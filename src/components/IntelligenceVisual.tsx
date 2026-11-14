@@ -12,7 +12,7 @@ type Star = {
 const TAU = Math.PI * 2;
 
 // The initial field is already dense. New stars are continuously born as
-// older stars expire or are consumed by the cursor, with a performance cap.
+// older stars expire naturally, with a performance cap.
 const DESKTOP = { initial: 2400, limit: 3200, birthsPerSecond: 54 };
 const MOBILE = { initial: 950, limit: 1450, birthsPerSecond: 25 };
 
@@ -76,7 +76,7 @@ function paint(
   const maxDistance = Math.max(width, height);
   const drag = Math.exp(-.3 * dt);
 
-  // Iterate backwards so capturing a star destroys it immediately.
+  // Iterate backwards to retire stars only when their natural lifetime ends.
   for (let index = stars.length - 1; index >= 0; index--) {
     const star = stars[index];
 
@@ -96,12 +96,16 @@ function paint(
       const dy = my - star.y;
       const distance = Math.hypot(dx, dy);
       if (attracting) {
-        // Long-range attraction; progressively stronger nearer the cursor.
-        // Softening keeps motion stable as stars approach the capture radius.
+        // Long-range gravity persists, but eases near the cursor so stars
+        // sweep past or circle it rather than piling up at a single point.
         const falloff = 1 / (1 + Math.pow(distance / (maxDistance * .69), 2));
-        const acceleration = (95 + 43000 / (distance + 135)) * falloff * star.speed;
-        ax += dx / (distance || 1) * acceleration;
-        ay += dy / (distance || 1) * acceleration;
+        const inward = (95 + 43000 / (distance + 135)) * falloff * star.speed;
+        const coreEase = 1 - .92 * Math.max(0, 1 - distance / 46);
+        const orbit = 225 * Math.max(0, 1 - distance / 115) * star.speed;
+        const nx = dx / (distance || 1);
+        const ny = dy / (distance || 1);
+        ax += nx * inward * coreEase - ny * orbit;
+        ay += ny * inward * coreEase + nx * orbit;
       }
 
       star.vx = (star.vx + ax * dt) * drag;
@@ -116,12 +120,6 @@ function paint(
       star.x += star.vx * dt;
       star.y += star.vy * dt;
       star.opacity = Math.min(1, star.opacity + dt * 1.1);
-
-      if (attracting && Math.hypot(mx - star.x, my - star.y) < 13 + star.size * 2.2) {
-        stars[index] = stars[stars.length - 1];
-        stars.pop();
-        continue;
-      }
 
       // Keep the drifting background populated across the entire viewport.
       if (star.x < -20) star.x = width + 20;
