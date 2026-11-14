@@ -79,7 +79,7 @@ export default function TheiaAnnouncement() {
       aria-label="Meet Theia announcement"
       aria-hidden={!visible}
       className={`absolute inset-x-0 top-full border-b-2 border-[#c9ec8a] bg-[#142820]/98 shadow-[0_6px_20px_rgba(0,0,0,.20)] backdrop-blur-sm transition-[height,opacity,visibility] duration-200 motion-reduce:transition-none ${
-        compact ? "h-[68px] sm:h-[36px]" : "h-[76px] sm:h-[43px]"
+        compact ? "h-[48px] sm:h-[36px]" : "h-[48px] sm:h-[43px]"
       } ${visible ? "visible opacity-100" : "invisible pointer-events-none opacity-0"}`}
     >
       {/* Stretch across the entire announcement, not just the content container. */}
@@ -90,15 +90,15 @@ export default function TheiaAnnouncement() {
         className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#c9ec8a]"
       />
 
-      <div className="container pointer-events-none relative z-10 flex h-full items-center justify-center pr-11 sm:px-11 lg:px-0">
+      <div className="container pointer-events-none relative z-10 flex h-full items-center justify-center px-12 sm:px-11 lg:px-0">
         <div className="pointer-events-none flex w-full max-w-max min-w-0 items-center justify-center gap-2 sm:gap-4">
           {!compact && (
-            <span aria-hidden="true" className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-xs font-semibold text-[#ddf4c5] sm:h-6 sm:w-6 sm:text-sm">
+            <span aria-hidden="true" className="relative hidden h-5 w-5 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-xs font-semibold text-[#ddf4c5] sm:flex sm:h-6 sm:w-6 sm:text-sm">
               T
               <span className="theia-online-dot absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#c9ec8a]" />
             </span>
           )}
-          <p className="min-w-0 flex-1 text-center text-[10px] font-medium leading-[13px] text-[#e6f0e7] sm:flex-none sm:whitespace-nowrap sm:text-[11px] lg:text-xs">
+          <p className="hidden min-w-0 flex-1 text-center text-[10px] font-medium leading-[13px] text-[#e6f0e7] sm:block sm:flex-none sm:whitespace-nowrap sm:text-[11px] lg:text-xs">
             Describe a business challenge. Theia maps the AI solution.
           </p>
           <Link
