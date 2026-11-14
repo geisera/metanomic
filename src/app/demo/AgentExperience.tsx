@@ -289,6 +289,12 @@ return (
               <p aria-live="polite" className={remaining <= 2 ? "shrink-0 font-semibold text-[#ffd08a]" : "shrink-0 text-[#c4d3ce]"}>
                 {remaining} {remaining === 1 ? "message" : "messages"} left in this demo
               </p>
+              <Link
+                href="/contact"
+                className="inline-flex min-h-6 items-center rounded-sm font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e5f8c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+              >
+                Schedule a call <span aria-hidden="true" className="ml-1">↗</span>
+              </Link>
             </div>
             {atLimit && (
               <p className="mt-2 text-xs leading-5 text-[#e3eecf]">
