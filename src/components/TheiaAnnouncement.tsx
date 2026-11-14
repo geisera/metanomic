@@ -90,7 +90,7 @@ export default function TheiaAnnouncement() {
         className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#c9ec8a]"
       />
 
-      <div className="container pointer-events-none relative z-10 flex h-full items-center justify-center pr-11 sm:pr-0">
+      <div className="container pointer-events-none relative z-10 flex h-full items-center justify-center pr-11 sm:px-11 lg:px-0">
         <div className="pointer-events-none flex w-full max-w-max min-w-0 items-center justify-center gap-2 sm:gap-4">
           {!compact && (
             <span aria-hidden="true" className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-xs font-semibold text-[#ddf4c5] sm:h-6 sm:w-6 sm:text-sm">
