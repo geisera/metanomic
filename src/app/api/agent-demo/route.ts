@@ -273,6 +273,17 @@ export async function POST(request: NextRequest) {
           if (availability) booking = availability;
           history.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result) });
         }
+        if (calendarIntent && booking) {
+          // The UI renders each verified slot as a card. Avoid asking the model
+          // to repeat booking links in prose, which can truncate the reply.
+          const answer = booking.status === "available"
+            ? "I checked Calendly for " + (booking.eventType || "a consultation") +
+              ". " + (booking.slots?.length || 0) + " available times are shown below in " +
+              (booking.timeZone || "America/New_York") +
+              ". Select one to complete your booking. Times may change until confirmed."
+            : booking.message;
+          return json({ answer, mode: "live", activities, model: MODEL, booking });
+        }
         continue;
       }
       const answer = typeof message.content === "string" ? message.content.trim() : "";
