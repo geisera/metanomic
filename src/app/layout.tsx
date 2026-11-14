@@ -4,11 +4,11 @@ import IntelligenceVisual from "@/components/IntelligenceVisual";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://metanomic.ai"),
-  title: { default: "Metanomic | Human Purpose. Intelligent Execution.", template: "%s | Metanomic" },
-  description: "Metanomic designs and builds practical AI agents, intelligent workflows, and integrated systems for growing businesses.",
+  title: { default: "Metanomic | AI That Magnifies Human Impact", template: "%s | Metanomic" },
+  description: "Metanomic builds practical AI tools, custom agents, and intelligent workflows that expand human capability and magnify the impact of people's work.",
   openGraph: {
-    title: "Metanomic — Human Purpose. Intelligent Execution.",
-    description: "AI strategy, custom agents, and intelligent systems thoughtfully built for people.",
+    title: "Metanomic — AI That Magnifies Human Impact",
+    description: "AI agents, automations, and connected tools designed to amplify what people can achieve.",
     url: "https://metanomic.ai",
     siteName: "Metanomic",
     type: "website"
