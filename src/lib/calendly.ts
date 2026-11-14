@@ -189,10 +189,13 @@ export async function checkCalendlyAvailability(input: AvailabilityRequest): Pro
   const now = new Date();
   const today = localDay(now, zone);
   const startDate = input.startDate ?? today;
-  const endDate = input.endDate ?? addDays(startDate as string, 6);
+  if (!validDay(startDate)) {
+    return { ...base, status: "invalid_request", message: "Please use a valid start date in YYYY-MM-DD format." };
+  }
+  const endDate = input.endDate ?? addDays(startDate, 6);
   const period = input.timeOfDay ?? "any";
 
-  if (!validDay(startDate) || !validDay(endDate) ||
+  if (!validDay(endDate) ||
       !["any", "morning", "afternoon", "evening"].includes(String(period))) {
     return { ...base, status: "invalid_request", message: "Please use YYYY-MM-DD dates and a valid time-of-day preference." };
   }
