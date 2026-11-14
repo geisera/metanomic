@@ -3,7 +3,7 @@
 :root { color-scheme: dark; --background:#091019; --foreground:#ecf0ed; --muted:#9caab3; --lime:#c9ec8a; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
-body { margin:0; background:var(--background); color:var(--foreground); font-family:Arial,Helvetica,sans-serif; -webkit-font-smoothing:antialiased; }
+body { margin:0; background:var(--background); color:var(--foreground); font-family:var(--font-geist),Arial,Helvetica,sans-serif; -webkit-font-smoothing:antialiased; }
 ::selection { background:var(--lime); color:#0b1520; }
 a { text-decoration:none; }
 .container { width:min(1160px, calc(100% - 48px)); margin-inline:auto; }
@@ -35,4 +35,11 @@ body::before { content:""; position:fixed; inset:0; pointer-events:none; z-index
 }
 @media (prefers-reduced-motion:reduce) {
   .theia-online-dot { animation:none; box-shadow:0 0 0 1px rgba(201,236,138,.32); }
+}
+
+/* Theia demo: quiet the global starfield without changing the rest of the site. */
+body:has(.theia-demo) .metanomic-starfield { opacity:.5; }
+.theia-demo :is(a,button,textarea):focus-visible { outline:2px solid #c9ec8a; outline-offset:2px; }
+@media (prefers-reduced-motion: reduce) {
+  .theia-demo *, .theia-demo *::before, .theia-demo *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
 }
