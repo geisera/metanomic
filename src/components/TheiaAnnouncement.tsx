@@ -90,7 +90,7 @@ export default function TheiaAnnouncement() {
         className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#c9ec8a]"
       />
 
-      <div className="container relative z-10 flex h-full items-center justify-center">
+      <div className="container pointer-events-none relative z-10 flex h-full items-center justify-center">
         <div className="pointer-events-none relative flex min-w-0 items-center justify-center gap-3 sm:gap-3">
           {!compact && (
             <span aria-hidden="true" className="relative hidden h-6 w-6 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-sm font-semibold text-[#ddf4c5] sm:flex">
@@ -118,7 +118,7 @@ export default function TheiaAnnouncement() {
           tabIndex={visible ? 0 : -1}
           onClick={dismiss}
           aria-label="Dismiss announcement"
-          className={`absolute right-0 z-20 flex h-11 w-11 items-center justify-center rounded-md text-xl leading-none text-[#e6f0e7] transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#c9ec8a] sm:top-1/2 sm:-translate-y-1/2 ${compact ? "top-1/2 -translate-y-1/2" : "bottom-1 sm:bottom-auto"}`}
+          className={`pointer-events-auto absolute right-0 z-20 flex h-11 w-11 items-center justify-center rounded-md text-xl leading-none text-[#e6f0e7] transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#c9ec8a] sm:top-1/2 sm:-translate-y-1/2 ${compact ? "top-1/2 -translate-y-1/2" : "bottom-1 sm:bottom-auto"}`}
         >
           <span aria-hidden="true">×</span>
         </button>
