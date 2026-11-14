@@ -210,7 +210,7 @@ function paint(
       continue;
     }
     const age = nova.age;
-    const flash = Math.exp(-((age - .12) / .23) ** 2);
+    const flash = Math.exp(-Math.pow((age - .12) / .23, 2));
     const after = Math.exp(-age * 1.8);
     const radius = Math.min(width, height) * (.055 + flash * .42 + after * .13);
     const bloom = context.createRadialGradient(nova.x, nova.y, 0, nova.x, nova.y, radius);
