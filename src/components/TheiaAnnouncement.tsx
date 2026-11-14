@@ -104,7 +104,7 @@ export default function TheiaAnnouncement() {
           <Link
             href="/demo"
             tabIndex={visible ? 0 : -1}
-            className="pointer-events-auto inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-[#c9ec8a] px-2 text-[10px] font-bold text-[#101a1b] transition-colors hover:bg-[#dcf7af] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-8 sm:gap-2 sm:px-3 sm:text-xs"
+            className="pointer-events-auto relative inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-md bg-[#c9ec8a] px-2 text-[10px] font-bold text-[#101a1b] transition-colors before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-[''] hover:bg-[#dcf7af] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:gap-2 sm:px-3 sm:text-xs sm:before:hidden"
           >
             Talk with Theia <span aria-hidden="true">↗</span>
           </Link>
