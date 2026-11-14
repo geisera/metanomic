@@ -112,17 +112,17 @@ export default function TheiaAnnouncement() {
             </Link>
           </div>
         </div>
+      </div>
 
-        <button
+      <button
           type="button"
           tabIndex={visible ? 0 : -1}
           onClick={dismiss}
           aria-label="Dismiss announcement"
-          className={`pointer-events-auto absolute right-0 z-20 flex h-11 w-11 items-center justify-center rounded-md text-xl leading-none text-[#e6f0e7] transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#c9ec8a] sm:top-1/2 sm:-translate-y-1/2 ${compact ? "top-1/2 -translate-y-1/2" : "bottom-1 sm:bottom-auto"}`}
+          className={`pointer-events-auto absolute right-2 z-20 flex sm:right-4 h-11 w-11 items-center justify-center rounded-md text-xl leading-none text-[#e6f0e7] transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#c9ec8a] sm:top-1/2 sm:-translate-y-1/2 ${compact ? "top-1/2 -translate-y-1/2" : "bottom-1 sm:bottom-auto"}`}
         >
           <span aria-hidden="true">×</span>
-        </button>
-      </div>
+      </button>
     </section>
   );
 }
