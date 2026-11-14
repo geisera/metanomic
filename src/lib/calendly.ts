@@ -175,7 +175,7 @@ export function directBookingEligibility(event: EventType): {
     const kind = location.kind;
     const simpleKinds = [
       "zoom_conference", "google_conference", "microsoft_teams_conference",
-      "webex_conference", "gotomeeting_conference", "inbound_call",
+      "webex_conference", "gotomeeting_conference",
     ];
     if (typeof kind !== "string" || !simpleKinds.includes(kind)) {
       return { supported: false, reason: "This meeting location needs additional details on Calendly." };
