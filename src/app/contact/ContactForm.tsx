@@ -1,6 +1,27 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import Script from "next/script";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
+
+type TurnstileAPI = {
+  render: (container: HTMLElement, options: {
+    sitekey: string;
+    theme: "dark";
+    size: "flexible";
+    appearance: "interaction-only";
+    action: string;
+    callback: (token: string) => void;
+    "expired-callback": () => void;
+    "error-callback": () => void;
+    "timeout-callback": () => void;
+  }) => string;
+  reset: (widgetId: string) => void;
+  remove: (widgetId: string) => void;
+};
+
+type TurnstileWindow = Window & { turnstile?: TurnstileAPI };
 
 type SubmissionState = "idle" | "sending" | "success" | "error";
 
@@ -9,12 +30,52 @@ const labelClass = "block text-sm font-medium text-[#e3ede7]";
 
 export default function ContactForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+  const [scriptReady, setScriptReady] = useState(false);
+  const [challengeError, setChallengeError] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY || !scriptReady || !widgetContainerRef.current) return;
+    const api = (window as TurnstileWindow).turnstile;
+    if (!api) return;
+
+    const widgetId = api.render(widgetContainerRef.current, {
+      sitekey: TURNSTILE_SITE_KEY,
+      theme: "dark",
+      size: "flexible",
+      appearance: "interaction-only",
+      action: "contact",
+      callback: token => {
+        setTurnstileToken(token);
+        setChallengeError(false);
+      },
+      "expired-callback": () => setTurnstileToken(""),
+      "error-callback": () => {
+        setTurnstileToken("");
+        setChallengeError(true);
+      },
+      "timeout-callback": () => setTurnstileToken(""),
+    });
+    widgetIdRef.current = widgetId;
+
+    return () => {
+      api.remove(widgetId);
+      widgetIdRef.current = null;
+    };
+  }, [scriptReady]);
   const [status, setStatus] = useState<SubmissionState>("idle");
   const [feedback, setFeedback] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (status === "sending") return;
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setStatus("error");
+      setFeedback("Please complete the security check before sending your message.");
+      return;
+    }
 
     const form = event.currentTarget;
     const fields = new FormData(form);
@@ -31,6 +92,7 @@ export default function ContactForm() {
           company: fields.get("company"),
           message: fields.get("message"),
           website: fields.get("website"),
+          turnstileToken: TURNSTILE_SITE_KEY ? turnstileToken : undefined,
         }),
       });
       const result: { message?: string } = await response.json();
@@ -43,6 +105,13 @@ export default function ContactForm() {
     } catch (cause) {
       setStatus("error");
       setFeedback(cause instanceof Error ? cause.message : "Your message could not be sent. Please try again.");
+    } finally {
+      // Turnstile tokens are single-use; refresh after every attempted submission.
+      if (TURNSTILE_SITE_KEY) {
+        setTurnstileToken("");
+        const api = (window as TurnstileWindow).turnstile;
+        if (api && widgetIdRef.current) api.reset(widgetIdRef.current);
+      }
     }
   }
 
@@ -89,6 +158,23 @@ export default function ContactForm() {
         <label htmlFor="contact-website">Leave this field empty</label>
         <input type="text" id="contact-website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
+
+      {TURNSTILE_SITE_KEY && (
+        <div className="mt-5" aria-label="Security verification">
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="afterInteractive"
+            onReady={() => setScriptReady(true)}
+            onError={() => setChallengeError(true)}
+          />
+          <div ref={widgetContainerRef} className="min-h-0 max-w-full" />
+          {challengeError && (
+            <p role="status" className="mt-2 text-sm text-[#f2d2af]">
+              The security check could not load. Please refresh this page and try again.
+            </p>
+          )}
+        </div>
+      )}
 
       <p className="mt-5 text-xs leading-6 text-[#c1d1ca]">
         We'll use your details to respond. Don't include sensitive information. Email delivery is handled by a third-party provider.
