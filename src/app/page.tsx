@@ -29,6 +29,7 @@ export default function Home() {
           <a className="navlink" href="#services">What we do</a>
           <a className="navlink" href="#approach">Our approach</a>
           <Link className="navlink" href="/enterprise-ai-stack">AI stack</Link>
+          <Link className="navlink" href="/demo">AI demo</Link>
           <a className="navlink" href="#about">About</a>
         </nav>
         <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>↗</span></Link>
@@ -44,6 +45,7 @@ export default function Home() {
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/contact" className="button button-primary">Start a conversation <span aria-hidden>↗</span></Link>
             <a href="#services" className="button button-outline">Explore our services <span aria-hidden>↓</span></a>
+            <Link href="/demo" className="button button-outline">Try our AI agent <span aria-hidden>↗</span></Link>
           </div>
         </div>
       </div>
@@ -70,6 +72,17 @@ export default function Home() {
           </div>
           <Link href="/enterprise-ai-stack" className="button button-outline">Explore the AI stack <span aria-hidden="true">↗</span></Link>
         </div>
+      </div>
+    </section>
+
+    <section className="rule py-16 md:py-20">
+      <div className="container flex flex-wrap items-center justify-between gap-8 rounded-xl border border-[#3a5452] bg-[#10252a]/90 p-8 backdrop-blur-lg md:p-12">
+        <div className="max-w-[700px]">
+          <p className="eyebrow">See the technology in action</p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-.05em] md:text-4xl">An AI agent with a real job to do.</h2>
+          <p className="muted mt-4 max-w-[600px] leading-8">Describe a business challenge. Our interactive workflow advisor helps turn it into a bounded AI pilot, with practical tools, safeguards, and measurable outcomes.</p>
+        </div>
+        <Link href="/demo" className="button button-primary">Try the AI agent <span aria-hidden="true">↗</span></Link>
       </div>
     </section>
 
