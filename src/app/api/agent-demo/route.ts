@@ -183,7 +183,7 @@ async function runTool(name: string, raw: string): Promise<{ result: object; act
   };
 }
 
-async function completion(messages: ModelMessage[], token: string, allowTools: boolean): Promise<ModelResult> {
+async function completion(messages: ModelMessage[], token: string, allowTools: boolean, requireCalendly = false): Promise<ModelResult> {
   const reply = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -192,7 +192,12 @@ async function completion(messages: ModelMessage[], token: string, allowTools: b
       messages,
       max_completion_tokens: 750,
       stream: false,
-      ...(allowTools ? { tools: definitions, tool_choice: "auto" } : {}),
+      ...(allowTools ? {
+        tools: definitions,
+        tool_choice: requireCalendly
+          ? { type: "function", function: { name: "check_calendly_availability" } }
+          : "auto",
+      } : {}),
     }),
     cache: "no-store",
     signal: AbortSignal.timeout(18000),
@@ -226,6 +231,19 @@ export async function POST(request: NextRequest) {
   if (!messages) return json({ error: "Please send a short conversation ending with your question." }, 400);
 
   const latest = messages[messages.length - 1].content;
+  // Availability questions always require actual Calendly data, never plausible-looking model guesses.
+  const calendarIntent = /\b(?:calendly|availability|openings?|appointment times?|meeting times?|time slots?)\b/i.test(latest)
+    || /\b(?:book|schedule|arrange)\b.{0,35}\b(?:call|meeting|consultation|appointment)\b/i.test(latest)
+    || /\b(?:available|free)\b.{0,24}\b(?:appointment|meeting|time|slot)\b/i.test(latest);
+  if (calendarIntent && !process.env.CALENDLY_PERSONAL_ACCESS_TOKEN?.trim()) {
+    const booking = await checkCalendlyAvailability({});
+    return json({
+      answer: booking.message,
+      booking,
+      mode: "guided",
+      notice: "Live Calendly availability needs a server-side API token. No times have been checked.",
+    });
+  }
   const auth = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
   if (!auth || process.env.DEMO_AGENT_LIVE === "false") {
     return json({ ...guidedAnswer(latest), mode: "guided", notice: "Live model access is not configured. Showing an explicitly rule-based preview." });
@@ -243,7 +261,7 @@ export async function POST(request: NextRequest) {
   try {
     // Bounded tool-use loop: at most two rounds of tool execution, plus a final answer.
     for (let step = 0; step < 3; step++) {
-      const output = await completion(history, auth, step < 2);
+      const output = await completion(history, auth, step < 2, step === 0 && calendarIntent);
       const message = output.choices?.[0]?.message;
       if (!message) throw new Error("missing_model_reply");
       const calls = Array.isArray(message.tool_calls) ? message.tool_calls.slice(0, 3) : [];
