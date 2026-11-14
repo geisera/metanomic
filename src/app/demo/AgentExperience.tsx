@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import type { AvailabilityResult } from "@/lib/calendly";
+import BookingForm from "./BookingForm";
 
 type Activity = { tool: string; label: string; detail: string };
 type ChatItem = {
@@ -52,6 +53,7 @@ export default function AgentExperience() {
   const [busy, setBusy] = useState(false);
   const [lastMode, setLastMode] = useState<"live" | "guided" | null>(null);
   const [error, setError] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<{ messageId: string; startTime: string } | null>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLTextAreaElement>(null);
   const count = items.filter(item => item.role === "user").length;
@@ -66,7 +68,7 @@ export default function AgentExperience() {
     if (items.length === 1 && !busy && !error) return;
     const conversation = conversationRef.current;
     if (conversation) conversation.scrollTop = conversation.scrollHeight;
-  }, [items, busy, error]);
+  }, [items, busy, error, selectedBooking]);
 
   useLayoutEffect(() => {
     const draft = draftRef.current;
@@ -149,6 +151,7 @@ export default function AgentExperience() {
     setInput("");
     setError("");
     setLastMode(null);
+    setSelectedBooking(null);
   }
 
 return (
@@ -238,19 +241,42 @@ return (
                             </p>
                             <div className="mt-3 grid gap-2 sm:grid-cols-2">
                               {item.booking.slots.map(slot => (
-                                <a
-                                  key={slot.startTime}
-                                  href={slot.bookingUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-lg border border-[#77946f] bg-[#1e3a33] px-3 py-2 text-sm font-semibold text-[#e7f8dc] hover:border-[#c9ec8a] hover:bg-[#29473b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
-                                >
-                                  <span>{slot.label}</span>
-                                  <span aria-hidden="true">↗</span>
-                                </a>
+                                <div key={slot.startTime}
+                                  className="rounded-lg border border-[#77946f] bg-[#1e3a33] p-3">
+                                  <p className="font-semibold text-[#e7f8dc]">{slot.label}</p>
+                                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+                                    {item.booking?.eventTypeUri && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setSelectedBooking({ messageId: item.id, startTime: slot.startTime })}
+                                        className="inline-flex min-h-11 items-center rounded-lg bg-[#c9ec8a] px-3 text-xs font-bold text-[#112026] hover:bg-[#def8ad] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+                                        aria-label={"Book " + slot.label + " directly in Theia"}
+                                        aria-expanded={selectedBooking?.messageId === item.id && selectedBooking?.startTime === slot.startTime}
+                                      >
+                                        Book here
+                                      </button>
+                                    )}
+                                    <a href={slot.bookingUrl} target="_blank" rel="noopener noreferrer"
+                                      className="inline-flex min-h-11 items-center text-xs font-semibold text-[#d5ecc4] underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]">
+                                      Calendly ↗
+                                    </a>
+                                  </div>
+                                </div>
                               ))}
                             </div>
-                            <p className="mt-3 text-xs text-[#c5d7c9]">Select a time to complete your booking on Calendly.</p>
+                            {selectedBooking?.messageId === item.id && item.booking.eventTypeUri && (
+                              <BookingForm
+                                key={item.id + ":" + selectedBooking.startTime}
+                                slot={item.booking.slots.find(slot => slot.startTime === selectedBooking.startTime) ?? item.booking.slots[0]}
+                                eventType={item.booking.eventType || "Consultation"}
+                                eventTypeUri={item.booking.eventTypeUri}
+                                timeZone={item.booking.timeZone || "America/New_York"}
+                                onCancel={() => setSelectedBooking(null)}
+                              />
+                            )}
+                            <p className="mt-3 text-xs text-[#c5d7c9]">
+                              Choose Book here to confirm inside Theia, or Calendly to complete booking on its website.
+                            </p>
                           </>
                         ) : item.booking.status === "choose_event" && item.booking.eventTypes?.length ? (
                           <>
