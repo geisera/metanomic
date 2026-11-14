@@ -79,7 +79,7 @@ export default function TheiaAnnouncement() {
       aria-label="Meet Theia announcement"
       aria-hidden={!visible}
       className={`absolute inset-x-0 top-full border-b-2 border-[#c9ec8a] bg-[#142820]/98 shadow-[0_6px_20px_rgba(0,0,0,.20)] backdrop-blur-sm transition-[height,opacity,visibility] duration-200 motion-reduce:transition-none ${
-        compact ? "h-[48px] sm:h-[36px]" : "h-[72px] sm:h-[43px]"
+        compact ? "h-[68px] sm:h-[36px]" : "h-[76px] sm:h-[43px]"
       } ${visible ? "visible opacity-100" : "invisible pointer-events-none opacity-0"}`}
     >
       {/* Stretch across the entire announcement, not just the content container. */}
@@ -90,27 +90,24 @@ export default function TheiaAnnouncement() {
         className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#c9ec8a]"
       />
 
-      <div className="container pointer-events-none relative z-10 flex h-full items-center justify-center">
-        <div className="pointer-events-none relative flex min-w-0 items-center justify-center gap-3 sm:gap-4">
+      <div className="container pointer-events-none relative z-10 flex h-full items-center justify-center pr-11 sm:pr-0">
+        <div className="pointer-events-none flex w-full max-w-max min-w-0 items-center justify-center gap-2 sm:gap-4">
           {!compact && (
-            <span aria-hidden="true" className="relative hidden h-6 w-6 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-sm font-semibold text-[#ddf4c5] sm:flex">
+            <span aria-hidden="true" className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-xs font-semibold text-[#ddf4c5] sm:h-6 sm:w-6 sm:text-sm">
               T
               <span className="theia-online-dot absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#c9ec8a]" />
             </span>
           )}
-          <div className={`flex min-w-0 items-center justify-center sm:flex-row sm:gap-4 ${compact ? "flex-row gap-2" : "flex-col gap-1"}`}>
-            <p className={`whitespace-nowrap text-center font-medium text-[#e6f0e7] ${compact ? "hidden text-[11px] sm:block" : "text-[11px] sm:text-[11px] lg:text-xs"}`}>
-              <span className="hidden sm:inline">Describe a business challenge. Theia maps the AI solution.</span>
-              <span className="sm:hidden">Got a business challenge? Ask Theia.</span>
-            </p>
-            <Link
-              href="/demo"
-              tabIndex={visible ? 0 : -1}
-              className="pointer-events-auto inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-[#c9ec8a] px-3 text-xs font-bold text-[#101a1b] transition-colors hover:bg-[#dcf7af] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-8"
-            >
-              Talk with Theia <span aria-hidden="true">↗</span>
-            </Link>
-          </div>
+          <p className="min-w-0 flex-1 text-center text-[10px] font-medium leading-[13px] text-[#e6f0e7] sm:flex-none sm:whitespace-nowrap sm:text-[11px] lg:text-xs">
+            Describe a business challenge. Theia maps the AI solution.
+          </p>
+          <Link
+            href="/demo"
+            tabIndex={visible ? 0 : -1}
+            className="pointer-events-auto inline-flex h-11 shrink-0 items-center justify-center gap-1 rounded-md bg-[#c9ec8a] px-2 text-[10px] font-bold text-[#101a1b] transition-colors hover:bg-[#dcf7af] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-8 sm:gap-2 sm:px-3 sm:text-xs"
+          >
+            Talk with Theia <span aria-hidden="true">↗</span>
+          </Link>
         </div>
       </div>
 
@@ -119,7 +116,7 @@ export default function TheiaAnnouncement() {
         tabIndex={visible ? 0 : -1}
         onClick={dismiss}
         aria-label="Dismiss announcement"
-        className={`pointer-events-auto absolute right-2 z-20 flex h-11 w-11 items-center justify-center rounded-md text-xl leading-none text-[#e6f0e7] transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#c9ec8a] sm:right-4 sm:top-1/2 sm:-translate-y-1/2 ${compact ? "top-1/2 -translate-y-1/2" : "bottom-1 sm:bottom-auto"}`}
+        className="pointer-events-auto absolute right-1 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-xl leading-none text-[#e6f0e7] transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#c9ec8a] sm:right-4"
       >
         <span aria-hidden="true">×</span>
       </button>
