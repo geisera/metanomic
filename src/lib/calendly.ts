@@ -12,7 +12,7 @@ export type AvailableSlot = {
   bookingUrl: string;
 };
 
-type EventType = {
+export type EventType = {
   uri: string;
   name: string;
   scheduling_url?: string;
@@ -40,6 +40,8 @@ export type AvailabilityResult = {
   timeZone?: string;
   eventType?: string;
   eventTypeUri?: string;
+  directBookingSupported?: boolean;
+  directBookingReason?: string;
   slots?: AvailableSlot[];
   eventTypes?: Array<{ name: string; bookingUrl: string }>;
 };
@@ -144,6 +146,45 @@ export async function findEventTypes(token: string): Promise<EventType[]> {
   return events;
 }
 
+// The UI and write endpoint share the same eligibility rules. Complex event
+// types remain bookable through Calendly's hosted booking page.
+export function directBookingEligibility(event: EventType): {
+  supported: boolean;
+  reason?: string;
+  location?: { kind: string };
+} {
+  if (event.is_paid || (event.kind && event.kind !== "solo") ||
+      (event.booking_method && event.booking_method !== "instant")) {
+    return { supported: false, reason: "This meeting type requires Calendly's booking process." };
+  }
+
+  if (Array.isArray(event.custom_questions) && event.custom_questions.some(value => {
+    const question = isRecord(value) ? value : {};
+    return question.required === true && question.enabled !== false;
+  })) {
+    return { supported: false, reason: "Additional required questions must be answered on Calendly." };
+  }
+
+  if (event.pooling_type === "round_robin") return { supported: true };
+  const locations = Array.isArray(event.locations) ? event.locations : [];
+  if (locations.length > 1) {
+    return { supported: false, reason: "Choose a meeting location on Calendly." };
+  }
+  if (locations.length === 1) {
+    const location = isRecord(locations[0]) ? locations[0] : {};
+    const kind = location.kind;
+    const simpleKinds = [
+      "zoom_conference", "google_conference", "microsoft_teams_conference",
+      "webex_conference", "gotomeeting_conference", "inbound_call",
+    ];
+    if (typeof kind !== "string" || !simpleKinds.includes(kind)) {
+      return { supported: false, reason: "This meeting location needs additional details on Calendly." };
+    }
+    return { supported: true, location: { kind } };
+  }
+  return { supported: true };
+}
+
 function chooseEvent(events: EventType[], requestName: unknown): EventType | null {
   const selectedUri = process.env.CALENDLY_EVENT_TYPE_URI?.trim();
   const configuredName = process.env.CALENDLY_EVENT_TYPE_NAME?.trim();
@@ -246,6 +287,7 @@ export async function checkCalendlyAvailability(input: AvailabilityRequest): Pro
     }
 
     const bookingUrl = chosen.scheduling_url || PROFILE_URL;
+    const eligibility = directBookingEligibility(chosen);
     // The API requires UTC bounds; pad for IANA time-zone offsets and filter locally.
     const queryStart = new Date(Math.max(Date.now() + 60_000, startMs - 86_400_000));
     const queryEnd = new Date(endMs + 2 * 86_400_000);
@@ -286,6 +328,8 @@ export async function checkCalendlyAvailability(input: AvailabilityRequest): Pro
         : "Calendly returned no available times in the requested window. Try a wider date range or use the booking page.",
       eventType: chosen.name,
       eventTypeUri: chosen.uri,
+      directBookingSupported: eligibility.supported,
+      directBookingReason: eligibility.reason,
       timeZone: zone,
       bookingUrl,
       slots,
