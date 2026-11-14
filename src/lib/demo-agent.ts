@@ -94,6 +94,12 @@ export function estimateCapacity(input: { tasksPerWeek?: unknown; minutesSaved?:
 }
 
 export function guidedAnswer(prompt: string) {
+  if (/\bcalendly\b|\b(?:book|schedule|arrange|set up)\b.{0,50}\b(?:call|meeting|consultation|appointment)\b|\b(?:talk|speak|meet)\b.{0,25}\b(?:metanomic|your team|you)\b/i.test(prompt)) {
+    return {
+      answer: "You can schedule a conversation with Metanomic at https://metanomic.ai/contact. The page has an embedded Calendly scheduler, or you can book directly at https://calendly.com/metanomic. I can help you prepare for a meeting, but I cannot book one on your behalf.",
+      activities: [],
+    };
+  }
   if (isStackQuestion(prompt)) return guidedStackAnswer();
   const category = mapOpportunity(resolveFocus(prompt));
   return {
