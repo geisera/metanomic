@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
+import type { AvailabilityResult } from "@/lib/calendly";
 
 type Activity = { tool: string; label: string; detail: string };
 type ChatItem = {
@@ -11,6 +12,7 @@ type ChatItem = {
   mode?: "live" | "guided";
   notice?: string;
   activities?: Activity[];
+  booking?: AvailabilityResult;
 };
 
 const intro = "Tell me what you're working on and I'll map out how AI can help. Or ask how I'm built—model, tools, architecture, safeguards.";
@@ -106,6 +108,7 @@ export default function AgentExperience() {
         mode?: "live" | "guided";
         notice?: string;
         activities?: Activity[];
+        booking?: AvailabilityResult;
       } = await response.json();
       if (!response.ok || !data.answer) throw new Error(data.error || "The request could not be completed.");
       setLastMode(data.mode || null);
@@ -116,6 +119,7 @@ export default function AgentExperience() {
         mode: data.mode,
         notice: data.notice,
         activities: data.activities,
+        booking: data.booking,
       }]);
     } catch (cause) {
       setError(cause instanceof Error && cause.name !== "AbortError" ? cause.message : "The agent request timed out. Please try again.");
@@ -222,6 +226,62 @@ return (
                     : "max-w-[97%] text-sm leading-7 text-[#dce8e3] sm:max-w-[90%]"}>
                     {item.role === "assistant" && <p className="mb-2 text-xs font-semibold uppercase tracking-[.1em] text-[#c9ec8a]">Theia</p>}
                     <div className="space-y-0.5">{formattedText(item.content)}</div>
+                    {item.role === "assistant" && item.booking && (
+                      <div className="mt-5 rounded-xl border border-[#506c53] bg-[#132a27] p-4" aria-label="Calendly scheduling options">
+                        {item.booking.status === "available" && item.booking.slots?.length ? (
+                          <>
+                            <p className="text-sm font-semibold text-[#e6f7d4]">
+                              Available {item.booking.eventType ? item.booking.eventType + " " : ""}appointments
+                            </p>
+                            <p className="mt-1 text-xs text-[#c6dacb]">
+                              {item.booking.timeZone || "America/New_York"} · Times may change before booking.
+                            </p>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                              {item.booking.slots.map(slot => (
+                                <a
+                                  key={slot.startTime}
+                                  href={slot.bookingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-lg border border-[#77946f] bg-[#1e3a33] px-3 py-2 text-sm font-semibold text-[#e7f8dc] hover:border-[#c9ec8a] hover:bg-[#29473b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+                                >
+                                  <span>{slot.label}</span>
+                                  <span aria-hidden="true">↗</span>
+                                </a>
+                              ))}
+                            </div>
+                            <p className="mt-3 text-xs text-[#c5d7c9]">Select a time to complete your booking on Calendly.</p>
+                          </>
+                        ) : item.booking.status === "choose_event" && item.booking.eventTypes?.length ? (
+                          <>
+                            <p className="text-sm font-semibold text-[#e6f7d4]">Choose a meeting type</p>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                              {item.booking.eventTypes.map(eventType => (
+                                <a
+                                  key={eventType.name}
+                                  href={eventType.bookingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-lg border border-[#77946f] px-3 py-2 text-sm text-[#e6f7d4] hover:bg-[#29473b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+                                >
+                                  <span>{eventType.name}</span><span aria-hidden="true">↗</span>
+                                </a>
+                              ))}
+                            </div>
+                            <p className="mt-3 text-xs text-[#c5d7c9]">Or tell me which meeting type to check.</p>
+                          </>
+                        ) : (
+                          <a
+                            href={item.booking.bookingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex min-h-11 items-center gap-2 rounded-md font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e5f8c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+                          >
+                            Open Metanomic's Calendly page <span aria-hidden="true">↗</span>
+                          </a>
+                        )}
+                      </div>
+                    )}
                     {item.activities && item.activities.length > 0 && (
                       <div className="mt-5 rounded-lg border border-[#385044] bg-[#112620] p-3">
                         <p className="text-xs font-bold uppercase tracking-[.1em] text-[#c9ec8a]">Tool activity</p>
