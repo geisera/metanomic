@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
           if (availability) booking = availability;
           history.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result) });
         }
-        if (calendarIntent && booking) {
+        if (booking) {
           // The UI renders each verified slot as a card. Avoid asking the model
           // to repeat booking links in prose, which can truncate the reply.
           const answer = booking.status === "available"
