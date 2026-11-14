@@ -82,24 +82,24 @@ export default function TheiaAnnouncement() {
         compact ? "h-[48px] sm:h-[36px]" : "h-[72px] sm:h-[43px]"
       } ${visible ? "visible opacity-100" : "invisible pointer-events-none opacity-0"}`}
     >
-      <div className="container relative flex h-full items-center justify-center">
-        {/* Separate stretched link avoids nesting interactive controls. */}
-        <Link
-          href="/demo"
-          aria-label="Open Theia chat"
-          tabIndex={visible ? 0 : -1}
-          className="absolute inset-0 z-0 cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#c9ec8a]"
-        />
+      {/* Stretch across the entire announcement, not just the content container. */}
+      <Link
+        href="/demo"
+        aria-label="Open Theia chat"
+        tabIndex={visible ? 0 : -1}
+        className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#c9ec8a]"
+      />
 
-        <div className="pointer-events-none relative z-10 flex min-w-0 items-center justify-center gap-4">
+      <div className="container relative z-10 flex h-full items-center justify-center">
+        <div className="pointer-events-none relative flex min-w-0 items-center justify-center gap-3 sm:gap-3">
           {!compact && (
             <span aria-hidden="true" className="relative hidden h-6 w-6 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-sm font-semibold text-[#ddf4c5] sm:flex">
               T
               <span className="theia-online-dot absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#c9ec8a]" />
             </span>
           )}
-          <div className={`flex min-w-0 items-center justify-center sm:flex-row sm:gap-4 ${compact ? "flex-row gap-2" : "flex-col gap-1"}`}>
-            <p className={`whitespace-nowrap text-center font-medium text-[#e6f0e7] ${compact ? "hidden text-[11px] sm:block" : "text-[11px] sm:text-xs"}`}>
+          <div className={`flex min-w-0 items-center justify-center sm:flex-row sm:gap-3 ${compact ? "flex-row gap-2" : "flex-col gap-1"}`}>
+            <p className={`whitespace-nowrap text-center font-medium text-[#e6f0e7] ${compact ? "hidden text-[11px] sm:block" : "text-[11px] sm:text-[11px] lg:text-xs"}`}>
               <span className="hidden sm:inline">Describe a business challenge. Theia maps the AI solution.</span>
               <span className="sm:hidden">Got a business challenge? Ask Theia.</span>
             </p>
