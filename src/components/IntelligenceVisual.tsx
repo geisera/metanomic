@@ -9,14 +9,12 @@ type Star = {
   age: number; lifetime: number; opacity: number;
 };
 
-type Nova = { x: number; y: number; age: number };
-
 const TAU = Math.PI * 2;
 
 // The initial field is already dense. New stars are continuously born as
 // older stars expire or are consumed by the cursor, with a performance cap.
-const DESKTOP = { initial: 2400, limit: 3200, birthsPerSecond: 54, novaThreshold: 85 };
-const MOBILE = { initial: 950, limit: 1450, birthsPerSecond: 25, novaThreshold: 48 };
+const DESKTOP = { initial: 2400, limit: 3200, birthsPerSecond: 54 };
+const MOBILE = { initial: 950, limit: 1450, birthsPerSecond: 25 };
 
 function makeRandom(seed: number) {
   let value = seed;
@@ -51,14 +49,11 @@ function newStar(
 function paint(
   context: CanvasRenderingContext2D,
   stars: Star[],
-  novas: Nova[],
   width: number,
   height: number,
   elapsed: number,
   dt: number,
   pointer: { x: number; y: number },
-  charge: { value: number },
-  threshold: number,
   still: boolean,
 ) {
   context.clearRect(0, 0, width, height);
@@ -68,7 +63,7 @@ function paint(
 
   context.globalCompositeOperation = "lighter";
 
-  // A low-key atmospheric layer, never a timed or automatic nova.
+  // Subtle atmospheric depth behind the continuously moving stars.
   const ambientGlow = context.createRadialGradient(
     width * .66, height * .46, 0,
     width * .66, height * .46, Math.max(width, height) * .75,
@@ -125,25 +120,6 @@ function paint(
       if (attracting && Math.hypot(mx - star.x, my - star.y) < 13 + star.size * 2.2) {
         stars[index] = stars[stars.length - 1];
         stars.pop();
-        charge.value += 1;
-
-        if (charge.value >= threshold) {
-          charge.value -= threshold;
-          novas.push({ x: mx, y: my, age: 0 });
-
-          // A nova physically sends nearby stars outward before gravity
-          // gradually pulls them back, rather than resetting the entire field.
-          const reach = Math.min(width, height) * .9;
-          for (const other of stars) {
-            const ox = other.x - mx;
-            const oy = other.y - my;
-            const r = Math.hypot(ox, oy);
-            if (r < 1 || r > reach) continue;
-            const impulse = 340 * (1 - r / reach) ** 1.45;
-            other.vx += ox / r * impulse;
-            other.vy += oy / r * impulse;
-          }
-        }
         continue;
       }
 
@@ -181,70 +157,17 @@ function paint(
     }
   }
 
-  // The attractor becomes brighter as it collects actual stars; it does not
-  // trigger a nova merely because the cursor is present.
+  // The cursor remains a quiet gravitational attractor.
   if (attracting) {
-    const fraction = charge.value / threshold;
-    const size = 100 + fraction * 90;
-    const well = context.createRadialGradient(mx, my, 0, mx, my, size);
-    well.addColorStop(0, `rgba(232,255,213,${.055 + fraction * .24})`);
-    well.addColorStop(.22, `rgba(164,236,183,${.025 + fraction * .10})`);
+    const radius = 110;
+    const well = context.createRadialGradient(mx, my, 0, mx, my, radius);
+    well.addColorStop(0, "rgba(232,255,213,.07)");
+    well.addColorStop(.25, "rgba(164,236,183,.025)");
     well.addColorStop(1, "rgba(123,206,187,0)");
     context.fillStyle = well;
-    context.fillRect(mx - size, my - size, size * 2, size * 2);
-    if (charge.value > 0) {
-      context.beginPath();
-      context.arc(mx, my, 11 + fraction * 7, 0, TAU * fraction);
-      context.strokeStyle = `rgba(215,250,195,${.2 + fraction * .55})`;
-      context.lineWidth = 1 + fraction;
-      context.stroke();
-    }
+    context.fillRect(mx - radius, my - radius, radius * 2, radius * 2);
   }
 
-  // Novas exist ONLY when the cursor has consumed enough actual stars.
-  for (let index = novas.length - 1; index >= 0; index--) {
-    const nova = novas[index];
-    nova.age += dt;
-    if (nova.age > 2.8) {
-      novas.splice(index, 1);
-      continue;
-    }
-    const age = nova.age;
-    const flash = Math.exp(-Math.pow((age - .12) / .23, 2));
-    const after = Math.exp(-age * 1.8);
-    const radius = Math.min(width, height) * (.055 + flash * .42 + after * .13);
-    const bloom = context.createRadialGradient(nova.x, nova.y, 0, nova.x, nova.y, radius);
-    bloom.addColorStop(0, `rgba(255,255,247,${Math.min(1, flash + after * .87)})`);
-    bloom.addColorStop(.13, `rgba(233,255,203,${Math.min(1, flash * .8 + after * .44)})`);
-    bloom.addColorStop(.42, `rgba(158,242,221,${flash * .43 + after * .13})`);
-    bloom.addColorStop(1, "rgba(120,198,185,0)");
-    context.fillStyle = bloom;
-    context.fillRect(nova.x - radius, nova.y - radius, radius * 2, radius * 2);
-
-    for (let ring = 0; ring < 2; ring++) {
-      const progress = (age - ring * .17) / 1.8;
-      if (progress <= 0 || progress >= 1) continue;
-      context.beginPath();
-      context.arc(nova.x, nova.y, (15 + progress * Math.max(width, height) * .75), 0, TAU);
-      context.lineWidth = 1 + (1 - progress) * 2.2;
-      context.strokeStyle = `rgba(219,255,223,${.63 * (1 - progress) ** 2})`;
-      context.stroke();
-    }
-
-    const spokes = 28;
-    for (let ray = 0; ray < spokes; ray++) {
-      const theta = ray / spokes * TAU + ray * .17;
-      const length = Math.min(width, height) * (.1 + (ray % 5) * .055) * Math.min(1, age * 4);
-      const opacity = Math.max(0, 1 - age / 1.4) * (.12 + (ray % 4) * .04);
-      if (opacity <= 0) continue;
-      context.beginPath();
-      context.moveTo(nova.x + Math.cos(theta) * length * .45, nova.y + Math.sin(theta) * length * .45);
-      context.lineTo(nova.x + Math.cos(theta) * length, nova.y + Math.sin(theta) * length);
-      context.strokeStyle = `rgba(220,255,219,${opacity})`;
-      context.lineWidth = .75;
-      context.stroke();
-    }
-  }
   context.globalCompositeOperation = "source-over";
 }
 
@@ -262,8 +185,6 @@ export default function IntelligenceVisual() {
     const configuration = window.matchMedia("(max-width: 700px)").matches ? MOBILE : DESKTOP;
     const random = makeRandom(78219);
     const stars: Star[] = [];
-    const novas: Nova[] = [];
-    const charge = { value: 0 };
     let width = 0, height = 0, last = 0, elapsed = 0;
     let birthCarry = 0, frame = 0;
     let visible = !document.hidden;
@@ -280,7 +201,7 @@ export default function IntelligenceVisual() {
         star.x = oldWidth ? star.x * width / oldWidth : star.x;
         star.y = oldHeight ? star.y * height / oldHeight : star.y;
       }
-      paint(context, stars, novas, width, height, elapsed, 0, pointer.current, charge, configuration.novaThreshold, still);
+      paint(context, stars, width, height, elapsed, 0, pointer.current, still);
     };
 
     const onPointer = (event: PointerEvent) => {
@@ -314,7 +235,7 @@ export default function IntelligenceVisual() {
         stars.push(newStar(random, width, height, false));
       }
 
-      paint(context, stars, novas, width, height, elapsed, dt, pointer.current, charge, configuration.novaThreshold, false);
+      paint(context, stars, width, height, elapsed, dt, pointer.current, false);
       frame = requestAnimationFrame(tick);
     };
 
@@ -329,7 +250,7 @@ export default function IntelligenceVisual() {
     for (let i = 0; i < configuration.initial; i++) {
       stars.push(newStar(random, width, height, true));
     }
-    paint(context, stars, novas, width, height, elapsed, 0, pointer.current, charge, configuration.novaThreshold, still);
+    paint(context, stars, width, height, elapsed, 0, pointer.current, still);
     if (!still) frame = requestAnimationFrame(tick);
 
     return () => {
