@@ -37,7 +37,7 @@ export default function TheiaAnnouncement() {
     measure();
     setReady(true);
 
-    if (!("IntersectionObserver" in window)) {
+    if (typeof IntersectionObserver === "undefined") {
       window.addEventListener("scroll", measure, { passive: true });
       window.addEventListener("resize", measure);
       return () => {
