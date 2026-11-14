@@ -181,7 +181,9 @@ export async function POST(request: NextRequest) {
 
   const history: ModelMessage[] = [
     { role: "system", content: instructions },
-    ...messages.map(msg => ({ role: msg.role, content: msg.content })),
+    ...messages.map((msg): ModelMessage => msg.role === "user"
+      ? { role: "user", content: msg.content }
+      : { role: "assistant", content: msg.content }),
   ];
   const activities: Activity[] = [];
 
