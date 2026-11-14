@@ -103,7 +103,7 @@ async function requestCalendly(path: string, token: string): Promise<Record<stri
   return payload;
 }
 
-async function findEventTypes(token: string): Promise<EventType[]> {
+export async function findEventTypes(token: string): Promise<EventType[]> {
   const userResult = await requestCalendly("/users/me", token);
   const user = isRecord(userResult.resource) ? userResult.resource : {};
   if (typeof user.uri !== "string" || !user.uri.startsWith(API + "/users/")) {
