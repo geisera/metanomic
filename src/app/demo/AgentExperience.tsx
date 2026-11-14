@@ -245,7 +245,7 @@ return (
                                   className="rounded-lg border border-[#77946f] bg-[#1e3a33] p-3">
                                   <p className="font-semibold text-[#e7f8dc]">{slot.label}</p>
                                   <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
-                                    {item.booking?.eventTypeUri && (
+                                    {item.booking?.eventTypeUri && item.booking.directBookingSupported !== false && (
                                       <button
                                         type="button"
                                         onClick={() => setSelectedBooking({ messageId: item.id, startTime: slot.startTime })}
@@ -275,7 +275,9 @@ return (
                               />
                             )}
                             <p className="mt-3 text-xs text-[#c5d7c9]">
-                              Choose Book here to confirm inside Theia, or Calendly to complete booking on its website.
+                              {item.booking.directBookingSupported === false
+                                ? (item.booking.directBookingReason || "This event requires Calendly's booking page.")
+                                : "Choose Book here to confirm inside Theia, or Calendly to book on its website."}
                             </p>
                           </>
                         ) : item.booking.status === "choose_event" && item.booking.eventTypes?.length ? (
