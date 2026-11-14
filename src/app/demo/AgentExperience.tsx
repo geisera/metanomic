@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import Link from "next/link";
 
 type Activity = { tool: string; label: string; detail: string };
 type ChatItem = {
@@ -13,24 +12,13 @@ type ChatItem = {
   activities?: Activity[];
 };
 
-const intro = "I'm Theia, Metanomic's AI guide. Tell me what you're trying to accomplish, and I'll help you explore how intelligent tools could get you there. What part of your team's work would you most like to improve?";
+const intro = "I'm Theia. Curious what makes me work? Ask about my stack—my model, tools, architecture, or safeguards. Or tell me what you're working on, and we'll explore it together.";
 
-const examples = [
-  {
-    label: "Customer service",
-    detail: "Summarize tickets and draft responses",
-    prompt: "Our support team handles hundreds of repetitive customer questions each week. How could we use AI while keeping people in control of responses?",
-  },
-  {
-    label: "Internal knowledge",
-    detail: "Find answers in trusted documents",
-    prompt: "Employees waste time finding procedures across hundreds of internal documents. Outline an AI knowledge assistant with permissions and source citations.",
-  },
-  {
-    label: "Operations",
-    detail: "Triage and route requests",
-    prompt: "We receive 300 service requests a week, and each one takes about 12 minutes to classify and route. Show a safe pilot and an illustrative time-savings calculation.",
-  },
+const suggestions = [
+  { label: "What's your stack?", prompt: "What technology stack are you built on, and how do the parts fit together?" },
+  { label: "What tools can you use?", prompt: "Which server-side tools can you use, and what are their limits?" },
+  { label: "How is my data handled?", prompt: "How do you handle my messages, and what safeguards and limitations does this demo have?" },
+  { label: "Explore a use case", prompt: "How would you design a human-supervised AI pilot for repetitive customer support requests?" },
 ];
 
 function formattedText(content: string) {
@@ -145,138 +133,123 @@ export default function AgentExperience() {
     setLastMode(null);
   }
 
-  return (
-    <section id="try-agent" className="container flex min-h-0 flex-1 flex-col pb-3 sm:pb-5">
-      <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[.38fr_.62fr]">
-        <aside className="hidden min-h-0 space-y-4 overflow-y-auto overscroll-contain pr-1 lg:block">
-          <div className="rounded-xl border border-[#314550] bg-[#10202b]/90 p-6 backdrop-blur-md md:p-8">
-            <p className="eyebrow">A working example</p>
-            <h2 className="mt-4 text-[26px] font-semibold leading-tight tracking-[-.045em]">From business friction to a practical AI pilot.</h2>
-            <p className="muted mt-4 text-sm leading-7">This demonstration shows how an agent can combine a language model with controlled business tools. It maps opportunities, identifies safeguards, and can calculate illustrative capacity gains.</p>
-            <div className="mt-7 border-t border-[#344752] pt-6">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[.16em] text-[#c9ec8a]">Try a scenario</p>
-              <div className="grid gap-2">
-                {examples.map(example => (
+return (
+    <section id="try-agent" aria-label="Talk with Theia" className="container flex min-h-0 flex-1 flex-col pb-3 sm:pb-4">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-[#385250] bg-[#0c1a23]/95 backdrop-blur-lg">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[#30464f] px-4 py-3 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <span aria-hidden="true" className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#b3db98]/35 bg-[#223a32] text-xl font-semibold text-[#d9f5b8]">
+              T
+              <span className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-[#f56667] shadow-[0_0_9px_#f56667]" />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold leading-tight tracking-[-.025em] text-[#edf5e9]">Theia</h1>
+              <p className="mt-0.5 text-xs text-[#a2b4b7]">Metanomic AI guide</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 sm:gap-5">
+            <span aria-label={lastMode === "live" ? "Live model connected" : lastMode === "guided" ? "Rule-based guided preview" : "Demo ready"} className="flex items-center gap-2 text-[11px] text-[#b2c7bb]">
+              <span className={lastMode === "guided" ? "h-2 w-2 shrink-0 rounded-full bg-amber-300" : "h-2 w-2 shrink-0 rounded-full bg-[#c9ec8a]"} />
+              <span className="hidden sm:inline">{lastMode === "guided" ? "Guided mode" : lastMode === "live" ? "Live model" : "Ready"}</span>
+            </span>
+            <button type="button" onClick={reset} disabled={busy} className="rounded-md border border-[#405963] px-3 py-1.5 text-xs text-[#c5d5d1] hover:bg-[#20333c] disabled:opacity-50">
+              New chat
+            </button>
+          </div>
+        </div>
+
+        <div ref={conversationRef} role="log" aria-label="Conversation with Theia" aria-live="polite" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-8 sm:py-7">
+          {count === 0 && (
+            <div className="mx-auto flex min-h-full max-w-[700px] flex-col items-center justify-center py-5 text-center">
+              <div aria-hidden="true" className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-[24px] border border-[#67836b]/55 bg-[#182f32]/90 text-[43px] font-light text-[#d8efc4] shadow-[0_0_42px_rgba(126,191,147,.11)] sm:h-24 sm:w-24">
+                T
+                <span className="absolute bottom-3 right-3 h-2.5 w-2.5 rounded-full bg-[#f56667] shadow-[0_0_12px_#f56667]" />
+              </div>
+              <h2 className="text-[clamp(1.65rem,4vw,2.65rem)] font-semibold tracking-[-.055em] text-[#edf5e9]">I'm Theia.</h2>
+              <p className="muted mt-3 max-w-[570px] text-sm leading-7 sm:text-base sm:leading-8">
+                Ask me about the technology behind me—my model, tools, architecture, or safeguards.
+                Or tell me what you're working on.
+              </p>
+              <div className="mt-7 flex max-w-[640px] flex-wrap justify-center gap-2.5" aria-label="Suggested questions">
+                {suggestions.map(suggestion => (
                   <button
-                    key={example.label}
                     type="button"
-                    onClick={() => void submit(example.prompt)}
+                    key={suggestion.label}
                     disabled={busy || atLimit}
-                    className="group rounded-lg border border-[#354852] bg-[#122630]/75 px-4 py-3 text-left transition-colors hover:border-[#749580] hover:bg-[#1a3440] disabled:cursor-not-allowed disabled:opacity-45"
+                    onClick={() => void submit(suggestion.prompt)}
+                    className="rounded-full border border-[#3c5757] bg-[#152b33]/90 px-4 py-2.5 text-sm text-[#d3e6dc] transition-colors hover:border-[#a0d6a1] hover:bg-[#213c42] hover:text-white disabled:opacity-50"
                   >
-                    <span className="block text-sm font-semibold text-[#e7f1e9]">{example.label}<span aria-hidden="true" className="float-right text-[#c9ec8a]">↗</span></span>
-                    <span className="muted mt-1 block text-xs">{example.detail}</span>
+                    {suggestion.label}
                   </button>
                 ))}
               </div>
             </div>
-          </div>
-          <div className="rounded-xl border border-[#30434b] bg-[#0e1c25]/85 p-6 backdrop-blur-md">
-            <p className="eyebrow">What's under the hood</p>
-            <div className="mt-5 space-y-4 text-sm leading-6">
-              <div><span className="font-semibold text-[#e5efe6]">01 / Reason</span><p className="muted mt-1">Understand a workflow and the human outcome it should improve.</p></div>
-              <div><span className="font-semibold text-[#e5efe6]">02 / Use tools</span><p className="muted mt-1">Look up mapped use cases or calculate assumptions in server-side functions.</p></div>
-              <div><span className="font-semibold text-[#e5efe6]">03 / Recommend</span><p className="muted mt-1">Propose a bounded pilot with approvals, metrics, and measurable next steps.</p></div>
-            </div>
-            <p className="mt-6 border-t border-[#30434b] pt-5 text-xs leading-6 text-[#9bb0b0]">Do not enter personal, confidential, or regulated data. Live AI messages are sent to an external model provider through Vercel AI Gateway. This demo does not connect to your company systems or retain a chat history on our server.</p>
-            <Link href="/contact" className="button button-outline mt-5">Discuss a real implementation <span aria-hidden="true">↗</span></Link>
-          </div>
-        </aside>
+          )}
 
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-[#3a5255] bg-[#0c1a23]/95 shadow-[0_24px_90px_rgba(0,0,0,.20)] backdrop-blur-lg">
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[#30464f] px-4 py-3 sm:px-6 sm:py-4">
-            <div className="flex items-center gap-3">
-              <span aria-hidden="true" className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#b3db98]/35 bg-[#223a32] font-semibold text-[#d9f5b8]">T<span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-[#f56667] shadow-[0_0_7px_#f56667]" /></span>
-              <div>
-                <h3 className="text-sm font-semibold text-[#edf5e9]">Theia <span className="ml-1 text-xs font-normal text-[#9fb3ad]">by Metanomic</span></h3>
-                <p className="mt-0.5 text-xs text-[#a2b4b7]">Your AI workflow advisor</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <span aria-label={lastMode === "live" ? "Live model connected" : lastMode === "guided" ? "Rule-based guided preview" : "Demo ready"} className="flex items-center gap-2 text-[11px] text-[#b2c7bb]">
-                <span className={lastMode === "guided" ? "h-2 w-2 rounded-full bg-amber-300" : "h-2 w-2 rounded-full bg-[#c9ec8a]"} />
-                {lastMode === "guided" ? "Guided mode" : lastMode === "live" ? "Live model" : "Demo ready"}
-              </span>
-              <button type="button" onClick={reset} disabled={busy} className="rounded border border-[#405963] px-2.5 py-1.5 text-[11px] text-[#c5d5d1] hover:bg-[#20333c] disabled:opacity-50">Reset</button>
-            </div>
-          </div>
-
-          <div ref={conversationRef} role="log" aria-label="Conversation with Theia" aria-live="polite" className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
-            {items.map(item => (
-              <div key={item.id} className={item.role === "user" ? "flex justify-end" : "flex justify-start"}>
-                <div className={item.role === "user"
-                  ? "max-w-[93%] rounded-2xl rounded-tr-sm border border-[#49664e] bg-[#253f37]/85 px-4 py-3 text-sm leading-7 text-[#f0f6ef] sm:max-w-[85%]"
-                  : "max-w-[97%] text-sm leading-7 text-[#dce8e3] sm:max-w-[90%]"}>
-                  {item.role === "assistant" && <p className="mb-2 text-[11px] font-semibold uppercase tracking-[.13em] text-[#c9ec8a]">"Theia"</p>}
-                  <div className="space-y-0.5">{formattedText(item.content)}</div>
-                  {item.activities && item.activities.length > 0 && (
-                    <div className="mt-5 rounded-lg border border-[#385044] bg-[#112620]/75 p-3">
-                      <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#c9ec8a]">Server-side tool activity</p>
-                      {item.activities.map((activity, i) => (
-                        <p key={i} className="mt-2 text-xs leading-5 text-[#cbded1]">
-                          <span className="font-semibold">{activity.label}</span>
-                          <span className="mt-0.5 block text-[#9fb9ab]">{activity.detail}</span>
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                  {item.notice && <p className="mt-4 border-l-2 border-amber-300/60 pl-3 text-xs leading-6 text-[#e6d7a9]">{item.notice}</p>}
+          {count > 0 && (
+            <div className="mx-auto max-w-[820px] space-y-6">
+              {items.filter(item => item.id !== "intro").map(item => (
+                <div key={item.id} className={item.role === "user" ? "flex justify-end" : "flex justify-start"}>
+                  <div className={item.role === "user"
+                    ? "max-w-[94%] rounded-2xl rounded-tr-sm border border-[#49664e] bg-[#253f37]/85 px-4 py-3 text-sm leading-7 text-[#f0f6ef] sm:max-w-[85%]"
+                    : "max-w-[97%] text-sm leading-7 text-[#dce8e3] sm:max-w-[90%]"}>
+                    {item.role === "assistant" && <p className="mb-2 text-[11px] font-semibold uppercase tracking-[.13em] text-[#c9ec8a]">Theia</p>}
+                    <div className="space-y-0.5">{formattedText(item.content)}</div>
+                    {item.activities && item.activities.length > 0 && (
+                      <div className="mt-5 rounded-lg border border-[#385044] bg-[#112620]/75 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#c9ec8a]">Tool activity</p>
+                        {item.activities.map((activity, i) => (
+                          <p key={i} className="mt-2 text-xs leading-5 text-[#cbded1]">
+                            <span className="font-semibold">{activity.label}</span>
+                            <span className="mt-0.5 block text-[#9fb9ab]">{activity.detail}</span>
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {item.notice && <p className="mt-4 border-l-2 border-amber-300/60 pl-3 text-xs leading-6 text-[#e6d7a9]">{item.notice}</p>}
+                  </div>
                 </div>
-              </div>
-            ))}
-            {count === 0 && (
-              <div className="grid gap-2 lg:hidden">
-                <p className="eyebrow">Try an example</p>
-                {examples.map(example => (
-                  <button
-                    key={example.label}
-                    type="button"
-                    disabled={busy}
-                    onClick={() => void submit(example.prompt)}
-                    className="rounded-lg border border-[#354852] bg-[#122630]/75 px-4 py-2.5 text-left text-xs text-[#e7f1e9] hover:border-[#749580] disabled:opacity-45"
-                  >
-                    <span className="font-semibold">{example.label}</span>
-                    <span className="ml-2 text-[#9aafb0]">{example.detail}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-            {busy && <div className="flex items-center gap-3 text-sm text-[#bed0bf]" role="status">
-              <span className="flex gap-1" aria-hidden="true"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a]" /><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:150ms]" /><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:300ms]" /></span>
-              Theia is evaluating the workflow…
-            </div>}
-            {error && <div role="alert" className="rounded-lg border border-red-300/25 bg-red-950/30 px-4 py-3 text-xs leading-6 text-[#f3c9c9]">{error}</div>}
+              ))}
+              {busy && <div className="flex items-center gap-3 text-sm text-[#bed0bf]" role="status">
+                <span className="flex gap-1" aria-hidden="true">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a]" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:150ms]" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:300ms]" />
+                </span>
+                Theia is thinking…
+              </div>}
+              {error && <div role="alert" className="rounded-lg border border-red-300/25 bg-red-950/30 px-4 py-3 text-xs leading-6 text-[#f3c9c9]">{error}</div>}
+            </div>
+          )}
+        </div>
 
-          </div>
-
-          <form onSubmit={onSubmit} className="shrink-0 border-t border-[#30464f] bg-[#0d1e27]/95 p-3 sm:p-4">
-            <label htmlFor="agent-question" className="mb-2 block text-xs font-semibold text-[#c9ec8a]">Your business challenge</label>
-            <div className="flex items-end gap-3 rounded-lg border border-[#425860] bg-[#0b1720] p-2 transition-colors focus-within:border-[#b7e294]">
+        <form onSubmit={onSubmit} className="shrink-0 border-t border-[#30464f] bg-[#0d1e27]/95 px-3 py-3 sm:px-7 sm:py-4">
+          <div className="mx-auto max-w-[820px]">
+            <label htmlFor="agent-question" className="sr-only">Ask Theia a question</label>
+            <div className="flex items-end gap-3 rounded-xl border border-[#425860] bg-[#0b1720] p-2 focus-within:border-[#b7e294]">
               <textarea
                 id="agent-question"
                 ref={draftRef}
                 value={input}
                 onChange={event => setInput(event.target.value.slice(0, 900))}
                 onKeyDown={onKeyDown}
-                placeholder={atLimit ? "Demo limit reached. Reset to start again." : "Describe a workflow your team would like to improve…"}
+                placeholder={atLimit ? "Session limit reached. Start a new chat." : "Ask me about my stack, tools, or your idea…"}
                 rows={2}
                 maxLength={900}
                 disabled={busy || atLimit}
-                className="min-h-[48px] max-h-[100px] w-full resize-y bg-transparent px-2 py-2 text-sm leading-6 text-[#f0f7ef] outline-none placeholder:text-[#81939d] disabled:opacity-50"
+                className="min-h-[46px] max-h-[100px] w-full resize-y bg-transparent px-2 py-2 text-sm leading-6 text-[#f0f7ef] outline-none placeholder:text-[#81939d] disabled:opacity-50"
               />
               <button type="submit" disabled={busy || !input.trim() || atLimit} className="button button-primary !min-h-[42px] !px-4 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Send message">
                 Send <span aria-hidden="true">↗</span>
               </button>
             </div>
-            <div className="muted mt-3 flex flex-wrap justify-between gap-2 text-[11px]">
-              <span>{atLimit ? "Session limit reached. Reset to continue." : "Enter to send · Shift+Enter for a new line"}</span>
-              <span>{count}/7 prompts</span>
+            <div className="muted mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 text-[11px]">
+              <span>Please don't share sensitive information. Live chats use an external AI model.</span>
+              <span>{count}/7 messages</span>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
-
-
     </section>
   );
 }
