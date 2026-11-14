@@ -280,7 +280,10 @@ export async function POST(request: NextRequest) {
             ? "I checked Calendly for " + (booking.eventType || "a consultation") +
               ". " + (booking.slots?.length || 0) + " available times are shown below in " +
               (booking.timeZone || "America/New_York") +
-              ". Select Book here to confirm an appointment inside Theia, or Calendly to book on their site. Times may change until confirmed."
+              (booking.directBookingSupported === false
+                ? ". This meeting requires Calendly's hosted booking process. Select a Calendly link below."
+                : ". Select Book here to confirm inside Theia, or Calendly to book on their site.") +
+              " Times may change until confirmed."
             : booking.message;
           return json({ answer, mode: "live", activities, model: MODEL, booking });
         }
