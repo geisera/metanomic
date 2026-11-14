@@ -26,3 +26,13 @@ a { text-decoration:none; }
 
 /* Keep the global particle field visible while maintaining readable foreground content. */
 body::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:0; background:linear-gradient(90deg,rgba(9,16,25,.43),transparent 75%); }
+
+/* Theia's online indicator: quiet two-second pulse, respecting motion preferences. */
+.theia-online-dot { animation:theia-online-pulse 2s ease-in-out infinite; }
+@keyframes theia-online-pulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(201,236,138,.35); }
+  50% { box-shadow:0 0 0 4px rgba(201,236,138,0); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .theia-online-dot { animation:none; box-shadow:0 0 0 1px rgba(201,236,138,.32); }
+}
