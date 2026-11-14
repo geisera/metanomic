@@ -22,7 +22,7 @@ export default function DemoPage() {
           <span className="flex h-7 w-7 items-center justify-center rounded-md border border-[#7b986d] bg-[#c9ec8a] text-sm font-black text-[#122322]">M</span>
           <span className="text-[16px] font-semibold tracking-[-.035em]">metanomic<span className="text-[#c9ec8a]">.</span></span>
         </Link>
-        <Link href="/" className="navlink inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm text-[#d1e0dc] hover:text-[#c9ec8a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"><span aria-hidden="true">←</span> Back to site</Link>
+        <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm text-[#d1e0dc] hover:text-[#c9ec8a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"><span aria-hidden="true">←</span> Back to site</Link>
       </header>
       <AgentExperience />
     </main>
