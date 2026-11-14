@@ -93,7 +93,7 @@ export function estimateCapacity(input: { tasksPerWeek?: unknown; minutesSaved?:
   };
 }
 
-export function guidedAnswer(prompt: string) {
+export function guidedAnswer(prompt: string) {\n  if (isStackQuestion(prompt)) return guidedStackAnswer();
   const category = mapOpportunity(resolveFocus(prompt));
   return {
     answer: [
@@ -107,5 +107,52 @@ export function guidedAnswer(prompt: string) {
       "This is a guided, rule-based preview—not an AI-generated recommendation. Activate live model access for a tailored conversation.",
     ].join("\n\n"),
     activities: [{ tool: "mapOpportunity", label: "Matched a documented business workflow", detail: category.title }],
+  };
+}
+
+
+// Public facts about this deployed demonstration. Keep this inventory in sync
+// with package.json and the agent route. No keys or private configuration included.
+export function describeStack() {
+  return {
+    identity: "Theia by Metanomic — public, bounded AI workflow advisor.",
+    interface: ["Next.js 16 App Router", "React 19", "TypeScript", "Tailwind CSS 4"],
+    hosting: "Vercel (frontend and server-side API route).",
+    model: "OpenAI GPT-5 mini (openai/gpt-5-mini) accessed through Vercel AI Gateway.",
+    orchestration: "A bounded server-side tool-calling loop using the Gateway chat-completions API; this demo does not use LangGraph or a separate agent framework.",
+    tools: [
+      "map_opportunity: looks up curated AI pilot patterns, safeguards, and measures.",
+      "estimate_capacity: calculates illustrative hours saved from explicit assumptions.",
+      "describe_stack: returns this approved technical inventory.",
+    ],
+    dataAndSafety: [
+      "Messages are validated and length-limited on the server; model calls use server-side credentials.",
+      "The application does not store a durable chat history. Chat context is held in the current browser session and sent with each request.",
+      "In live mode, messages are processed by Vercel AI Gateway and a model provider. Do not submit sensitive information.",
+      "This demo does not connect to client systems, read private databases, browse the web, or perform write actions.",
+      "Rate limiting uses per-instance in-memory counters, not distributed enforcement.",
+      "If live model inference fails, the interface explicitly labels deterministic guided responses.",
+    ],
+    limitations: "This is an illustrative demo, not a certified production integration or an independently audited security implementation.",
+  };
+}
+
+export function isStackQuestion(prompt: string) {
+  return /\b(your stack|your tech|tech stack|what powers you|how (are|were) you built|how do you work|behind the scenes|under the hood|architecture|your tools|what tools do you use|your security|how do you handle data|your privacy|which model|what model|what are you built with)\b/i.test(prompt);
+}
+
+export function guidedStackAnswer() {
+  const stack = describeStack();
+  return {
+    answer: [
+      "I'm Theia. Here's the actual stack behind this demo:",
+      "INTERFACE\n" + stack.interface.join(" · "),
+      "MODEL & HOSTING\n" + stack.model + "\n" + stack.hosting,
+      "ORCHESTRATION\n" + stack.orchestration,
+      "SERVER-SIDE TOOLS\n" + stack.tools.map(tool => "• " + tool).join("\n"),
+      "DATA & LIMITATIONS\n" + stack.dataAndSafety.map(note => "• " + note).join("\n"),
+      stack.limitations,
+    ].join("\n\n"),
+    activities: [{ tool: "describe_stack", label: "Read the demo's technical inventory", detail: "Verified application components and limitations" }],
   };
 }
