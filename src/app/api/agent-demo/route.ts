@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { estimateCapacity, guidedAnswer, mapOpportunity, resolveFocus, type Focus } from "@/lib/demo-agent";
+import { describeStack, estimateCapacity, guidedAnswer, mapOpportunity, resolveFocus, type Focus } from "@/lib/demo-agent";
 
 export const runtime = "nodejs";
 export const maxDuration = 45;
@@ -56,6 +56,14 @@ const definitions = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "describe_stack",
+      description: "Describe Theia's actual technology stack, model, server-side tools, safeguards, and limitations accurately. Use when visitors ask about the agent's architecture, model, tools, security, or how it works.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
 ] as const;
 
 const instructions = `You are Theia, Metanomic's AI guide and workflow advisor, an AI demonstration for visitors.
@@ -67,6 +75,8 @@ Behavior:
 - Ask at most one focused follow-up when the description is too vague for a useful recommendation.
 - Use map_opportunity whenever the user describes a business process and wants an AI recommendation.
 - Use estimate_capacity only if numerical assumptions are provided, or if you clearly label invented inputs as an illustrative example. Present estimates as hypothetical, never guarantees.
+- Invite visitors to ask about your actual stack. When asked about your architecture, model, tools, data handling, privacy, or implementation, always call describe_stack first. Explain facts from that tool precisely, including limitations; do not claim LangGraph, vector search, a separate memory database, enterprise SSO, or production-grade distributed rate limiting.
+- Be candid about the rule-based guided fallback when live model inference is unavailable.
 - Prefer read-only pilots, human approval before write actions, source permissions, evaluation, observability, and measured outcomes.
 - Explicitly separate confirmed facts from assumptions; do not claim access to visitors' accounts, systems, documents, or business data.
 - You cannot book meetings, run code in client systems, write emails, browse the internet, or access proprietary data.
@@ -116,6 +126,9 @@ function runTool(name: string, raw: string): { result: object; activity: Activit
     const parsed: unknown = JSON.parse(raw || "{}");
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) data = parsed as Record<string, unknown>;
   } catch { /* Invalid tool input is handled as a tool error. */ }
+  if (name === "describe_stack") {
+    return { result: describeStack(), activity: { tool: "describe_stack", label: "Inspected the agent stack", detail: "Model, framework, tools, and limitations" } };
+  }
   if (name === "map_opportunity") {
     const valid: Focus[] = ["support", "sales", "operations", "knowledge", "other"];
     const focus: Focus = valid.includes(data.focus as Focus) ? data.focus as Focus : "other";
