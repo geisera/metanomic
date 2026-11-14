@@ -332,7 +332,7 @@ export default function IntelligenceVisual() {
   }, [reducedMotion]);
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div aria-hidden="true" className="metanomic-starfield pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <canvas ref={canvas} className="block h-full w-full" />
     </div>
   );
