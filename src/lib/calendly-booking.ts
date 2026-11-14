@@ -65,6 +65,7 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
   const token = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN?.trim();
   if (!token) return result("not_configured", "Direct booking is unavailable. Please use Calendly instead.");
 
+  let bookingSubmitted = false;
   try {
     // Check that the event type belongs to this account, is still active,
     // and can be booked without unsupported payment, location or question inputs.
@@ -73,7 +74,7 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
     if (!event) return result("unsupported", "This meeting type is no longer bookable here. Please open Calendly.");
 
     const bookingUrl = event.scheduling_url || FALLBACK_URL;
-    if (event.is_paid || (event.booking_method && event.booking_method !== "instant")) {
+    if (event.is_paid || (event.kind && event.kind !== "solo") || (event.booking_method && event.booking_method !== "instant")) {
       return result("unsupported", "This meeting type requires Calendly's booking process.", bookingUrl);
     }
 
@@ -132,6 +133,7 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
     });
     if (!stillAvailable) return result("not_available", "This appointment is no longer available. Please select another time.", bookingUrl);
 
+    bookingSubmitted = true;
     const response = await fetch(API + "/invitees", {
       method: "POST",
       headers: {
@@ -185,8 +187,10 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
       timeZone: input.timeZone,
     };
   } catch {
-    // A timeout after POST may mean Calendly succeeded. Do not retry automatically.
-    console.error("Calendly booking request did not complete.");
-    return result("uncertain", "Booking confirmation could not be verified. Check your email before attempting another booking.");
+    // A timeout after POST may mean Calendly succeeded. Never retry it automatically.
+    console.error("Calendly booking check or request did not complete.");
+    return bookingSubmitted
+      ? result("uncertain", "Booking confirmation could not be verified. Check your email before attempting another booking.")
+      : result("error", "Calendly availability could not be checked. Please use the booking page.");
   }
 }
