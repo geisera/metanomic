@@ -17,10 +17,12 @@ export type BookingRequest = {
   name: string;
   email: string;
   timeZone: string;
+  website?: unknown;
+  turnstileToken?: unknown;
 };
 
 export type BookingOutcome = {
-  status: "confirmed" | "not_available" | "unsupported" | "not_configured" | "auth_error" | "error" | "uncertain";
+  status: "confirmed" | "not_available" | "unsupported" | "not_configured" | "auth_error" | "error" | "uncertain" | "duplicate";
   message: string;
   bookingUrl?: string;
   cancelUrl?: string;
