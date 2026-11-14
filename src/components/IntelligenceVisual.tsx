@@ -7,6 +7,7 @@ type Star = {
   x: number; y: number; vx: number; vy: number;
   size: number; phase: number; speed: number; tint: number;
   age: number; lifetime: number; opacity: number;
+  isRed: boolean;
 };
 
 const TAU = Math.PI * 2;
@@ -43,6 +44,7 @@ function newStar(
     age: established ? random() * lifetime * .92 : 0,
     lifetime,
     opacity: established ? 1 : 0,
+    isRed: false,
   };
 }
 
@@ -82,7 +84,7 @@ function paint(
 
     if (!still) {
       star.age += dt;
-      if (star.age >= star.lifetime) {
+      if (!star.isRed && star.age >= star.lifetime) {
         stars[index] = stars[stars.length - 1];
         stars.pop();
         continue;
@@ -122,27 +124,33 @@ function paint(
       star.opacity = Math.min(1, star.opacity + dt * 1.1);
 
       // Keep the drifting background populated across the entire viewport.
-      if (star.x < -20) star.x = width + 20;
-      else if (star.x > width + 20) star.x = -20;
-      if (star.y < -20) star.y = height + 20;
-      else if (star.y > height + 20) star.y = -20;
+      // Keep the unique red star within the visible bounds as it wraps.
+      const margin = star.isRed ? 0 : 20;
+      if (star.x < -margin) star.x = width + margin;
+      else if (star.x > width + margin) star.x = -margin;
+      if (star.y < -margin) star.y = height + margin;
+      else if (star.y > height + margin) star.y = -margin;
     }
 
     const twinkle = .9 + .1 * Math.sin(elapsed * star.speed * 1.7 + star.phase);
     const finalOpacity = (.21 + Math.min(1, star.size / 1.9) * .43) * twinkle * star.opacity;
     if (finalOpacity < .005) continue;
-    context.fillStyle = star.tint > .73
-      ? `rgba(149,199,208,${finalOpacity})`
-      : `rgba(180,219,189,${finalOpacity})`;
+    context.fillStyle = star.isRed
+      ? `rgba(246,90,96,${Math.max(.7, finalOpacity)})`
+      : star.tint > .73
+        ? `rgba(149,199,208,${finalOpacity})`
+        : `rgba(180,219,189,${finalOpacity})`;
 
     if (!still && Math.hypot(star.vx, star.vy) > 185 && star.size > 1) {
       context.beginPath();
       context.moveTo(star.x, star.y);
       context.lineTo(star.x - star.vx * .028, star.y - star.vy * .028);
       context.lineWidth = Math.max(.4, star.size * .42);
-      context.strokeStyle = star.tint > .73
-        ? `rgba(149,199,208,${finalOpacity * .20})`
-        : `rgba(180,219,189,${finalOpacity * .20})`;
+      context.strokeStyle = star.isRed
+        ? `rgba(246,90,96,${finalOpacity * .32})`
+        : star.tint > .73
+          ? `rgba(149,199,208,${finalOpacity * .20})`
+          : `rgba(180,219,189,${finalOpacity * .20})`;
       context.stroke();
     }
 
@@ -300,6 +308,12 @@ export default function IntelligenceVisual() {
     for (let i = 0; i < configuration.initial; i++) {
       stars.push(newStar(random, width, height, true));
     }
+    // Exactly one persistent red star, present from the first frame.
+    // It participates in gravity, touch interactions, and movement but never expires.
+    const redStar = newStar(random, width, height, true);
+    redStar.isRed = true;
+    redStar.size = 1.75;
+    stars.push(redStar);
     paint(context, stars, width, height, elapsed, 0, pointer.current, still);
     if (!still) frame = requestAnimationFrame(tick);
 
