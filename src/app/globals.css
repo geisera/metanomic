@@ -18,8 +18,11 @@ a { text-decoration:none; }
 .button-outline:hover { background:#1b2a35; }
 .pill { display:inline-flex; align-items:center; gap:9px; border:1px solid #314350; background:#11212d; padding:9px 13px; border-radius:999px; color:#d5e5dc; font-size:12px; }
 .pill::before { content:""; width:7px; height:7px; background:var(--lime); border-radius:50%; box-shadow:0 0 12px #c9ec8a90; }
-.card { border:1px solid #273843; border-radius:10px; background:linear-gradient(140deg,#152431,#0e1a25); padding:30px; }
+.card { border:1px solid #273843; border-radius:10px; background:linear-gradient(140deg,rgba(21,36,49,.91),rgba(14,26,37,.88)); padding:30px; backdrop-filter:blur(10px); }
 .rule { border-top:1px solid #263843; }
 .navlink { color:#b8c7ce; font-size:13px; transition:color .2s; }
 .navlink:hover { color:#fff; }
 @media (max-width:700px) { .container {width:min(100% - 36px,1160px);} .card {padding:23px;} }
+
+/* Keep the global particle field visible while maintaining readable foreground content. */
+body::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:0; background:linear-gradient(90deg,rgba(9,16,25,.43),transparent 75%); }
