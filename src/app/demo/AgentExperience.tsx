@@ -13,7 +13,7 @@ type ChatItem = {
   activities?: Activity[];
 };
 
-const intro = "What is one repetitive or time-consuming part of your team's work? Describe it in plain language. I can help identify a useful AI pilot, the systems involved, human safeguards, and how to measure its impact.";
+const intro = "I'm Theia, Metanomic's AI guide. Tell me what you're trying to accomplish, and I'll help you explore how intelligent tools could get you there. What part of your team's work would you most like to improve?";
 
 const examples = [
   {
@@ -186,10 +186,10 @@ export default function AgentExperience() {
         <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-[#3a5255] bg-[#0c1a23]/95 shadow-[0_24px_90px_rgba(0,0,0,.20)] backdrop-blur-lg">
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[#30464f] px-4 py-3 sm:px-6 sm:py-4">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#b3db98]/35 bg-[#223a32] font-bold text-[#d9f5b8]">M</span>
+              <span aria-hidden="true" className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#b3db98]/35 bg-[#223a32] font-semibold text-[#d9f5b8]">T<span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-[#f56667] shadow-[0_0_7px_#f56667]" /></span>
               <div>
-                <h3 className="text-sm font-semibold text-[#edf5e9]">Metanomic Workflow Advisor</h3>
-                <p className="mt-0.5 text-xs text-[#a2b4b7]">Interactive AI agent demonstration</p>
+                <h3 className="text-sm font-semibold text-[#edf5e9]">Theia <span className="ml-1 text-xs font-normal text-[#9fb3ad]">by Metanomic</span></h3>
+                <p className="mt-0.5 text-xs text-[#a2b4b7]">Your AI workflow advisor</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -201,13 +201,13 @@ export default function AgentExperience() {
             </div>
           </div>
 
-          <div ref={conversationRef} role="log" aria-label="Agent conversation" aria-live="polite" className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
+          <div ref={conversationRef} role="log" aria-label="Conversation with Theia" aria-live="polite" className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
             {items.map(item => (
               <div key={item.id} className={item.role === "user" ? "flex justify-end" : "flex justify-start"}>
                 <div className={item.role === "user"
                   ? "max-w-[93%] rounded-2xl rounded-tr-sm border border-[#49664e] bg-[#253f37]/85 px-4 py-3 text-sm leading-7 text-[#f0f6ef] sm:max-w-[85%]"
                   : "max-w-[97%] text-sm leading-7 text-[#dce8e3] sm:max-w-[90%]"}>
-                  {item.role === "assistant" && <p className="mb-2 text-[11px] font-semibold uppercase tracking-[.13em] text-[#c9ec8a]">{item.id === "intro" ? "Metanomic" : "Advisor"}</p>}
+                  {item.role === "assistant" && <p className="mb-2 text-[11px] font-semibold uppercase tracking-[.13em] text-[#c9ec8a]">"Theia"</p>}
                   <div className="space-y-0.5">{formattedText(item.content)}</div>
                   {item.activities && item.activities.length > 0 && (
                     <div className="mt-5 rounded-lg border border-[#385044] bg-[#112620]/75 p-3">
@@ -243,7 +243,7 @@ export default function AgentExperience() {
             )}
             {busy && <div className="flex items-center gap-3 text-sm text-[#bed0bf]" role="status">
               <span className="flex gap-1" aria-hidden="true"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a]" /><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:150ms]" /><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:300ms]" /></span>
-              Evaluating the workflow…
+              Theia is evaluating the workflow…
             </div>}
             {error && <div role="alert" className="rounded-lg border border-red-300/25 bg-red-950/30 px-4 py-3 text-xs leading-6 text-[#f3c9c9]">{error}</div>}
 
