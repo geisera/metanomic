@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TheiaAnnouncement from "@/components/TheiaAnnouncement";
 
 const services = [
   { number: "01", title: "AI strategy & advisory", description: "Find where AI can extend your team's expertise, remove constraints, and unlock meaningful outcomes. We turn those opportunities into practical plans." },
@@ -22,8 +23,9 @@ function Logo() {
 
 export default function Home() {
   return <main>
-    <div className="border-b border-[#20303b]">
-      <header className="container flex min-h-[86px] items-center justify-between gap-4">
+    <div className="sticky top-0 z-40">
+      <div className="border-b border-[#20303b] bg-[#091019]/95 backdrop-blur-sm">
+        <header className="container flex min-h-[86px] items-center justify-between gap-4">
         <Logo />
         <nav aria-label="Primary navigation" className="hidden items-center gap-8 md:flex">
           <a className="navlink" href="#services">What we do</a>
@@ -34,26 +36,11 @@ export default function Home() {
         </nav>
         <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>↗</span></Link>
       </header>
+      </div>
+      <TheiaAnnouncement />
     </div>
 
-    <section aria-label="Try Theia" className="h-[43px] border-b border-[#395247] bg-[#142820]/95 backdrop-blur-sm">
-      <div className="container flex h-full items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span aria-hidden="true" className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-sm font-semibold text-[#ddf4c5]">
-            T
-            <span className="absolute bottom-0.5 right-0.5 h-1 w-1 rounded-full bg-[#f56667] shadow-[0_0_6px_#f56667]" />
-          </span>
-          <p className="truncate text-xs text-[#d6e6da]">
-            <strong className="font-semibold text-[#c9ec8a]">Meet our AI agent, Theia!</strong>
-          </p>
-        </div>
-        <Link href="/demo" className="inline-flex h-7 shrink-0 items-center gap-2 rounded border border-[#c9ec8a]/70 px-3 text-xs font-semibold text-[#dbf4c2] transition-colors hover:bg-[#c9ec8a] hover:text-[#14231e]">
-          Try Theia <span aria-hidden="true">↗</span>
-        </Link>
-      </div>
-    </section>
-
-    <section className="relative overflow-hidden">
+    <section id="home-hero" className="relative overflow-hidden">
       <div className="container relative flex min-h-[min(83vh,820px)] items-center py-28 md:py-36">
         <div>
           <span className="pill">Human purpose. Intelligent execution.</span>
@@ -62,7 +49,6 @@ export default function Home() {
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/contact" className="button button-primary">Start a conversation <span aria-hidden>↗</span></Link>
             <a href="#services" className="button button-outline">Explore our services <span aria-hidden>↓</span></a>
-            <Link href="/demo" className="button button-outline">Meet Theia <span aria-hidden>↗</span></Link>
           </div>
         </div>
       </div>
@@ -92,7 +78,7 @@ export default function Home() {
       </div>
     </section>
 
-    <section className="rule py-16 md:py-20">
+    <section id="meet-theia" className="rule py-16 md:py-20">
       <div className="container flex flex-wrap items-center justify-between gap-8 rounded-xl border border-[#3a5452] bg-[#10252a]/90 p-8 backdrop-blur-lg md:p-12">
         <div className="max-w-[700px]">
           <p className="eyebrow">See the technology in action</p>
