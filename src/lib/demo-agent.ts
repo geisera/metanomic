@@ -93,7 +93,8 @@ export function estimateCapacity(input: { tasksPerWeek?: unknown; minutesSaved?:
   };
 }
 
-export function guidedAnswer(prompt: string) {\n  if (isStackQuestion(prompt)) return guidedStackAnswer();
+export function guidedAnswer(prompt: string) {
+  if (isStackQuestion(prompt)) return guidedStackAnswer();
   const category = mapOpportunity(resolveFocus(prompt));
   return {
     answer: [
