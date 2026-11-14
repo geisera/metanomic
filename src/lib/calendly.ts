@@ -1,5 +1,5 @@
-// Read-only Calendly availability for Theia. The bearer token never leaves the server.
-// Calendly API: GET /users/me, /event_types, /event_type_available_times.
+// Calendly availability and visitor-confirmed scheduling. Credentials never leave the server.
+// Only the separately confirmed booking endpoint can create invitees.
 
 const API = "https://api.calendly.com";
 const PROFILE_URL = "https://calendly.com/metanomic";
@@ -16,7 +16,12 @@ type EventType = {
   uri: string;
   name: string;
   scheduling_url?: string;
-  active?: boolean;
+  locations?: unknown;
+  custom_questions?: unknown;
+  kind?: string;
+  pooling_type?: string;
+  booking_method?: string;
+  is_paid?: boolean;
 };
 
 export type AvailabilityRequest = {
@@ -34,6 +39,7 @@ export type AvailabilityResult = {
   bookingUrl: string;
   timeZone?: string;
   eventType?: string;
+  eventTypeUri?: string;
   slots?: AvailableSlot[];
   eventTypes?: Array<{ name: string; bookingUrl: string }>;
 };
@@ -42,7 +48,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function safeBookingUrl(candidate: unknown): string | null {
+export function safeBookingUrl(candidate: unknown): string | null {
   if (typeof candidate !== "string") return null;
   try {
     const url = new URL(candidate);
@@ -69,7 +75,7 @@ function localDay(date: Date, timeZone: string): string {
   return take("year") + "-" + take("month") + "-" + take("day");
 }
 
-function validTimeZone(value: unknown): string | null {
+export function validTimeZone(value: unknown): string | null {
   const timeZone = typeof value === "string" ? value.trim() : "America/New_York";
   if (timeZone.length > 64) return null;
   try {
@@ -121,6 +127,12 @@ async function findEventTypes(token: string): Promise<EventType[]> {
         uri: entry.uri,
         name: entry.name.slice(0, 120),
         scheduling_url: safeBookingUrl(entry.scheduling_url) || undefined,
+        locations: entry.locations,
+        custom_questions: entry.custom_questions,
+        kind: typeof entry.kind === "string" ? entry.kind : undefined,
+        pooling_type: typeof entry.pooling_type === "string" ? entry.pooling_type : undefined,
+        booking_method: typeof entry.booking_method === "string" ? entry.booking_method : undefined,
+        is_paid: entry.is_paid === true,
       });
     }
     const pagination = isRecord(data.pagination) ? data.pagination : {};
@@ -273,6 +285,7 @@ export async function checkCalendlyAvailability(input: AvailabilityRequest): Pro
         ? "These are currently available Calendly appointments. Times are not reserved and can change until booked."
         : "Calendly returned no available times in the requested window. Try a wider date range or use the booking page.",
       eventType: chosen.name,
+      eventTypeUri: chosen.uri,
       timeZone: zone,
       bookingUrl,
       slots,
