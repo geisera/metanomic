@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import IntelligenceVisual from "@/components/IntelligenceVisual";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://metanomic.ai"),
@@ -16,5 +17,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body><IntelligenceVisual /><div className="relative z-10">{children}</div></body></html>;
 }
