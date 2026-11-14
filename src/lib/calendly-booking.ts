@@ -151,7 +151,6 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
           timezone: input.timeZone,
         },
         ...(eligibility.location ? { location: eligibility.location } : {}),
-        tracking: { utm_source: "metanomic_theia" },
       }),
       cache: "no-store",
       signal: AbortSignal.timeout(12000),
