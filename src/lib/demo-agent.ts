@@ -139,7 +139,10 @@ export function describeStack() {
 }
 
 export function isStackQuestion(prompt: string) {
-  return /\b(your stack|your tech|tech stack|what powers you|how (are|were) you built|how do you work|behind the scenes|under the hood|architecture|your tools|what tools do you use|your security|how do you handle data|your privacy|which model|what model|what are you built with)\b/i.test(prompt);
+  const question = prompt.toLowerCase();
+  return /\b(tech(nology)? stack|under the hood|behind the scenes)\b/.test(question)
+    || (/\b(you|your|theia)\b/.test(question)
+      && /\b(stack|technolog\w*|architect\w*|built|model|tools?|safeguards?|privacy|security|data|messages|work|powers?)\b/.test(question));
 }
 
 export function guidedStackAnswer() {
