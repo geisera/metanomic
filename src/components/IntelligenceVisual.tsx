@@ -188,6 +188,54 @@ export default function IntelligenceVisual() {
     let width = 0, height = 0, last = 0, elapsed = 0;
     let birthCarry = 0, frame = 0;
     let visible = !document.hidden;
+    let activeTouchId: number | null = null;
+
+    // Finger contact pulls a small local cluster into motion immediately.
+    // Dragging then carries nearby stars along with the touch location.
+    // These are passive listeners: native scrolling, links and gestures remain intact.
+    const stirStars = (x: number, y: number, dx = 0, dy = 0, initial = false) => {
+      if (still) return;
+      const radius = initial ? 180 : 150;
+      for (const star of stars) {
+        const sx = x - star.x;
+        const sy = y - star.y;
+        const distance = Math.hypot(sx, sy);
+        if (distance < 1 || distance >= radius) continue;
+        const strength = Math.pow(1 - distance / radius, 2);
+        if (initial) {
+          const tug = 115 * strength;
+          star.vx += sx / distance * tug - sy / distance * tug * .22;
+          star.vy += sy / distance * tug + sx / distance * tug * .22;
+        } else {
+          star.vx += dx * .85 * strength;
+          star.vy += dy * .85 * strength;
+        }
+      }
+    };
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (still || activeTouchId !== null) return;
+      const touch = event.changedTouches.item(0);
+      if (!touch) return;
+      activeTouchId = touch.identifier;
+      pointer.current = { x: touch.clientX, y: touch.clientY };
+      stirStars(touch.clientX, touch.clientY, 0, 0, true);
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      if (still || activeTouchId === null) return;
+      const touch = Array.from(event.touches).find(item => item.identifier === activeTouchId);
+      if (!touch) return;
+      const dx = touch.clientX - pointer.current.x;
+      const dy = touch.clientY - pointer.current.y;
+      pointer.current = { x: touch.clientX, y: touch.clientY };
+      stirStars(touch.clientX, touch.clientY, dx, dy);
+    };
+    const onTouchEnd = (event: TouchEvent) => {
+      if (activeTouchId === null) return;
+      if (!Array.from(event.changedTouches).some(item => item.identifier === activeTouchId)) return;
+      activeTouchId = null;
+      pointer.current = { x: -10000, y: -10000 };
+    };
 
     const resize = () => {
       const oldWidth = width, oldHeight = height;
@@ -205,7 +253,7 @@ export default function IntelligenceVisual() {
     };
 
     const onPointer = (event: PointerEvent) => {
-      // Touch scrolling should not create a persistent gravitational cursor.
+      // Touch is handled separately, including during native scrolling.
       if (event.pointerType === "touch") return;
       pointer.current = { x: event.clientX, y: event.clientY };
     };
@@ -241,6 +289,10 @@ export default function IntelligenceVisual() {
 
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("pointermove", onPointer, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
     window.addEventListener("blur", clearPointer);
     document.addEventListener("pointerleave", clearPointer);
     document.addEventListener("visibilitychange", onVisibility);
@@ -257,6 +309,10 @@ export default function IntelligenceVisual() {
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
       window.removeEventListener("blur", clearPointer);
       document.removeEventListener("pointerleave", clearPointer);
       document.removeEventListener("visibilitychange", onVisibility);
