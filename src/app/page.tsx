@@ -1,3 +1,4 @@
+import IntelligenceVisual from "@/components/IntelligenceVisual";
 import Link from "next/link";
 
 const services = [
@@ -46,17 +47,7 @@ export default function Home() {
             <a href="#services" className="button button-outline">Explore our services <span aria-hidden>↓</span></a>
           </div>
         </div>
-        <div aria-label="Conceptual illustration of connected intelligent systems" className="relative mx-auto flex aspect-square w-full max-w-[440px] items-center justify-center">
-          <div className="absolute inset-[4%] rounded-full border border-[#53705d]/30"/>
-          <div className="absolute inset-[17%] rounded-full border border-[#a8d58b]/35"/>
-          <div className="absolute inset-[30%] rounded-full border border-[#b8ed8a]/45"/>
-          <div className="absolute inset-[39%] rotate-45 rounded-[28px] border border-[#c9ec8a] bg-[#c9ec8a]/10 shadow-[0_0_95px_25px_#c9ec8a14]"/>
-          <div className="relative text-[clamp(4rem,11vw,7.5rem)] font-black tracking-[-.1em] text-[#c9ec8a]">M</div>
-          <span className="absolute left-[13%] top-[25%] h-3 w-3 rounded-full bg-[#c9ec8a] shadow-[0_0_18px_#c9ec8a]"/>
-          <span className="absolute right-[6%] top-[48%] h-2 w-2 rounded-full bg-[#a9cfb8]"/>
-          <span className="absolute bottom-[15%] left-[30%] h-2.5 w-2.5 rounded-full bg-[#d9f9a2]"/>
-          <div className="absolute bottom-[4%] right-[0%] rounded-md border border-[#324b45] bg-[#10242b] px-4 py-3 text-xs text-[#b9d6c0]">People + intelligence + action</div>
-        </div>
+        <IntelligenceVisual />
       </div>
     </section>
 
