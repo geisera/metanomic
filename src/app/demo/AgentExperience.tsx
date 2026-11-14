@@ -67,7 +67,7 @@ export default function AgentExperience() {
   const atLimit = count >= 7;
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (items.length > 1 || busy) bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [items, busy]);
 
   async function submit(text: string) {
