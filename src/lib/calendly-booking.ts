@@ -56,6 +56,35 @@ export function validBookingRequest(value: unknown): value is BookingRequest {
     validTimeZone(data.timeZone) === data.timeZone;
 }
 
+// Calendly's validation error includes structured codes and fields. Keep
+// diagnostics limited to identifiers; never log an invitee name, email,
+// raw provider message, body, or API credentials.
+async function bookingErrorDetail(response: Response): Promise<{ code: string; parameter?: string; requestId?: string }> {
+  let code = "http_" + response.status;
+  let parameter: string | undefined;
+  try {
+    const body: unknown = await response.json();
+    const error = record(body);
+    const details = Array.isArray(error?.details) ? error.details : [];
+    for (const detail of details) {
+      const item = record(detail);
+      if (typeof item?.code === "string" && /^[a-z0-9_]{1,72}$/.test(item.code)) {
+        code = item.code;
+        if (typeof item.parameter === "string" && /^[a-zA-Z0-9_.]{1,96}$/.test(item.parameter)) {
+          parameter = item.parameter;
+        }
+        break;
+      }
+    }
+  } catch {
+    // Malformed error response; the HTTP status is still actionable.
+  }
+  const rawId = response.headers.get("x-request-id");
+  const requestId = rawId && /^[a-zA-Z0-9-]{8,80}$/.test(rawId) ? rawId : undefined;
+  console.error("Calendly booking rejected", { status: response.status, code, parameter, requestId });
+  return { code, parameter, requestId };
+}
+
 export async function createCalendlyBooking(input: BookingRequest): Promise<BookingOutcome> {
   const token = process.env.CALENDLY_PERSONAL_ACCESS_TOKEN?.trim();
   if (!token) return result("not_configured", "Direct booking is unavailable. Please use Calendly instead.");
@@ -132,7 +161,22 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
       return result("auth_error", "Calendly didn't authorize direct booking. Check the API token's scheduled_events:write access or book on Calendly.", bookingUrl);
     }
     if ([400, 404, 409, 422].includes(response.status)) {
-      return result("not_available", "Calendly couldn't confirm this booking. The time or meeting requirements may have changed. Please book on Calendly.", bookingUrl);
+      const detail = await bookingErrorDetail(response);
+      const reference = detail.requestId ? " Reference: " + detail.requestId + "." : "";
+      if (response.status === 404 || response.status === 409) {
+        return result("not_available", "Calendly no longer offers this time. Please choose another slot." + reference, bookingUrl);
+      }
+      const locationProblem = /location/i.test(detail.parameter || "") ||
+        /location/.test(detail.code);
+      const questionsProblem = /question/.test(detail.code) ||
+        /question/i.test(detail.parameter || "");
+      const reason = locationProblem
+        ? "This meeting's location configuration requires booking on Calendly."
+        : questionsProblem
+          ? "This event requires additional responses on Calendly."
+          : "Calendly rejected the booking details (HTTP " + response.status +
+            ", code: " + detail.code + "). Please use the hosted booking link.";
+      return result("unsupported", reason + reference, bookingUrl);
     }
     if (response.status === 429) {
       return result("error", "Calendly's booking limit has been reached. Please use the Calendly link or try again later.", bookingUrl);
