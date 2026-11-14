@@ -1,4 +1,3 @@
-import IntelligenceVisual from "@/components/IntelligenceVisual";
 import Link from "next/link";
 
 const services = [
@@ -35,9 +34,8 @@ export default function Home() {
       </header>
     </div>
 
-    <section className="relative overflow-hidden grid-lines">
-      <div className="pointer-events-none absolute right-[-240px] top-[-250px] h-[760px] w-[760px] rounded-full bg-[#9bcf7b]/[.075] blur-[110px]"/>
-      <div className="container relative grid gap-14 py-24 md:grid-cols-[1.17fr_.83fr] md:items-center md:py-36">
+    <section className="relative overflow-hidden">
+      <div className="container relative flex min-h-[min(83vh,820px)] items-center py-28 md:py-36">
         <div>
           <span className="pill">Thoughtful AI. Real-world impact.</span>
           <h1 className="mt-8 max-w-[790px] text-[clamp(3.4rem,7.5vw,6.9rem)] leading-[1.02] font-semibold tracking-[-.075em]">Human purpose.<br/><span className="text-[#c9ec8a]">Intelligent</span><br/>execution.</h1>
@@ -47,7 +45,6 @@ export default function Home() {
             <a href="#services" className="button button-outline">Explore our services <span aria-hidden>↓</span></a>
           </div>
         </div>
-        <IntelligenceVisual />
       </div>
     </section>
 
@@ -67,7 +64,7 @@ export default function Home() {
       </div>
     </section>
 
-    <section id="approach" className="rule bg-[#101c27] py-24 md:py-28">
+    <section id="approach" className="rule py-24 md:py-28">
       <div className="container">
         <p className="eyebrow">How we work</p>
         <h2 className="mt-4 max-w-[640px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">People first. Purpose always.</h2>
@@ -91,7 +88,7 @@ export default function Home() {
       </div>
     </section>
 
-    <section className="border-y border-[#405242] bg-[#c9ec8a] py-20 text-[#14231e]">
+    <section className="border-y border-[#405242] bg-[#c9ec8a]/90 py-20 text-[#14231e] backdrop-blur-sm">
       <div className="container flex flex-wrap items-center justify-between gap-8">
         <div><p className="text-xs font-bold uppercase tracking-[.2em]">Build what comes next</p><h2 className="mt-3 max-w-[660px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">Let&apos;s make intelligence useful.</h2></div>
         <Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Talk with Metanomic <span aria-hidden>↗</span></Link>
