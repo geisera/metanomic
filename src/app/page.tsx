@@ -28,6 +28,7 @@ export default function Home() {
         <nav aria-label="Primary navigation" className="hidden items-center gap-8 md:flex">
           <a className="navlink" href="#services">What we do</a>
           <a className="navlink" href="#approach">Our approach</a>
+          <Link className="navlink" href="/enterprise-ai-stack">AI stack</Link>
           <a className="navlink" href="#about">About</a>
         </nav>
         <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>↗</span></Link>
@@ -60,6 +61,14 @@ export default function Home() {
             <h3 className="mt-7 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>
             <p className="muted mt-4 max-w-[480px] text-sm leading-7">{service.description}</p>
           </article>)}
+        </div>
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-lg border border-[#31454b] bg-[#0e1d27]/85 p-6 backdrop-blur-sm md:p-8">
+          <div>
+            <p className="eyebrow">Explore the technology</p>
+            <h3 className="mt-2 text-xl font-semibold tracking-[-.035em]">What goes into an enterprise AI system?</h3>
+            <p className="muted mt-2 max-w-[650px] text-sm leading-7">Explore the models, agents, integrations, and infrastructure behind AI tools built for real work.</p>
+          </div>
+          <Link href="/enterprise-ai-stack" className="button button-outline">Explore the AI stack <span aria-hidden="true">↗</span></Link>
         </div>
       </div>
     </section>
