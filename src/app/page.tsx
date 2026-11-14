@@ -36,6 +36,24 @@ export default function Home() {
       </header>
     </div>
 
+    <section aria-label="Try Theia" className="border-b border-[#395247] bg-[#142820]/95 backdrop-blur-sm">
+      <div className="container flex flex-wrap items-center justify-between gap-x-8 gap-y-3 py-3 sm:py-4">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <span aria-hidden="true" className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#73936d] bg-[#243c31] text-xl font-semibold text-[#ddf4c5]">
+            T
+            <span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-[#f56667] shadow-[0_0_8px_#f56667]" />
+          </span>
+          <p className="text-sm leading-6 text-[#d6e6da]">
+            <strong className="mr-2 font-semibold text-[#c9ec8a]">Meet Theia.</strong>
+            Ask our AI guide about her stack, her tools, or what AI could do for your team.
+          </p>
+        </div>
+        <Link href="/demo" className="inline-flex min-h-[38px] shrink-0 items-center gap-2 rounded-md border border-[#c9ec8a]/70 px-4 py-2 text-xs font-semibold text-[#dbf4c2] transition-colors hover:bg-[#c9ec8a] hover:text-[#14231e]">
+          Try Theia <span aria-hidden="true">↗</span>
+        </Link>
+      </div>
+    </section>
+
     <section className="relative overflow-hidden">
       <div className="container relative flex min-h-[min(83vh,820px)] items-center py-28 md:py-36">
         <div>
