@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import CalendlyBooking from "./CalendlyBooking";
-
 
 export const metadata: Metadata = {
   title: "Schedule a Conversation",
@@ -34,7 +32,19 @@ export default function ContactPage() {
           Tell us about your business challenge. Schedule a conversation to explore practical AI solutions with Metanomic.
         </p>
 
-        <CalendlyBooking />
+        <div className="mt-9">
+          <a
+            href="https://calendly.com/metanomic"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-[#c9ec8a] underline underline-offset-4 hover:text-[#e5f9c4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+          >
+            Open Calendly <span aria-hidden="true">↗</span>
+          </a>
+          <p className="mt-4 text-xs leading-6 text-[#b9cac4]">
+            Opens in a new tab. Scheduling information is processed by Calendly.
+          </p>
+        </div>
       </section>
     </main>
   );
