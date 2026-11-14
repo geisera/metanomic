@@ -13,6 +13,7 @@ type Particle = {
   phase: number;
   tint: number;
   offset: number;
+  px: number; py: number; vx: number; vy: number; birth: number;
 };
 
 const TAU = Math.PI * 2;
@@ -29,13 +30,14 @@ function particles(count: number, seed: number): Particle[] {
     angle: random() * TAU, radius: .12 + random() * .88,
     size: .35 + Math.pow(random(), 4) * 2.05,
     speed: .55 + random() * 1.5,
-    phase: random() * TAU, tint: random(), offset: random() * TAU
+    phase: random() * TAU, tint: random(), offset: random() * TAU,
+    px: 0, py: 0, vx: 0, vy: 0, birth: 1
   }));
 }
 
 function draw(
   ctx: CanvasRenderingContext2D, ambient: Particle[], event: Particle[],
-  w: number, h: number, seconds: number, mx: number, my: number, still: boolean
+  w: number, h: number, seconds: number, mx: number, my: number, still: boolean, dt: number
 ) {
   ctx.clearRect(0, 0, w, h);
   const scale = Math.min(w, h);
@@ -58,20 +60,69 @@ function draw(
   ctx.fillRect(0, 0, w, h);
 
   ctx.globalCompositeOperation = "lighter";
-  // A permanent backdrop of drifting stars: motion never stops, even between novae.
+  // The cursor is a persistent, softened gravitational attractor rather than a repulsor.
+  // Each star has its own position and velocity, so it takes time to fall toward the pointer.
+  const attracting = !still && mx >= 0 && my >= 0 && mx <= w && my <= h;
+  const drag = Math.exp(-.85 * dt);
+  const influenceRadius = Math.max(w, h) * 1.05;
   for (const p of ambient) {
-    const x = (((p.x + seconds * .0017 * p.speed + Math.sin(seconds * .17 + p.phase) * .008) % 1) + 1) % 1 * w;
-    const y = (((p.y + seconds * .0011 * p.speed + Math.cos(seconds * .15 + p.phase) * .009) % 1) + 1) % 1 * h;
-    const dx = x - mx, dy = y - my;
+    const dx = mx - p.px;
+    const dy = my - p.py;
     const distance = Math.hypot(dx, dy);
-    const repulse = still || distance >= 115 ? 0 : (1 - distance / 115) ** 2 * 17;
-    const px = x + (dx / (distance || 1)) * repulse;
-    const py = y + (dy / (distance || 1)) * repulse;
-    const alpha = .16 + .19 * (.5 + .5 * Math.sin(seconds * (1 + p.speed * .32) + p.phase));
+    let ax = Math.sin(seconds * .19 + p.phase) * 1.8;
+    let ay = Math.cos(seconds * .15 + p.phase) * 1.6;
+
+    if (attracting && distance < influenceRadius) {
+      // Inverse-distance pull with softening: near stars accelerate faster without
+      // becoming unstable or snapping instantly onto the cursor.
+      const strength = 28000 / (distance + 115);
+      ax += (dx / (distance || 1)) * strength * (.67 + p.speed * .20);
+      ay += (dy / (distance || 1)) * strength * (.67 + p.speed * .20);
+    } else {
+      // When the cursor leaves the screen, restore the original star field gently.
+      ax += (p.x * w - p.px) * .09;
+      ay += (p.y * h - p.py) * .09;
+    }
+
+    if (!still) {
+      p.vx = (p.vx + ax * dt) * drag;
+      p.vy = (p.vy + ay * dt) * drag;
+      const velocity = Math.hypot(p.vx, p.vy);
+      const maxSpeed = 190 + p.speed * 24;
+      if (velocity > maxSpeed) {
+        p.vx *= maxSpeed / velocity;
+        p.vy *= maxSpeed / velocity;
+      }
+      p.px += p.vx * dt;
+      p.py += p.vy * dt;
+      p.birth = Math.min(1, p.birth + dt * .7);
+
+      // Recycle stars after they fall into the cursor. A short fade-in prevents
+      // the distant replacement from popping into view.
+      if (attracting && Math.hypot(mx - p.px, my - p.py) < 9) {
+        p.px = p.x * w;
+        p.py = p.y * h;
+        p.vx = 0;
+        p.vy = 0;
+        p.birth = 0;
+      }
+    }
+
+    const alpha = (.16 + .19 * (.5 + .5 * Math.sin(seconds * (1 + p.speed * .32) + p.phase))) * p.birth;
+    if (p.px < -4 || p.px > w + 4 || p.py < -4 || p.py > h + 4) continue;
     ctx.beginPath();
-    ctx.arc(px, py, p.size, 0, TAU);
+    ctx.arc(p.px, p.py, p.size, 0, TAU);
     ctx.fillStyle = p.tint > .73 ? `rgba(148,216,226,${alpha})` : `rgba(194,236,187,${alpha})`;
     ctx.fill();
+  }
+
+  if (attracting) {
+    // Almost imperceptible lensing hints at the attractor without drawing a cursor UI.
+    const well = ctx.createRadialGradient(mx, my, 0, mx, my, 110);
+    well.addColorStop(0, "rgba(195,246,184,.085)");
+    well.addColorStop(1, "rgba(195,246,184,0)");
+    ctx.fillStyle = well;
+    ctx.fillRect(mx - 110, my - 110, 220, 220);
   }
 
   // A separate cohort repeatedly gathers, ignites, and disperses.
@@ -160,13 +211,18 @@ export default function IntelligenceVisual() {
     let w = 0, h = 0, frameId = 0, last = 0, elapsed = 0;
     let visible = !document.hidden;
     const resize = () => {
+      const prevW = w, prevH = h;
       w = window.innerWidth;
       h = window.innerHeight;
+      for (const p of backdrop) {
+        p.px = prevW ? p.px * w / prevW : p.x * w;
+        p.py = prevH ? p.py * h / prevH : p.y * h;
+      }
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       element.width = Math.round(w * dpr);
       element.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      draw(ctx, backdrop, wave, w, h, elapsed, pointer.current.x, pointer.current.y, still);
+      draw(ctx, backdrop, wave, w, h, elapsed, pointer.current.x, pointer.current.y, still, 0);
     };
     const onPointer = (event: PointerEvent) => { pointer.current.x = event.clientX; pointer.current.y = event.clientY; };
     const onPointerOut = () => { pointer.current = { x: -10000, y: -10000 }; };
@@ -174,9 +230,10 @@ export default function IntelligenceVisual() {
     const tick = (now: number) => {
       if (!visible) { frameId = 0; return; }
       if (!last) last = now;
-      elapsed += Math.min((now - last) / 1000, .05);
+      const dt = Math.min((now - last) / 1000, .05);
+      elapsed += dt;
       last = now;
-      draw(ctx, backdrop, wave, w, h, elapsed, pointer.current.x, pointer.current.y, false);
+      draw(ctx, backdrop, wave, w, h, elapsed, pointer.current.x, pointer.current.y, false, dt);
       frameId = requestAnimationFrame(tick);
     };
     const onVisibilityResume = () => {
