@@ -61,14 +61,18 @@ export default function AgentExperience() {
   const [busy, setBusy] = useState(false);
   const [lastMode, setLastMode] = useState<"live" | "guided" | null>(null);
   const [error, setError] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const conversationRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLTextAreaElement>(null);
   const count = items.filter(item => item.role === "user").length;
   const atLimit = count >= 7;
 
+  // Scroll only the conversation panel. scrollIntoView() also scrolls the page
+  // and was causing the entire demo to jump each time a message arrived.
   useEffect(() => {
-    if (items.length > 1 || busy) bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [items, busy]);
+    if (items.length === 1 && !busy && !error) return;
+    const conversation = conversationRef.current;
+    if (conversation) conversation.scrollTop = conversation.scrollHeight;
+  }, [items, busy, error]);
 
   async function submit(text: string) {
     const prompt = text.trim();
@@ -116,7 +120,8 @@ export default function AgentExperience() {
     } finally {
       window.clearTimeout(timeout);
       setBusy(false);
-      draftRef.current?.focus();
+      // Avoid reopening the software keyboard and shifting the mobile viewport.
+      if (window.matchMedia("(pointer: fine)").matches) draftRef.current?.focus({ preventScroll: true });
     }
   }
 
@@ -141,9 +146,9 @@ export default function AgentExperience() {
   }
 
   return (
-    <section id="try-agent" className="container pb-24 md:pb-32">
-      <div className="grid gap-6 lg:grid-cols-[.39fr_.61fr] lg:items-start">
-        <aside className="space-y-5">
+    <section id="try-agent" className="container flex min-h-0 flex-1 flex-col pb-3 sm:pb-5">
+      <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[.38fr_.62fr]">
+        <aside className="hidden min-h-0 space-y-4 overflow-y-auto overscroll-contain pr-1 lg:block">
           <div className="rounded-xl border border-[#314550] bg-[#10202b]/90 p-6 backdrop-blur-md md:p-8">
             <p className="eyebrow">A working example</p>
             <h2 className="mt-4 text-[26px] font-semibold leading-tight tracking-[-.045em]">From business friction to a practical AI pilot.</h2>
@@ -174,11 +179,12 @@ export default function AgentExperience() {
               <div><span className="font-semibold text-[#e5efe6]">03 / Recommend</span><p className="muted mt-1">Propose a bounded pilot with approvals, metrics, and measurable next steps.</p></div>
             </div>
             <p className="mt-6 border-t border-[#30434b] pt-5 text-xs leading-6 text-[#9bb0b0]">Do not enter personal, confidential, or regulated data. Live AI messages are sent to an external model provider through Vercel AI Gateway. This demo does not connect to your company systems or retain a chat history on our server.</p>
+            <Link href="/contact" className="button button-outline mt-5">Discuss a real implementation <span aria-hidden="true">↗</span></Link>
           </div>
         </aside>
 
-        <div className="overflow-hidden rounded-xl border border-[#3a5255] bg-[#0c1a23]/95 shadow-[0_24px_90px_rgba(0,0,0,.20)] backdrop-blur-lg">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#30464f] px-5 py-5 sm:px-7">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-[#3a5255] bg-[#0c1a23]/95 shadow-[0_24px_90px_rgba(0,0,0,.20)] backdrop-blur-lg">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[#30464f] px-4 py-3 sm:px-6 sm:py-4">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#b3db98]/35 bg-[#223a32] font-bold text-[#d9f5b8]">M</span>
               <div>
@@ -195,7 +201,7 @@ export default function AgentExperience() {
             </div>
           </div>
 
-          <div role="log" aria-label="Agent conversation" aria-live="polite" className="h-[510px] space-y-6 overflow-y-auto px-5 py-6 sm:h-[560px] sm:px-7">
+          <div ref={conversationRef} role="log" aria-label="Agent conversation" aria-live="polite" className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
             {items.map(item => (
               <div key={item.id} className={item.role === "user" ? "flex justify-end" : "flex justify-start"}>
                 <div className={item.role === "user"
@@ -218,15 +224,32 @@ export default function AgentExperience() {
                 </div>
               </div>
             ))}
+            {count === 0 && (
+              <div className="grid gap-2 lg:hidden">
+                <p className="eyebrow">Try an example</p>
+                {examples.map(example => (
+                  <button
+                    key={example.label}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void submit(example.prompt)}
+                    className="rounded-lg border border-[#354852] bg-[#122630]/75 px-4 py-2.5 text-left text-xs text-[#e7f1e9] hover:border-[#749580] disabled:opacity-45"
+                  >
+                    <span className="font-semibold">{example.label}</span>
+                    <span className="ml-2 text-[#9aafb0]">{example.detail}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             {busy && <div className="flex items-center gap-3 text-sm text-[#bed0bf]" role="status">
               <span className="flex gap-1" aria-hidden="true"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a]" /><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:150ms]" /><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:300ms]" /></span>
               Evaluating the workflow…
             </div>}
             {error && <div role="alert" className="rounded-lg border border-red-300/25 bg-red-950/30 px-4 py-3 text-xs leading-6 text-[#f3c9c9]">{error}</div>}
-            <div ref={bottomRef} />
+
           </div>
 
-          <form onSubmit={onSubmit} className="border-t border-[#30464f] bg-[#0d1e27]/95 p-4 sm:p-6">
+          <form onSubmit={onSubmit} className="shrink-0 border-t border-[#30464f] bg-[#0d1e27]/95 p-3 sm:p-4">
             <label htmlFor="agent-question" className="mb-2 block text-xs font-semibold text-[#c9ec8a]">Your business challenge</label>
             <div className="flex items-end gap-3 rounded-lg border border-[#425860] bg-[#0b1720] p-2 transition-colors focus-within:border-[#b7e294]">
               <textarea
@@ -239,7 +262,7 @@ export default function AgentExperience() {
                 rows={2}
                 maxLength={900}
                 disabled={busy || atLimit}
-                className="min-h-[56px] max-h-[150px] w-full resize-y bg-transparent px-2 py-2 text-sm leading-6 text-[#f0f7ef] outline-none placeholder:text-[#81939d] disabled:opacity-50"
+                className="min-h-[48px] max-h-[100px] w-full resize-y bg-transparent px-2 py-2 text-sm leading-6 text-[#f0f7ef] outline-none placeholder:text-[#81939d] disabled:opacity-50"
               />
               <button type="submit" disabled={busy || !input.trim() || atLimit} className="button button-primary !min-h-[42px] !px-4 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Send message">
                 Send <span aria-hidden="true">↗</span>
@@ -253,10 +276,7 @@ export default function AgentExperience() {
         </div>
       </div>
 
-      <div className="mt-10 flex flex-wrap items-center justify-between gap-5 border-t border-[#31464b] pt-8">
-        <p className="muted max-w-[650px] text-sm leading-7">This is a bounded demonstration, not a substitute for discovery, security review, or an implementation plan built from your actual requirements.</p>
-        <Link href="/contact" className="button button-outline">Discuss a real implementation <span aria-hidden="true">↗</span></Link>
-      </div>
+
     </section>
   );
 }
