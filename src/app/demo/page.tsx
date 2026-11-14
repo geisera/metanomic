@@ -32,7 +32,7 @@ export default function DemoPage() {
       </div>
       <section className="container py-20 md:py-28">
         <div className="max-w-[930px]">
-          <p className="eyebrow">Metanomic / Live capability demonstration</p>
+          <p className="eyebrow">Metanomic / Interactive capability demonstration</p>
           <h1 className="mt-6 text-[clamp(3.05rem,6.7vw,6.3rem)] font-semibold leading-[1.03] tracking-[-.07em]">
             AI that moves beyond <span className="text-[#c9ec8a]">the conversation.</span>
           </h1>
