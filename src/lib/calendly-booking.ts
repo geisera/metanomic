@@ -1,16 +1,11 @@
 // Booking is invoked only by the dedicated, visitor-confirmed API route.
 // Never expose the Calendly access token or call POST /invitees from the model.
 
-import { findEventTypes, safeBookingUrl, validTimeZone } from "./calendly";
+import { directBookingEligibility, findEventTypes, safeBookingUrl, validTimeZone } from "./calendly";
 
 const API = "https://api.calendly.com";
 const FALLBACK_URL = "https://calendly.com/metanomic";
 const EVENT_URI = /^https:\/\/api\.calendly\.com\/event_types\/[A-Za-z0-9-]+$/;
-const DIRECT_LOCATION_KINDS = new Set([
-  "zoom_conference", "google_conference", "microsoft_teams_conference",
-  "webex_conference", "gotomeeting_conference", "inbound_call",
-]);
-
 export type BookingRequest = {
   eventTypeUri: string;
   startTime: string;
@@ -74,32 +69,9 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
     if (!event) return result("unsupported", "This meeting type is no longer bookable here. Please open Calendly.");
 
     const bookingUrl = event.scheduling_url || FALLBACK_URL;
-    if (event.is_paid || (event.kind && event.kind !== "solo") || (event.booking_method && event.booking_method !== "instant")) {
-      return result("unsupported", "This meeting type requires Calendly's booking process.", bookingUrl);
-    }
-
-    const requiredQuestions = Array.isArray(event.custom_questions) && event.custom_questions.some(question => {
-      const item = record(question);
-      return item?.enabled === true && item.required === true;
-    });
-    if (requiredQuestions) {
-      return result("unsupported", "This meeting type has additional required questions. Please complete booking on Calendly.", bookingUrl);
-    }
-
-    const options = Array.isArray(event.locations) ? event.locations : [];
-    let location: { kind: string } | undefined;
-    if (event.pooling_type !== "round_robin") {
-      if (options.length > 1) {
-        return result("unsupported", "This meeting offers multiple locations. Please choose one on Calendly.", bookingUrl);
-      }
-      if (options.length === 1) {
-        const option = record(options[0]);
-        const kind = option?.kind;
-        if (typeof kind !== "string" || !DIRECT_LOCATION_KINDS.has(kind)) {
-          return result("unsupported", "This meeting requires a location choice or additional contact information. Please use Calendly.", bookingUrl);
-        }
-        location = { kind };
-      }
+    const eligibility = directBookingEligibility(event);
+    if (!eligibility.supported) {
+      return result("unsupported", eligibility.reason || "Use Calendly to book this meeting.", bookingUrl);
     }
 
     // A displayed slot is not a reservation. Recheck the exact start time
@@ -149,7 +121,7 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
           email: input.email.trim(),
           timezone: input.timeZone,
         },
-        ...(location ? { location } : {}),
+        ...(eligibility.location ? { location: eligibility.location } : {}),
         tracking: { utm_source: "metanomic_theia" },
       }),
       cache: "no-store",
