@@ -1,16 +1,16 @@
 import Link from "next/link";
 
 const services = [
-  { number: "01", title: "AI strategy & advisory", description: "Find the opportunities worth pursuing. We turn promising AI ideas into clear, practical plans grounded in your business." },
-  { number: "02", title: "Custom AI agents", description: "Purpose-built digital teammates that research, coordinate, and complete work within the guardrails you define." },
-  { number: "03", title: "Workflow automation", description: "Remove repetitive work and connect the systems your team already depends on—without losing human oversight." },
-  { number: "04", title: "Integration & operations", description: "Connect data, tools, and processes into reliable systems that can be maintained, monitored, and improved." }
+  { number: "01", title: "AI strategy & advisory", description: "Find where AI can extend your team's expertise, remove constraints, and unlock meaningful outcomes. We turn those opportunities into practical plans." },
+  { number: "02", title: "Custom AI agents", description: "Purpose-built agents that expand your team's reach—researching, coordinating, and taking action within boundaries you control." },
+  { number: "03", title: "Workflow automation", description: "Give people more time for judgment, creativity, and connection by automating repetitive work without losing human oversight." },
+  { number: "04", title: "Integration & operations", description: "Bring data, tools, and teams together so intelligent systems reliably support the people and outcomes that matter." }
 ];
 const steps = [
-  { index: "01", title: "Understand", description: "We start with your people, your processes, and the outcomes that matter." },
-  { index: "02", title: "Design", description: "We map a useful solution, establish boundaries, and define how success is measured." },
-  { index: "03", title: "Build", description: "We develop and integrate agents and automations into real working systems." },
-  { index: "04", title: "Improve", description: "We evaluate results, refine performance, and support responsible growth." }
+  { index: "01", title: "Understand", description: "We begin with the people, their ambitions, and the work worth amplifying." },
+  { index: "02", title: "Design", description: "We shape the solution around human needs, clear safeguards, and measurable impact." },
+  { index: "03", title: "Build", description: "We put practical AI tools into people's hands, integrated with how they already work." },
+  { index: "04", title: "Improve", description: "We learn from real use, refine the tools, and help their human impact grow." }
 ];
 
 function Logo() {
@@ -37,9 +37,9 @@ export default function Home() {
     <section className="relative overflow-hidden">
       <div className="container relative flex min-h-[min(83vh,820px)] items-center py-28 md:py-36">
         <div>
-          <span className="pill">Thoughtful AI. Real-world impact.</span>
-          <h1 className="mt-8 max-w-[790px] text-[clamp(3.4rem,7.5vw,6.9rem)] leading-[1.02] font-semibold tracking-[-.075em]">Human purpose.<br/><span className="text-[#c9ec8a]">Intelligent</span><br/>execution.</h1>
-          <p className="muted mt-8 max-w-[550px] text-[17px] leading-[1.85]">We help organizations put AI to work. From smart strategy to custom agents and connected workflows, we build technology that gives people more room to do what matters.</p>
+          <span className="pill">Human purpose. Intelligent execution.</span>
+          <h1 className="mt-8 max-w-[790px] text-[clamp(3.4rem,7.5vw,6.9rem)] leading-[1.02] font-semibold tracking-[-.075em]">AI that magnifies<br/><span className="text-[#c9ec8a]">human impact.</span></h1>
+          <p className="muted mt-8 max-w-[550px] text-[17px] leading-[1.85]">We build AI tools that give people greater reach and more room to do their best work. From custom agents to connected workflows, our mission is to turn human expertise, ambition, and ideas into meaningful results at a greater scale.</p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/contact" className="button button-primary">Start a conversation <span aria-hidden>↗</span></Link>
             <a href="#services" className="button button-outline">Explore our services <span aria-hidden>↓</span></a>
@@ -51,8 +51,8 @@ export default function Home() {
     <section id="services" className="rule py-24 md:py-30">
       <div className="container">
         <div className="mb-12 flex flex-wrap items-end justify-between gap-8">
-          <div><p className="eyebrow">What we do</p><h2 className="mt-4 max-w-[620px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">Intelligence built for the way you work.</h2></div>
-          <p className="muted max-w-[320px] text-sm leading-7">No technology for technology&apos;s sake. Just useful solutions designed around your business.</p>
+          <div><p className="eyebrow">What we do</p><h2 className="mt-4 max-w-[620px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">More capability. Greater human impact.</h2></div>
+          <p className="muted max-w-[320px] text-sm leading-7">The value of AI isn't what it does on its own. It's what people can accomplish with it.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           {services.map((service) => <article className="card group min-h-[255px]" key={service.number}>
@@ -67,8 +67,8 @@ export default function Home() {
     <section id="approach" className="rule py-24 md:py-28">
       <div className="container">
         <p className="eyebrow">How we work</p>
-        <h2 className="mt-4 max-w-[640px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">People first. Purpose always.</h2>
-        <p className="muted mt-6 max-w-[650px] leading-8">The best AI systems are designed with people—not just processes—in mind. We bring care, clarity, and practical engineering to every engagement.</p>
+        <h2 className="mt-4 max-w-[640px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">People lead. Intelligence amplifies.</h2>
+        <p className="muted mt-6 max-w-[650px] leading-8">Every engagement starts with the people whose work matters. We pair human judgment with thoughtfully designed AI to expand capability while keeping people in control.</p>
         <div className="mt-14 grid gap-8 md:grid-cols-4">
           {steps.map((step) => <div className="border-t border-[#426050] pt-5" key={step.index}>
             <span className="text-xs font-bold text-[#c9ec8a]">{step.index}</span>
@@ -82,15 +82,15 @@ export default function Home() {
     <section id="about" className="rule py-24 md:py-32">
       <div className="container grid gap-10 md:grid-cols-[.55fr_1fr]">
         <p className="eyebrow pt-2">The Metanomic perspective</p>
-        <div><h2 className="text-4xl font-semibold leading-[1.15] tracking-[-.06em] md:text-[3.3rem]">Technology should extend human capability, not complicate it.</h2>
-          <p className="muted mt-7 max-w-[660px] leading-8">We believe the future of work is a partnership between human judgment and intelligent systems. Our role is to make that partnership useful, reliable, and accessible—one thoughtfully built solution at a time.</p>
+        <div><h2 className="text-4xl font-semibold leading-[1.15] tracking-[-.06em] md:text-[3.3rem]">Human potential is the point.</h2>
+          <p className="muted mt-7 max-w-[660px] leading-8">The promise of AI isn't to replace the people who do meaningful work. It's to extend their expertise, creativity, and ability to act. We build practical tools that put more possibility in human hands—helping individuals and organizations solve bigger problems and make a greater difference.</p>
         </div>
       </div>
     </section>
 
     <section className="border-y border-[#405242] bg-[#c9ec8a]/90 py-20 text-[#14231e] backdrop-blur-sm">
       <div className="container flex flex-wrap items-center justify-between gap-8">
-        <div><p className="text-xs font-bold uppercase tracking-[.2em]">Build what comes next</p><h2 className="mt-3 max-w-[660px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">Let&apos;s make intelligence useful.</h2></div>
+        <div><p className="text-xs font-bold uppercase tracking-[.2em]">Build what comes next</p><h2 className="mt-3 max-w-[660px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">Let&apos;s make a bigger impact.</h2></div>
         <Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Talk with Metanomic <span aria-hidden>↗</span></Link>
       </div>
     </section>
