@@ -3,260 +3,348 @@
 import { useEffect, useRef } from "react";
 import { useReducedMotion } from "motion/react";
 
-type Particle = {
-  x: number;
-  y: number;
-  angle: number;
-  radius: number;
-  size: number;
-  speed: number;
-  phase: number;
-  tint: number;
-  offset: number;
-  px: number; py: number; vx: number; vy: number; birth: number;
+type Star = {
+  x: number; y: number; vx: number; vy: number;
+  size: number; phase: number; speed: number; tint: number;
+  age: number; lifetime: number; opacity: number;
 };
 
-const TAU = Math.PI * 2;
-const CYCLE = 18;
-const clamp = (n: number) => Math.min(1, Math.max(0, n));
-const ease = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t); };
-const mix = (a: number, b: number, f: number) => a + (b - a) * f;
+type Nova = { x: number; y: number; age: number };
 
-function particles(count: number, seed: number): Particle[] {
-  let state = seed;
-  const random = () => { state = (state * 1664525 + 1013904223) >>> 0; return state / 4294967296; };
-  return Array.from({ length: count }, () => ({
-    x: random(), y: random(),
-    angle: random() * TAU, radius: .12 + random() * .88,
-    size: .35 + Math.pow(random(), 4) * 2.05,
-    speed: .55 + random() * 1.5,
-    phase: random() * TAU, tint: random(), offset: random() * TAU,
-    px: 0, py: 0, vx: 0, vy: 0, birth: 1
-  }));
+const TAU = Math.PI * 2;
+
+// The initial field is already dense. New stars are continuously born as
+// older stars expire or are consumed by the cursor, with a performance cap.
+const DESKTOP = { initial: 2400, limit: 3200, birthsPerSecond: 54, novaThreshold: 85 };
+const MOBILE = { initial: 950, limit: 1450, birthsPerSecond: 25, novaThreshold: 48 };
+
+function makeRandom(seed: number) {
+  let value = seed;
+  return () => {
+    value = (value * 1664525 + 1013904223) >>> 0;
+    return value / 4294967296;
+  };
 }
 
-function draw(
-  ctx: CanvasRenderingContext2D, ambient: Particle[], event: Particle[],
-  w: number, h: number, seconds: number, mx: number, my: number, still: boolean, dt: number
+function newStar(
+  random: () => number,
+  width: number,
+  height: number,
+  established: boolean,
+): Star {
+  const lifetime = 48 + random() * 48;
+  return {
+    x: random() * width,
+    y: random() * height,
+    vx: (random() - .5) * 13,
+    vy: (random() - .5) * 13,
+    size: .4 + Math.pow(random(), 3.4) * 2.15,
+    phase: random() * TAU,
+    speed: .65 + random() * 1.3,
+    tint: random(),
+    age: established ? random() * lifetime * .92 : 0,
+    lifetime,
+    opacity: established ? 1 : 0,
+  };
+}
+
+function paint(
+  context: CanvasRenderingContext2D,
+  stars: Star[],
+  novas: Nova[],
+  width: number,
+  height: number,
+  elapsed: number,
+  dt: number,
+  pointer: { x: number; y: number },
+  charge: { value: number },
+  threshold: number,
+  still: boolean,
 ) {
-  ctx.clearRect(0, 0, w, h);
-  const scale = Math.min(w, h);
-  const cx = w * (w < 700 ? .52 : .67) + Math.sin(seconds * .065) * scale * .023;
-  const cy = h * .46 + Math.cos(seconds * .075) * scale * .026;
-  const phase = still ? 2 : seconds % CYCLE;
-  const gather = still ? 0 : ease((phase - 2.0) / 5.7);
-  const crush = still ? 0 : ease((phase - 7.4) / 1.5);
-  const blast = still ? 0 : ease((phase - 8.9) / 1.15);
-  const fade = still ? 0 : ease((phase - 12.2) / 3.4);
-  const reset = still ? 1 : 1 - ease((phase - 16.0) / 1.7);
-  const heat = gather * (1 - blast) + blast * (1 - fade) * .32;
+  context.clearRect(0, 0, width, height);
+  const mx = pointer.x;
+  const my = pointer.y;
+  const attracting = !still && mx >= 0 && my >= 0 && mx <= width && my <= height;
 
-  // A diffuse atmosphere reaching to the edges of the viewport.
-  const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, scale * .82);
-  halo.addColorStop(0, `rgba(136,228,176,${.035 + heat * .12})`);
-  halo.addColorStop(.42, `rgba(78,171,183,${.026 + heat * .035})`);
-  halo.addColorStop(1, "rgba(7,15,21,0)");
-  ctx.fillStyle = halo;
-  ctx.fillRect(0, 0, w, h);
+  context.globalCompositeOperation = "lighter";
 
-  ctx.globalCompositeOperation = "lighter";
-  // The cursor is a persistent, softened gravitational attractor rather than a repulsor.
-  // Each star has its own position and velocity, so it takes time to fall toward the pointer.
-  const attracting = !still && mx >= 0 && my >= 0 && mx <= w && my <= h;
-  const drag = Math.exp(-.85 * dt);
-  const influenceRadius = Math.max(w, h) * 1.05;
-  for (const p of ambient) {
-    const dx = mx - p.px;
-    const dy = my - p.py;
-    const distance = Math.hypot(dx, dy);
-    let ax = Math.sin(seconds * .19 + p.phase) * 1.8;
-    let ay = Math.cos(seconds * .15 + p.phase) * 1.6;
+  // A low-key atmospheric layer, never a timed or automatic nova.
+  const ambientGlow = context.createRadialGradient(
+    width * .66, height * .46, 0,
+    width * .66, height * .46, Math.max(width, height) * .75,
+  );
+  ambientGlow.addColorStop(0, "rgba(76,157,141,.065)");
+  ambientGlow.addColorStop(1, "rgba(6,14,22,0)");
+  context.fillStyle = ambientGlow;
+  context.fillRect(0, 0, width, height);
 
-    if (attracting && distance < influenceRadius) {
-      // Inverse-distance pull with softening: near stars accelerate faster without
-      // becoming unstable or snapping instantly onto the cursor.
-      const strength = 28000 / (distance + 115);
-      ax += (dx / (distance || 1)) * strength * (.67 + p.speed * .20);
-      ay += (dy / (distance || 1)) * strength * (.67 + p.speed * .20);
-    } else {
-      // When the cursor leaves the screen, restore the original star field gently.
-      ax += (p.x * w - p.px) * .09;
-      ay += (p.y * h - p.py) * .09;
-    }
+  const maxDistance = Math.max(width, height);
+  const drag = Math.exp(-.3 * dt);
+
+  // Iterate backwards so capturing a star destroys it immediately.
+  for (let index = stars.length - 1; index >= 0; index--) {
+    const star = stars[index];
 
     if (!still) {
-      p.vx = (p.vx + ax * dt) * drag;
-      p.vy = (p.vy + ay * dt) * drag;
-      const velocity = Math.hypot(p.vx, p.vy);
-      const maxSpeed = 190 + p.speed * 24;
-      if (velocity > maxSpeed) {
-        p.vx *= maxSpeed / velocity;
-        p.vy *= maxSpeed / velocity;
+      star.age += dt;
+      if (star.age >= star.lifetime) {
+        stars[index] = stars[stars.length - 1];
+        stars.pop();
+        continue;
       }
-      p.px += p.vx * dt;
-      p.py += p.vy * dt;
-      p.birth = Math.min(1, p.birth + dt * .7);
 
-      // Recycle stars after they fall into the cursor. A short fade-in prevents
-      // the distant replacement from popping into view.
-      if (attracting && Math.hypot(mx - p.px, my - p.py) < 9) {
-        p.px = p.x * w;
-        p.py = p.y * h;
-        p.vx = 0;
-        p.vy = 0;
-        p.birth = 0;
+      // Slow perpetual drift exists even when there is no pointer.
+      let ax = Math.sin(elapsed * .21 + star.phase) * 3;
+      let ay = Math.cos(elapsed * .17 + star.phase) * 3;
+
+      const dx = mx - star.x;
+      const dy = my - star.y;
+      const distance = Math.hypot(dx, dy);
+      if (attracting) {
+        // Long-range attraction; progressively stronger nearer the cursor.
+        // Softening keeps motion stable as stars approach the capture radius.
+        const falloff = 1 / (1 + Math.pow(distance / (maxDistance * .69), 2));
+        const acceleration = (95 + 43000 / (distance + 135)) * falloff * star.speed;
+        ax += dx / (distance || 1) * acceleration;
+        ay += dy / (distance || 1) * acceleration;
       }
+
+      star.vx = (star.vx + ax * dt) * drag;
+      star.vy = (star.vy + ay * dt) * drag;
+
+      const velocity = Math.hypot(star.vx, star.vy);
+      const maxVelocity = 290;
+      if (velocity > maxVelocity) {
+        star.vx *= maxVelocity / velocity;
+        star.vy *= maxVelocity / velocity;
+      }
+      star.x += star.vx * dt;
+      star.y += star.vy * dt;
+      star.opacity = Math.min(1, star.opacity + dt * 1.1);
+
+      if (attracting && Math.hypot(mx - star.x, my - star.y) < 13 + star.size * 2.2) {
+        stars[index] = stars[stars.length - 1];
+        stars.pop();
+        charge.value += 1;
+
+        if (charge.value >= threshold) {
+          charge.value -= threshold;
+          novas.push({ x: mx, y: my, age: 0 });
+
+          // A nova physically sends nearby stars outward before gravity
+          // gradually pulls them back, rather than resetting the entire field.
+          const reach = Math.min(width, height) * .9;
+          for (const other of stars) {
+            const ox = other.x - mx;
+            const oy = other.y - my;
+            const r = Math.hypot(ox, oy);
+            if (r < 1 || r > reach) continue;
+            const impulse = 340 * (1 - r / reach) ** 1.45;
+            other.vx += ox / r * impulse;
+            other.vy += oy / r * impulse;
+          }
+        }
+        continue;
+      }
+
+      // Keep the drifting background populated across the entire viewport.
+      if (star.x < -20) star.x = width + 20;
+      else if (star.x > width + 20) star.x = -20;
+      if (star.y < -20) star.y = height + 20;
+      else if (star.y > height + 20) star.y = -20;
     }
 
-    const alpha = (.16 + .19 * (.5 + .5 * Math.sin(seconds * (1 + p.speed * .32) + p.phase))) * p.birth;
-    if (p.px < -4 || p.px > w + 4 || p.py < -4 || p.py > h + 4) continue;
-    ctx.beginPath();
-    ctx.arc(p.px, p.py, p.size, 0, TAU);
-    ctx.fillStyle = p.tint > .73 ? `rgba(148,216,226,${alpha})` : `rgba(194,236,187,${alpha})`;
-    ctx.fill();
+    const twinkle = .79 + .21 * Math.sin(elapsed * star.speed * 1.7 + star.phase);
+    const finalOpacity = (.23 + Math.min(1, star.size / 2.5) * .53) * twinkle * star.opacity;
+    if (finalOpacity < .005) continue;
+    context.fillStyle = star.tint > .73
+      ? `rgba(150,224,235,${finalOpacity})`
+      : `rgba(200,246,191,${finalOpacity})`;
+
+    if (!still && Math.hypot(star.vx, star.vy) > 155 && star.size > 1) {
+      context.beginPath();
+      context.moveTo(star.x, star.y);
+      context.lineTo(star.x - star.vx * .037, star.y - star.vy * .037);
+      context.lineWidth = Math.max(.55, star.size * .52);
+      context.strokeStyle = star.tint > .73
+        ? `rgba(150,224,235,${finalOpacity * .32})`
+        : `rgba(200,246,191,${finalOpacity * .32})`;
+      context.stroke();
+    }
+
+    if (star.size <= 1) {
+      context.fillRect(star.x, star.y, Math.max(.55, star.size), Math.max(.55, star.size));
+    } else {
+      context.beginPath();
+      context.arc(star.x, star.y, star.size, 0, TAU);
+      context.fill();
+    }
   }
 
+  // The attractor becomes brighter as it collects actual stars; it does not
+  // trigger a nova merely because the cursor is present.
   if (attracting) {
-    // Almost imperceptible lensing hints at the attractor without drawing a cursor UI.
-    const well = ctx.createRadialGradient(mx, my, 0, mx, my, 110);
-    well.addColorStop(0, "rgba(195,246,184,.085)");
-    well.addColorStop(1, "rgba(195,246,184,0)");
-    ctx.fillStyle = well;
-    ctx.fillRect(mx - 110, my - 110, 220, 220);
+    const fraction = charge.value / threshold;
+    const size = 100 + fraction * 90;
+    const well = context.createRadialGradient(mx, my, 0, mx, my, size);
+    well.addColorStop(0, `rgba(232,255,213,${.055 + fraction * .24})`);
+    well.addColorStop(.22, `rgba(164,236,183,${.025 + fraction * .10})`);
+    well.addColorStop(1, "rgba(123,206,187,0)");
+    context.fillStyle = well;
+    context.fillRect(mx - size, my - size, size * 2, size * 2);
+    if (charge.value > 0) {
+      context.beginPath();
+      context.arc(mx, my, 11 + fraction * 7, 0, TAU * fraction);
+      context.strokeStyle = `rgba(215,250,195,${.2 + fraction * .55})`;
+      context.lineWidth = 1 + fraction;
+      context.stroke();
+    }
   }
 
-  // A separate cohort repeatedly gathers, ignites, and disperses.
-  for (const p of event) {
-    const ax = (p.x * 1.3 - .15) * w + Math.sin(seconds * .27 + p.phase) * 10;
-    const ay = (p.y * 1.3 - .15) * h + Math.cos(seconds * .21 + p.phase) * 12;
-    const angle = p.angle + phase * (.11 + p.speed * .07);
-    const orbit = scale * (.07 + p.radius * .60) * (1 - crush * .985);
-    const sx = cx + Math.cos(angle) * orbit;
-    const sy = cy + Math.sin(angle) * orbit * .83;
-    const inX = mix(ax, sx, gather);
-    const inY = mix(ay, sy, gather);
-    const outAngle = p.offset + p.angle * .31;
-    const outRadius = scale * (.04 + blast * (.5 + p.radius * .74));
-    const outX = cx + Math.cos(outAngle) * outRadius;
-    const outY = cy + Math.sin(outAngle) * outRadius;
-    const x = mix(inX, outX, blast);
-    const y = mix(inY, outY, blast);
-    const opacity = (.17 + p.speed * .23 + gather * .24 + blast * .25) * (1 - fade) * reset;
-
-    if (x < -35 || y < -35 || x > w + 35 || y > h + 35 || opacity < .008) continue;
-    const tint = p.tint > .68 ? "153,224,237" : "208,252,180";
-    if (gather > .05 && blast < .05 && p.size > .7) {
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + (x - cx) * .035 * gather, y + (y - cy) * .035 * gather);
-      ctx.strokeStyle = `rgba(${tint},${opacity * gather * .33})`;
-      ctx.lineWidth = Math.max(.3, p.size * .48);
-      ctx.stroke();
+  // Novas exist ONLY when the cursor has consumed enough actual stars.
+  for (let index = novas.length - 1; index >= 0; index--) {
+    const nova = novas[index];
+    nova.age += dt;
+    if (nova.age > 2.8) {
+      novas.splice(index, 1);
+      continue;
     }
-    if (blast > .01 && fade < 1 && p.size > .65) {
-      const length = 19 * blast * (1 - fade) * p.speed;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x - Math.cos(outAngle) * length, y - Math.sin(outAngle) * length);
-      ctx.strokeStyle = `rgba(${tint},${opacity * .43})`;
-      ctx.lineWidth = p.size * .67;
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.arc(x, y, p.size * (1 + crush * .65), 0, TAU);
-    ctx.fillStyle = `rgba(${tint},${clamp(opacity)})`;
-    ctx.fill();
-  }
-
-  // Recurring white-hot core and two expanding shockwaves.
-  if (!still && phase > 8.4 && phase < 12.8) {
-    const age = phase - 9.0;
-    const flash = Math.exp(-Math.pow((age - .23) / .31, 2));
-    const after = Math.exp(-Math.max(0, age) * 1.08);
-    const reach = scale * (.075 + .36 * flash + .12 * after);
-    const bloom = ctx.createRadialGradient(cx, cy, 0, cx, cy, reach);
-    bloom.addColorStop(0, `rgba(255,255,244,${Math.min(1, flash + after * .65)})`);
-    bloom.addColorStop(.12, `rgba(229,255,201,${Math.min(1, flash * .84 + after * .4)})`);
-    bloom.addColorStop(.36, `rgba(163,237,220,${flash * .44 + after * .15})`);
-    bloom.addColorStop(1, "rgba(117,205,195,0)");
-    ctx.fillStyle = bloom;
-    ctx.fillRect(0, 0, w, h);
+    const age = nova.age;
+    const flash = Math.exp(-((age - .12) / .23) ** 2);
+    const after = Math.exp(-age * 1.8);
+    const radius = Math.min(width, height) * (.055 + flash * .42 + after * .13);
+    const bloom = context.createRadialGradient(nova.x, nova.y, 0, nova.x, nova.y, radius);
+    bloom.addColorStop(0, `rgba(255,255,247,${Math.min(1, flash + after * .87)})`);
+    bloom.addColorStop(.13, `rgba(233,255,203,${Math.min(1, flash * .8 + after * .44)})`);
+    bloom.addColorStop(.42, `rgba(158,242,221,${flash * .43 + after * .13})`);
+    bloom.addColorStop(1, "rgba(120,198,185,0)");
+    context.fillStyle = bloom;
+    context.fillRect(nova.x - radius, nova.y - radius, radius * 2, radius * 2);
 
     for (let ring = 0; ring < 2; ring++) {
-      const progress = (age - ring * .24) / 1.8;
+      const progress = (age - ring * .17) / 1.8;
       if (progress <= 0 || progress >= 1) continue;
-      ctx.beginPath();
-      ctx.arc(cx, cy, scale * (.035 + progress * .85), 0, TAU);
-      ctx.lineWidth = 1 + (1 - progress) * 2.5;
-      ctx.strokeStyle = `rgba(221,255,231,${.52 * (1 - progress) ** 2})`;
-      ctx.stroke();
+      context.beginPath();
+      context.arc(nova.x, nova.y, (15 + progress * Math.max(width, height) * .75), 0, TAU);
+      context.lineWidth = 1 + (1 - progress) * 2.2;
+      context.strokeStyle = `rgba(219,255,223,${.63 * (1 - progress) ** 2})`;
+      context.stroke();
+    }
+
+    const spokes = 28;
+    for (let ray = 0; ray < spokes; ray++) {
+      const theta = ray / spokes * TAU + ray * .17;
+      const length = Math.min(width, height) * (.1 + (ray % 5) * .055) * Math.min(1, age * 4);
+      const opacity = Math.max(0, 1 - age / 1.4) * (.12 + (ray % 4) * .04);
+      if (opacity <= 0) continue;
+      context.beginPath();
+      context.moveTo(nova.x + Math.cos(theta) * length * .45, nova.y + Math.sin(theta) * length * .45);
+      context.lineTo(nova.x + Math.cos(theta) * length, nova.y + Math.sin(theta) * length);
+      context.strokeStyle = `rgba(220,255,219,${opacity})`;
+      context.lineWidth = .75;
+      context.stroke();
     }
   }
-  ctx.globalCompositeOperation = "source-over";
+  context.globalCompositeOperation = "source-over";
 }
 
 export default function IntelligenceVisual() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const pointer = useRef({ x: -10000, y: -10000 });
-  const reduced = useReducedMotion();
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const element = canvas.current;
-    const ctx = element?.getContext("2d", { alpha: true });
-    if (!element || !ctx) return;
-    const still = reduced === true;
-    const mobile = window.matchMedia("(max-width: 700px)").matches;
-    const backdrop = particles(mobile ? 280 : 750, 98113);
-    const wave = particles(mobile ? 420 : 950, 78533);
-    let w = 0, h = 0, frameId = 0, last = 0, elapsed = 0;
+    const context = element?.getContext("2d", { alpha: true });
+    if (!element || !context) return;
+
+    const still = reducedMotion === true;
+    const configuration = window.matchMedia("(max-width: 700px)").matches ? MOBILE : DESKTOP;
+    const random = makeRandom(78219);
+    const stars: Star[] = [];
+    const novas: Nova[] = [];
+    const charge = { value: 0 };
+    let width = 0, height = 0, last = 0, elapsed = 0;
+    let birthCarry = 0, frame = 0;
     let visible = !document.hidden;
+
     const resize = () => {
-      const prevW = w, prevH = h;
-      w = window.innerWidth;
-      h = window.innerHeight;
-      for (const p of backdrop) {
-        p.px = prevW ? p.px * w / prevW : p.x * w;
-        p.py = prevH ? p.py * h / prevH : p.y * h;
-      }
+      const oldWidth = width, oldHeight = height;
+      width = window.innerWidth;
+      height = window.innerHeight;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      element.width = Math.round(w * dpr);
-      element.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      draw(ctx, backdrop, wave, w, h, elapsed, pointer.current.x, pointer.current.y, still, 0);
+      element.width = Math.round(width * dpr);
+      element.height = Math.round(height * dpr);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      for (const star of stars) {
+        star.x = oldWidth ? star.x * width / oldWidth : star.x;
+        star.y = oldHeight ? star.y * height / oldHeight : star.y;
+      }
+      paint(context, stars, novas, width, height, elapsed, 0, pointer.current, charge, configuration.novaThreshold, still);
     };
-    const onPointer = (event: PointerEvent) => { pointer.current.x = event.clientX; pointer.current.y = event.clientY; };
-    const onPointerOut = () => { pointer.current = { x: -10000, y: -10000 }; };
-    const onVisibility = () => { visible = !document.hidden; last = 0; };
+
+    const onPointer = (event: PointerEvent) => {
+      // Touch scrolling should not create a persistent gravitational cursor.
+      if (event.pointerType === "touch") return;
+      pointer.current = { x: event.clientX, y: event.clientY };
+    };
+    const clearPointer = () => { pointer.current = { x: -10000, y: -10000 }; };
+    const onVisibility = () => {
+      visible = !document.hidden;
+      last = 0;
+      if (visible && !still && !frame) frame = requestAnimationFrame(tick);
+      if (!visible && frame) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+      }
+    };
+
     const tick = (now: number) => {
-      if (!visible) { frameId = 0; return; }
+      if (!visible) { frame = 0; return; }
       if (!last) last = now;
       const dt = Math.min((now - last) / 1000, .05);
-      elapsed += dt;
       last = now;
-      draw(ctx, backdrop, wave, w, h, elapsed, pointer.current.x, pointer.current.y, false, dt);
-      frameId = requestAnimationFrame(tick);
+      elapsed += dt;
+
+      // Spawn every frame, not merely when a particle gets captured.
+      birthCarry += dt * configuration.birthsPerSecond;
+      const births = Math.floor(birthCarry);
+      birthCarry -= births;
+      for (let i = 0; i < births && stars.length < configuration.limit; i++) {
+        stars.push(newStar(random, width, height, false));
+      }
+
+      paint(context, stars, novas, width, height, elapsed, dt, pointer.current, charge, configuration.novaThreshold, false);
+      frame = requestAnimationFrame(tick);
     };
-    const onVisibilityResume = () => {
-      onVisibility();
-      if (visible && !still && !frameId) frameId = requestAnimationFrame(tick);
-      if (!visible && frameId) { cancelAnimationFrame(frameId); frameId = 0; }
-    };
+
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("pointermove", onPointer, { passive: true });
-    document.addEventListener("pointerleave", onPointerOut);
-    document.addEventListener("visibilitychange", onVisibilityResume);
+    window.addEventListener("blur", clearPointer);
+    document.addEventListener("pointerleave", clearPointer);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    // Populate the entire canvas immediately before starting animation.
     resize();
-    if (!still) frameId = requestAnimationFrame(tick);
+    for (let i = 0; i < configuration.initial; i++) {
+      stars.push(newStar(random, width, height, true));
+    }
+    paint(context, stars, novas, width, height, elapsed, 0, pointer.current, charge, configuration.novaThreshold, still);
+    if (!still) frame = requestAnimationFrame(tick);
+
     return () => {
-      cancelAnimationFrame(frameId);
+      cancelAnimationFrame(frame);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointer);
-      document.removeEventListener("pointerleave", onPointerOut);
-      document.removeEventListener("visibilitychange", onVisibilityResume);
+      window.removeEventListener("blur", clearPointer);
+      document.removeEventListener("pointerleave", clearPointer);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [reduced]);
+  }, [reducedMotion]);
 
-  return <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-    <canvas ref={canvas} className="block h-full w-full" />
-  </div>;
+  return (
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <canvas ref={canvas} className="block h-full w-full" />
+    </div>
+  );
 }
