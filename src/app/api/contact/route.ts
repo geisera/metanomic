@@ -85,6 +85,43 @@ export async function POST(request: NextRequest) {
     return respond("Too many messages have been sent. Please try again later.", 429);
   }
 
+  // Require both configured Turnstile keys, or neither during setup.
+  // In production, enable both together before relying on bot protection.
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim();
+  const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
+  if (siteKey || secret) {
+    if (!siteKey || !secret) {
+      console.error("Contact form: Turnstile keys are not both configured.");
+      return respond("Contact verification is temporarily unavailable. Please try again later.", 503);
+    }
+
+    const token = field(payload.turnstileToken, 2048);
+    if (!token) return respond("Please complete the security check and try again.", 400);
+
+    try {
+      const challenge = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ secret, response: token, remoteip: ip }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!challenge.ok) {
+        console.error("Contact form: Turnstile Siteverify returned status", challenge.status);
+        return respond("Security verification is unavailable. Please try again later.", 503);
+      }
+      const result: unknown = await challenge.json();
+      // Bind the token to this site's hostname and this form's action.
+      if (!isRecord(result) || result.success !== true ||
+          result.action !== "contact" || result.hostname !== request.nextUrl.hostname) {
+        return respond("Security verification failed or expired. Please try again.", 403);
+      }
+    } catch {
+      console.error("Contact form: Turnstile verification request failed.");
+      return respond("Security verification is unavailable. Please try again later.", 503);
+    }
+  }
+
   const key = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_TO_EMAIL;
   const from = process.env.CONTACT_FROM_EMAIL;
