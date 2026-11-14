@@ -96,7 +96,7 @@ export function estimateCapacity(input: { tasksPerWeek?: unknown; minutesSaved?:
 export function guidedAnswer(prompt: string) {
   if (/\bcalendly\b|\b(?:book|schedule|arrange|set up)\b.{0,50}\b(?:call|meeting|consultation|appointment)\b|\b(?:talk|speak|meet)\b.{0,25}\b(?:metanomic|your team|you)\b/i.test(prompt)) {
     return {
-      answer: "You can schedule a conversation with Metanomic at https://metanomic.ai/contact. The page has an embedded Calendly scheduler, or you can book directly at https://calendly.com/metanomic. I can help you prepare for a meeting, but I cannot book one on your behalf.",
+      answer: "You can schedule a conversation with Metanomic at https://metanomic.ai/contact. The contact page has one external Calendly booking link, or you can book directly at https://calendly.com/metanomic. I can help you prepare for a meeting, but I cannot book one on your behalf.",
       activities: [],
     };
   }
@@ -131,12 +131,13 @@ export function describeStack() {
       "map_opportunity: looks up curated AI pilot patterns, safeguards, and measures.",
       "estimate_capacity: calculates illustrative hours saved from explicit assumptions.",
       "describe_stack: returns this approved technical inventory.",
+      "check_calendly_availability: read-only Calendly appointment search with verified time slots and booking links (requires server-side token).",
     ],
     dataAndSafety: [
       "Messages are validated and length-limited on the server; model calls use server-side credentials.",
       "The application does not store a durable chat history. Chat context is held in the current browser session and sent with each request.",
       "In live mode, messages are processed by Vercel AI Gateway and a model provider. Do not submit sensitive information.",
-      "This demo does not connect to client systems, read private databases, browse the web, or perform write actions.",
+      "This demo does not connect to visitor systems, read private databases, browse the web, or perform write actions. Calendly availability is read-only and available only when the server-side token is configured.",
       "Rate limiting uses per-instance in-memory counters, not distributed enforcement.",
       "If live model inference fails, the interface explicitly labels deterministic guided responses.",
     ],
