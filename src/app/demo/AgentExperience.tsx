@@ -70,7 +70,7 @@ export default function AgentExperience() {
     const draft = draftRef.current;
     if (!draft) return;
     draft.style.height = "auto";
-    const maxHeight = 160;
+    const maxHeight = 164;
     const naturalHeight = draft.scrollHeight;
     draft.style.height = Math.min(naturalHeight, maxHeight) + "px";
     draft.style.overflowY = naturalHeight > maxHeight ? "auto" : "hidden";
@@ -256,7 +256,7 @@ return (
           <div className="mx-auto w-full max-w-[780px]">
             <label htmlFor="agent-question" className="sr-only">Ask Theia a question</label>
             <span id="theia-composer-hint" className="sr-only">Press Enter to send. Press Shift plus Enter to insert a new line.</span>
-            <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#50666b] bg-[#0b1720] p-1 transition-[border-color,box-shadow] focus-within:border-[#c9ec8a] focus-within:shadow-[0_0_0_2px_rgba(201,236,138,.15)] motion-reduce:transition-none">
+            <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#50666b] bg-[#0b1720] p-0.5 transition-[border-color,box-shadow] focus-within:border-[#c9ec8a] focus-within:shadow-[0_0_0_2px_rgba(201,236,138,.15)] motion-reduce:transition-none">
               <textarea
                 id="agent-question"
                 ref={draftRef}
@@ -268,7 +268,7 @@ return (
                 rows={1}
                 maxLength={900}
                 disabled={busy || atLimit}
-                className="min-h-[40px] max-h-[160px] min-w-0 flex-1 resize-none overflow-y-hidden bg-transparent px-3 py-2 text-base leading-6 text-[#f0f7ef] outline-none placeholder:text-[#b9cdc7] disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-[44px] max-h-[164px] min-w-0 flex-1 resize-none overflow-y-hidden bg-transparent px-3 py-2 text-base leading-6 text-[#f0f7ef] outline-none placeholder:text-[#b9cdc7] disabled:cursor-not-allowed disabled:opacity-60"
               />
               <button
                 type="submit"
