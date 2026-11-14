@@ -44,8 +44,7 @@ export default function Home() {
             <span className="absolute bottom-0.5 right-0.5 h-1 w-1 rounded-full bg-[#f56667] shadow-[0_0_6px_#f56667]" />
           </span>
           <p className="truncate text-xs text-[#d6e6da]">
-            <strong className="font-semibold text-[#c9ec8a]">Meet Theia.</strong>
-            <span className="hidden sm:inline"> Ask about her stack.</span>
+            <strong className="font-semibold text-[#c9ec8a]">Meet our AI agent, Theia!</strong>
           </p>
         </div>
         <Link href="/demo" className="inline-flex h-7 shrink-0 items-center gap-2 rounded border border-[#c9ec8a]/70 px-3 text-xs font-semibold text-[#dbf4c2] transition-colors hover:bg-[#c9ec8a] hover:text-[#14231e]">
