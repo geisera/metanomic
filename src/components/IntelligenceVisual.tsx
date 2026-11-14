@@ -131,7 +131,7 @@ function paint(
     }
 
     const twinkle = .9 + .1 * Math.sin(elapsed * star.speed * 1.7 + star.phase);
-    const finalOpacity = (.19 + Math.min(1, star.size / 1.9) * .40) * twinkle * star.opacity;
+    const finalOpacity = (.21 + Math.min(1, star.size / 1.9) * .43) * twinkle * star.opacity;
     if (finalOpacity < .005) continue;
     context.fillStyle = star.tint > .73
       ? `rgba(149,199,208,${finalOpacity})`
