@@ -36,7 +36,7 @@ function newStar(
     y: random() * height,
     vx: (random() - .5) * 13,
     vy: (random() - .5) * 13,
-    size: .4 + Math.pow(random(), 3.4) * 2.15,
+    size: .32 + Math.pow(random(), 3.4) * 1.48,
     phase: random() * TAU,
     speed: .65 + random() * 1.3,
     tint: random(),
@@ -68,7 +68,7 @@ function paint(
     width * .66, height * .46, 0,
     width * .66, height * .46, Math.max(width, height) * .75,
   );
-  ambientGlow.addColorStop(0, "rgba(76,157,141,.065)");
+  ambientGlow.addColorStop(0, "rgba(76,157,141,.035)");
   ambientGlow.addColorStop(1, "rgba(6,14,22,0)");
   context.fillStyle = ambientGlow;
   context.fillRect(0, 0, width, height);
@@ -130,21 +130,21 @@ function paint(
       else if (star.y > height + 20) star.y = -20;
     }
 
-    const twinkle = .79 + .21 * Math.sin(elapsed * star.speed * 1.7 + star.phase);
-    const finalOpacity = (.23 + Math.min(1, star.size / 2.5) * .53) * twinkle * star.opacity;
+    const twinkle = .9 + .1 * Math.sin(elapsed * star.speed * 1.7 + star.phase);
+    const finalOpacity = (.16 + Math.min(1, star.size / 1.9) * .35) * twinkle * star.opacity;
     if (finalOpacity < .005) continue;
     context.fillStyle = star.tint > .73
-      ? `rgba(150,224,235,${finalOpacity})`
-      : `rgba(200,246,191,${finalOpacity})`;
+      ? `rgba(149,199,208,${finalOpacity})`
+      : `rgba(180,219,189,${finalOpacity})`;
 
-    if (!still && Math.hypot(star.vx, star.vy) > 155 && star.size > 1) {
+    if (!still && Math.hypot(star.vx, star.vy) > 185 && star.size > 1) {
       context.beginPath();
       context.moveTo(star.x, star.y);
-      context.lineTo(star.x - star.vx * .037, star.y - star.vy * .037);
-      context.lineWidth = Math.max(.55, star.size * .52);
+      context.lineTo(star.x - star.vx * .028, star.y - star.vy * .028);
+      context.lineWidth = Math.max(.4, star.size * .42);
       context.strokeStyle = star.tint > .73
-        ? `rgba(150,224,235,${finalOpacity * .32})`
-        : `rgba(200,246,191,${finalOpacity * .32})`;
+        ? `rgba(149,199,208,${finalOpacity * .20})`
+        : `rgba(180,219,189,${finalOpacity * .20})`;
       context.stroke();
     }
 
@@ -161,8 +161,8 @@ function paint(
   if (attracting) {
     const radius = 110;
     const well = context.createRadialGradient(mx, my, 0, mx, my, radius);
-    well.addColorStop(0, "rgba(232,255,213,.07)");
-    well.addColorStop(.25, "rgba(164,236,183,.025)");
+    well.addColorStop(0, "rgba(232,255,213,.035)");
+    well.addColorStop(.25, "rgba(164,236,183,.015)");
     well.addColorStop(1, "rgba(123,206,187,0)");
     context.fillStyle = well;
     context.fillRect(mx - radius, my - radius, radius * 2, radius * 2);
