@@ -55,3 +55,14 @@ Production acceptance cases (expanded):
 5. "What happens during Hush?" → documented rules with source citations.
 
 This milestone does not include administrator-configurable scope settings or durable message analytics.
+
+## Context-first routing (November 2026 refinement)
+
+- Common AI vocabulary such as tokens, context windows, vectors, inference, embeddings, temperature, and hallucinations now takes the professional meaning by default. Visitors need not qualify every concept with "in AI".
+- Short follow-ups inherit recent in-scope context unless a later, explicitly unrelated request changes the subject.
+- Ordinary senses (for example, a city's weather temperature) are not automatically treated as AI concepts.
+- The narrow semantic classifier distinguishes `IN_SCOPE`, `OUT_OF_SCOPE`, and `CLARIFY`. Uncertain classifications request a focused clarification rather than sending a generic sales redirect. The additional model call is reserved for uncertain queries.
+- General professional definitions do not incur a knowledge-search embedding request; Metanomic/company-documentation questions and possible approved knowledge subjects still search published passages.
+- Contact invitations are reserved for concrete business and implementation needs. A technical definition or ordinary off-topic request should not automatically display a consultation CTA.
+- The scope tests include the transcript "What are tokens?", short technical vocabulary, conversation continuity, irrelevant preparation requests, and contact-intent detection.
+
