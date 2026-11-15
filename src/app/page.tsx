@@ -2,10 +2,12 @@ import Link from "next/link";
 import TheiaAnnouncement from "@/components/TheiaAnnouncement";
 
 const services = [
-  { number: "01", title: "AI strategy & advisory", description: "Find where AI can extend your team's expertise, remove constraints, and unlock meaningful outcomes. We turn those opportunities into practical plans." },
-  { number: "02", title: "Custom AI agents", description: "Purpose-built agents that expand your team's reach—researching, coordinating, and taking action within boundaries you control." },
-  { number: "03", title: "Workflow automation", description: "Give people more time for judgment, creativity, and connection by automating repetitive work without losing human oversight." },
-  { number: "04", title: "Integration & operations", description: "Bring data, tools, and teams together so intelligent systems reliably support the people and outcomes that matter." }
+  { number: "01", title: "Knowledge & research agents", description: "Find information across approved sources, compare evidence, and synthesize findings with citations. Give your team answers they can trace and use." },
+  { number: "02", title: "Operations agents", description: "Coordinate recurring work across your systems, gather missing information, and prepare actions for approval. Keep routine tasks moving and escalate exceptions to the right people." },
+  { number: "03", title: "Customer service agents", description: "Answer questions, investigate account issues, and carry out permitted service actions. Hand complex cases to your team with the context they need." },
+  { number: "04", title: "Sales & intake agents", description: "Qualify inquiries, collect requirements, update CRM records, and arrange next steps. Turn conversations into useful information and clear opportunities for your team." },
+  { number: "05", title: "Document-processing agents", description: "Read documents, extract and validate information, and flag missing or inconsistent details. Prepare follow-up work while keeping people in control of important decisions." },
+  { number: "06", title: "Salesforce agents", description: "Build agents around your CRM processes and connected systems. Investigate cases, recommend resolutions, and update approved fields within the permissions you define." }
 ];
 const steps = [
   { index: "01", title: "Understand", description: "We begin with the people, their ambitions, and the work worth amplifying." },
@@ -57,16 +59,17 @@ export default function Home() {
     <section id="services" className="rule py-24 md:py-30">
       <div className="container">
         <div className="mb-12 flex flex-wrap items-end justify-between gap-8">
-          <div><p className="eyebrow">What we do</p><h2 className="mt-4 max-w-[620px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">More capability. Greater human impact.</h2></div>
-          <p className="muted max-w-[320px] text-sm leading-7">The value of AI isn't what it does on its own. It's what people can accomplish with it.</p>
+          <div><p className="eyebrow">What we do</p><h2 className="mt-4 max-w-[620px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">Custom AI agents built around your business.</h2></div>
+          <p className="muted max-w-[320px] text-sm leading-7">We design, integrate, and operate agents that work with your knowledge, use your tools, and carry out defined tasks—with people in control.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           {services.map((service) => <article className="card group min-h-[255px]" key={service.number}>
-            <span className="eyebrow">{service.number} / Expertise</span>
+            <span className="eyebrow">{service.number} / Custom agents</span>
             <h3 className="mt-7 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>
             <p className="muted mt-4 max-w-[480px] text-sm leading-7">{service.description}</p>
           </article>)}
         </div>
+        <p className="muted mt-8 max-w-[850px] text-sm leading-7">From a focused pilot to production: agent design, approved knowledge and memory, business integrations, controlled execution, evaluation, and ongoing operations. Every agent is built around clear permissions, human oversight, and measurable outcomes.</p>
         <div className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-lg border border-[#31454b] bg-[#0e1d27]/85 p-6 backdrop-blur-sm md:p-8">
           <div>
             <p className="eyebrow">Explore the technology</p>
