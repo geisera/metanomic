@@ -10,7 +10,7 @@ The Metanomic source code contains:
 - Revision conflict protection so stale browser tabs cannot silently overwrite changes.
 - SQL migration defining RLS-protected documents, revisions, administration memberships, and the tables required by later vector ingestion.
 
-**Not yet active:** This deployment does not connect to Supabase until you create a dedicated Metanomic project and set the two environment variables. A Published document is stored and approved but is **not yet retrieved by Theia**. PDF ingestion, embeddings, hybrid retrieval, citations, and RAG testing are future milestones.
+**Current deployment:** Supabase and Vercel are connected. Publishing a document initiates embedding and indexing; Theia can use indexed published passages. PDF ingestion and background retries remain future work.
 
 Do not reuse the Book Formatter Supabase project: it contains an unrelated application's data and access configuration.
 
@@ -86,13 +86,39 @@ No Supabase service-role or secret key is required for this milestone. The authe
 - Only real authorized administrators should be provisioned. Supabase Auth policies and password/MFA choices should be reviewed before broad team access.
 - Some organizations disable the Supabase Data API. The project must allow the `public` schema through its Data API, with RLS in force, for this design.
 
-## Next milestone: ingestion and retrieval
+## RAG retrieval (Milestone 2 — deployed)
 
-1. Upload PDFs/other approved files to private Supabase Storage; extract and segment text with controlled limits.
-2. Compute embeddings for approved published chunks and reindex changes/revocations.
-3. Add hybrid retrieval (Postgres full-text + pgvector), server-side query filtering to published documents, and search evaluation.
-4. Introduce a bounded, read-only `search_knowledge` tool to Theia.
-5. Display source citations and refuse unsupported company-specific claims.
-6. Add an admin **Test Knowledge** panel that shows retrieved passages and grounding quality.
+The migration `supabase/migrations/20261115_theia_rag_pipeline.sql` adds:
+- An administrator-only `knowledge_index_document` RPC for atomic replacement of each document's embedded chunks.
+- A read-only `knowledge_search` RPC combining PostgreSQL full-text search and pgvector semantic ranking (reciprocal rank fusion).
+- A generated full-text index and a revision check that **immediately excludes** edited, archived, unpublished or not-yet-reindexed documents.
 
-This foundation deliberately separates **publication** from **activation for public retrieval** to avoid accidental disclosure during ingestion development.
+### Indexing an approved document
+
+1. Sign into [Theia Knowledge Administration](https://metanomic.ai/admin/knowledge).
+2. Select a document and click **Publish**. The browser saves the new revision, then requests indexing with your authenticated Supabase JWT. Publishing is not a reservation of a vector index: wait for the explicit **Published and indexed N passages** confirmation.
+3. If indexing fails, the document remains Published but is not available for retrieval until successfully indexed. Clicking Publish again retries (and creates a new revision).
+4. Use the **Test Knowledge** panel with a specific question. It displays actual published excerpts, document titles, and revision numbers.
+5. Visit [Theia](https://metanomic.ai/demo) and ask the question. Theia can call `search_knowledge`; sources are appended to live answers.
+
+**Important:** The fabricated Bellwether Hollow fixture is intentionally still a **Draft**. It is not publicly searchable until you Publish it. This avoids treating fictional material as ordinary company content without an explicit review step.
+
+### Security controls
+
+- Editing/indexing requires a verified Supabase Auth administrator session; the model has no write-capable knowledge tool.
+- Retrieval is a bounded, anonymous, read-only RPC which returns **only current-revision Published chunks**; stale vectors are never returned.
+- Public retrieval never uses a service-role key. The database function enforces publication status and index revision in SQL.
+- A failed or interrupted indexing attempt cannot expose stale content; the atomic RPC writes the new index and completion state together.
+- The contents of retrieved excerpts are untrusted source material and cannot override Theia's system or tool instructions.
+- `AI_GATEWAY_API_KEY` is used server-side for embeddings (`openai/text-embedding-3-small`, 1,536 dimensions).
+
+### Known constraints / further work
+
+- Text and Markdown only in the editor. PDF extraction and Supabase Storage ingestion are not yet implemented.
+- Indexing uses a request initiated by an administrator publishing the document. There is no scheduled background index-retry worker or resilient job queue yet.
+- Large documents may exceed the 60-second function duration: split oversized content until background jobs are added.
+- Source titles and revisions are displayed; optional externally approved source URLs are retained. Fine-grained paragraph anchors and automatic external-document citation links are future improvements.
+- Hybrid retrieval ranking should be tuned using evaluation questions to reduce false positives.
+- A complete browser acceptance test using a real admin session is still required; server-side SQL tests used rollback-only synthetic vectors, not live model-generated embeddings.
+- A published document with no successful index is **not searchable**, even if it remains marked Published in the editor.
+
