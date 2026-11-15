@@ -6,6 +6,7 @@ import type { AvailabilityResult } from "@/lib/calendly";
 import BookingForm from "./BookingForm";
 
 type Activity = { tool: string; label: string; detail: string };
+type KnowledgeSource = { number: number; documentId: string; title: string; revision: number; category: string; sourceUrl: string; excerpt: string };
 type ChatItem = {
   id: string;
   role: "user" | "assistant";
@@ -13,6 +14,7 @@ type ChatItem = {
   mode?: "live" | "guided";
   notice?: string;
   activities?: Activity[];
+  sources?: KnowledgeSource[];
   booking?: AvailabilityResult;
 };
 
@@ -61,6 +63,8 @@ export default function AgentExperience() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [thinkingIndex, setThinkingIndex] = useState(0);
+  const [isKnowledgeAdmin, setIsKnowledgeAdmin] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [lastMode, setLastMode] = useState<"live" | "guided" | null>(null);
   const [error, setError] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<{ messageId: string; startTime: string } | null>(null);
@@ -71,6 +75,16 @@ export default function AgentExperience() {
   const remaining = 7 - count;
   const canSend = !busy && !atLimit && Boolean(input.trim());
   const statusLabel = busy ? "Preparing a reply" : lastMode === "guided" ? "Guided mode" : lastMode === "live" ? "Live model" : "Ready";
+
+  // The optional debug switch exists only for users with a verified admin session.
+  // Public visitors cannot enable it by adding a query string or editing the UI.
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/knowledge/session", { cache: "no-store", signal: controller.signal })
+      .then(response => { if (response.ok) setIsKnowledgeAdmin(true); })
+      .catch(() => { /* A public visitor normally has no knowledge-admin session. */ });
+    return () => controller.abort();
+  }, []);
 
   // Rotate only while the request is pending. Never delay an actual response.
   useEffect(() => {
@@ -121,7 +135,7 @@ export default function AgentExperience() {
       const response = await fetch("/api/agent-demo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ messages, ...(isKnowledgeAdmin && showDiagnostics ? { debug: true } : {}) }),
         signal: controller.signal,
       });
       const data: {
@@ -130,6 +144,7 @@ export default function AgentExperience() {
         mode?: "live" | "guided";
         notice?: string;
         activities?: Activity[];
+        sources?: KnowledgeSource[];
         booking?: AvailabilityResult;
       } = await response.json();
       if (!response.ok || !data.answer) throw new Error(data.error || "The request could not be completed.");
@@ -141,6 +156,7 @@ export default function AgentExperience() {
         mode: data.mode,
         notice: data.notice,
         activities: data.activities,
+        sources: data.sources,
         booking: data.booking,
       }]);
     } catch (cause) {
@@ -189,6 +205,16 @@ return (
             </div>
           </div>
           <div className="flex items-center gap-3 sm:gap-5">
+            {isKnowledgeAdmin && (
+              <label className="inline-flex min-h-11 items-center gap-2 text-xs text-[#cfdfd4]">
+                <input type="checkbox" checked={showDiagnostics}
+                  onChange={event => setShowDiagnostics(event.target.checked)}
+                  className="h-4 w-4 accent-[#c9ec8a]"
+                  aria-label="Show administrator diagnostics" />
+                <span className="hidden sm:inline">Diagnostics</span>
+                <span className="sm:hidden">Debug</span>
+              </label>
+            )}
             <span role="status" aria-label={statusLabel} className="inline-flex min-h-11 items-center gap-2 text-xs text-[#d1e1d6]">
               <span aria-hidden="true" className={lastMode === "guided" ? "h-2 w-2 shrink-0 rounded-full bg-amber-300" : "h-2 w-2 shrink-0 rounded-full bg-[#c9ec8a]"} />
               <span className="hidden sm:inline">{statusLabel}</span>
@@ -330,16 +356,43 @@ return (
                         )}
                       </div>
                     )}
-                    {item.activities && item.activities.length > 0 && (
-                      <div className="mt-5 rounded-lg border border-[#385044] bg-[#112620] p-3">
-                        <p className="text-xs font-bold uppercase tracking-[.1em] text-[#c9ec8a]">Tool activity</p>
+                    {item.role === "assistant" && item.sources && item.sources.length > 0 && (
+                      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#bed0c0]"
+                        aria-label="Knowledge sources">
+                        <span className="font-semibold text-[#d2e7c6]">Sources:</span>
+                        {item.sources.filter((source, index, all) =>
+                          all.findIndex(candidate => candidate.documentId === source.documentId) === index
+                        ).map(source => (
+                          source.sourceUrl.startsWith("https://")
+                            ? <a key={source.documentId} href={source.sourceUrl} target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline decoration-[#799583] underline-offset-2 hover:text-[#e1f5d6]">
+                                [{source.number}] {source.title}
+                              </a>
+                            : <span key={source.documentId} title={"Revision " + source.revision}>
+                                [{source.number}] {source.title}
+                              </span>
+                        ))}
+                      </div>
+                    )}
+                    {isKnowledgeAdmin && showDiagnostics && item.activities && item.activities.length > 0 && (
+                      <details className="mt-4 rounded-lg border border-[#385044] bg-[#112620] p-3">
+                        <summary className="cursor-pointer text-xs font-semibold text-[#c9ec8a]">
+                          Administrator diagnostics ({item.activities.length} tool calls)
+                        </summary>
                         {item.activities.map((activity, i) => (
                           <p key={i} className="mt-2 text-xs leading-5 text-[#d1e1d7]">
                             <span className="font-semibold">{activity.label}</span>
                             <span className="mt-0.5 block text-[#bdd1c4]">{activity.detail}</span>
                           </p>
                         ))}
-                      </div>
+                        {item.sources?.map((source, i) => (
+                          <p key={"source-" + i} className="mt-2 text-xs leading-5 text-[#bdd1c4]">
+                            <span className="font-semibold">[{source.number}] {source.title}, revision {source.revision}</span>
+                            <span className="mt-1 block whitespace-pre-wrap">{source.excerpt}</span>
+                          </p>
+                        ))}
+                      </details>
                     )}
                     {item.notice && <p className="mt-4 border-l-2 border-amber-300/60 pl-3 text-xs leading-6 text-[#eadbac]">{item.notice}</p>}
                   </div>
