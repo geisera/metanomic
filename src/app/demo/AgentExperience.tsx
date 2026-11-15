@@ -2,28 +2,11 @@
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
-import type { AvailabilityResult } from "@/lib/calendly";
-import { boundConversation } from "@/lib/theia-conversation";
 import TheiaAvatar from "@/components/TheiaAvatar";
 import { consumeTheiaPrefill } from "@/lib/theia-entry";
 import { suggestions } from "@/lib/theia-suggestions";
+import { useTheiaConversation } from "@/components/TheiaConversation";
 import BookingForm from "./BookingForm";
-
-type Activity = { tool: string; label: string; detail: string };
-type KnowledgeSource = { number: number; documentId: string; title: string; revision: number; category: string; sourceUrl: string; excerpt: string };
-type ChatItem = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  mode?: "live" | "guided";
-  notice?: string;
-  appointmentInvitation?: string;
-  activities?: Activity[];
-  sources?: KnowledgeSource[];
-  booking?: AvailabilityResult;
-};
-
-const intro = "Tell me what you're working on and I'll map out how AI can help. Or ask how I'm built—model, tools, architecture, safeguards.";
 
 // Lighthearted waiting copy, not a claim about specific model tools or hidden reasoning.
 const thinkingMessages = [
@@ -57,33 +40,17 @@ function formattedText(content: string) {
   });
 }
 
-export default function AgentExperience() {
-  const [items, setItems] = useState<ChatItem[]>([{ id: "intro", role: "assistant", content: intro }]);
+export default function AgentExperience({ embedded = false, instance = "demo" }: { embedded?: boolean; instance?: string }) {
+  const { items, ready, busy, error, lastMode, count, atLimit, isKnowledgeAdmin, showDiagnostics, setShowDiagnostics, submit: send, reset: resetConversation } = useTheiaConversation();
   const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
   const [thinkingIndex, setThinkingIndex] = useState(0);
-  const [isKnowledgeAdmin, setIsKnowledgeAdmin] = useState(false);
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const [lastMode, setLastMode] = useState<"live" | "guided" | null>(null);
-  const [error, setError] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<{ messageId: string; startTime: string } | null>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLTextAreaElement>(null);
-  const count = items.filter(item => item.role === "user").length;
-  const atLimit = count >= 7;
+  const Heading = embedded ? "h3" : "h1";
   const remaining = 7 - count;
   const canSend = !busy && !atLimit && Boolean(input.trim());
   const statusLabel = busy ? "Preparing a reply" : lastMode === "guided" ? "Guided mode" : lastMode === "live" ? "Live model" : "Ready";
-
-  // The optional debug switch exists only for users with a verified admin session.
-  // Public visitors cannot enable it by adding a query string or editing the UI.
-  useEffect(() => {
-    const controller = new AbortController();
-    void fetch("/api/knowledge/session", { cache: "no-store", signal: controller.signal })
-      .then(response => { if (response.ok) setIsKnowledgeAdmin(true); })
-      .catch(() => { /* A public visitor normally has no knowledge-admin session. */ });
-    return () => controller.abort();
-  }, []);
 
   // Rotate only while the request is pending. Never delay an actual response.
   useEffect(() => {
@@ -113,73 +80,22 @@ export default function AgentExperience() {
   }, [input]);
 
   async function submit(text: string) {
-    const prompt = text.trim();
-    if (!prompt || busy || atLimit || prompt.length > 900) return;
-    const userItem: ChatItem = { id: "u-" + Date.now(), role: "user", content: prompt };
-    const next = [...items, userItem];
-    setItems(next);
-    setInput("");
-    setError("");
-    setThinkingIndex(0);
-    setBusy(true);
-    setLastMode(null);
-
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 58000);
-    try {
-      const messages = boundConversation(next.filter(item => item.id !== "intro").slice(-10).map(item => ({
-        role: item.role,
-        content: item.content,
-      })));
-      const response = await fetch("/api/agent-demo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages, ...(isKnowledgeAdmin && showDiagnostics ? { debug: true } : {}) }),
-        signal: controller.signal,
-      });
-      const data: {
-        answer?: string;
-        error?: string;
-        mode?: "live" | "guided";
-        notice?: string;
-  appointmentInvitation?: string;
-        activities?: Activity[];
-        sources?: KnowledgeSource[];
-        booking?: AvailabilityResult;
-      } = await response.json();
-      if (!response.ok || !data.answer) throw new Error(data.error || "The request could not be completed.");
-      setLastMode(data.mode || null);
-      setItems(previous => [...previous, {
-        id: "a-" + Date.now(),
-        role: "assistant",
-        content: data.answer || "",
-        mode: data.mode,
-        notice: data.notice,
-        appointmentInvitation: data.appointmentInvitation,
-        activities: data.activities,
-        sources: data.sources,
-        booking: data.booking,
-      }]);
-    } catch (cause) {
-      setError(cause instanceof Error && cause.name !== "AbortError" ? cause.message : "The agent request timed out. Please try again.");
-    } finally {
-      window.clearTimeout(timeout);
-      setBusy(false);
-      // Focus after the disabled composer is re-enabled, without moving the page.
-      window.requestAnimationFrame(() => draftRef.current?.focus({ preventScroll: true }));
-    }
+    if (!ready || busy || atLimit || !text.trim()) return;
+    setInput(""); setThinkingIndex(0);
+    await send(text);
   }
 
   const sendPrefill = useEffectEvent((text: string) => { void submit(text); });
   useEffect(() => {
     // Defer until mounted; Strict Mode cleanup cancels its probe timer.
+    if (!ready || embedded) return;
     const timer = window.setTimeout(() => {
       let prompt: string | null = null;
       try { prompt = consumeTheiaPrefill(window.sessionStorage); } catch { /* Storage disabled. */ }
       if (prompt) sendPrefill(prompt);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [ready, embedded]);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -195,22 +111,20 @@ export default function AgentExperience() {
 
   function reset() {
     if (busy) return;
-    setItems([{ id: "intro", role: "assistant", content: intro }]);
+    resetConversation();
     setInput("");
-    setError("");
-    setLastMode(null);
     setSelectedBooking(null);
   }
 
 return (
-    <section id="try-agent" aria-label="Talk with Theia" className="flex min-h-0 w-full flex-1 flex-col sm:mx-auto sm:max-w-[1148px] sm:px-6 sm:pb-4">
+    <section id={`${instance}-try-agent`} aria-label="Talk with Theia" className={`flex min-h-0 w-full flex-1 flex-col ${embedded ? "" : "sm:mx-auto sm:max-w-[1148px] sm:px-6 sm:pb-4"}`}>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-y border-[#385250] bg-[#0c1a23] shadow-[0_24px_90px_rgba(0,0,0,.20)] sm:rounded-xl sm:border">
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[#30464f] px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <TheiaAvatar />
             <div className="min-w-0">
               <p className="text-lg font-semibold leading-tight tracking-[-.02em] text-[#edf5e9]">Theia</p>
-              {count > 0 && <h1 className="sr-only">Theia — AI workflow advisor</h1>}
+              {count > 0 && <Heading className="sr-only">Theia — AI workflow advisor</Heading>}
               <p className="mt-0.5 hidden text-xs text-[#c2d1ca] sm:block">AI workflow advisor</p>
             </div>
           </div>
@@ -255,10 +169,10 @@ return (
               <div aria-hidden="true" className="mb-3 flex h-16 w-16 items-center justify-center rounded-[19px] border border-[#67836b]/55 bg-[#182f32] text-[34px] font-light text-[#d8efc4]">
                 T
               </div>
-              <h1 className="text-[clamp(1.75rem,4vw,2.625rem)] font-semibold tracking-[-.02em] text-[#edf5e9]">I'm Theia.</h1>
+              <Heading className="text-[clamp(1.75rem,4vw,2.625rem)] font-semibold tracking-[-.02em] text-[#edf5e9]">I&apos;m Theia.</Heading>
               <p className="mt-2.5 max-w-[52ch] text-base leading-6 text-[#d0e0d8]">
-                Tell me what you're working on and I'll map out how AI can help.
-                Or ask how I'm built—model, tools, architecture, safeguards.
+                Tell me what you&apos;re working on and I&apos;ll map out how AI can help.
+                Or ask how I&apos;m built—model, tools, architecture, safeguards.
               </p>
               <div className="mt-5 grid w-full max-w-[610px] grid-cols-1 gap-2.5 min-[480px]:grid-cols-2" aria-label="Suggested questions">
                 {suggestions.map(suggestion => (
@@ -376,7 +290,7 @@ return (
                             rel="noopener noreferrer"
                             className="inline-flex min-h-11 items-center gap-2 rounded-md font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e5f8c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
                           >
-                            Open Metanomic's Calendly page <span aria-hidden="true">↗</span>
+                            Open Metanomic&apos;s Calendly page <span aria-hidden="true">↗</span>
                           </a>
                         )}
                       </div>
@@ -440,16 +354,16 @@ return (
 
         <form onSubmit={onSubmit} className="shrink-0 border-t border-[#30464f] bg-[#0d1e27] px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:p-4">
           <div className="mx-auto w-full max-w-[780px]">
-            <label htmlFor="agent-question" className="sr-only">Ask Theia a question</label>
-            <span id="theia-composer-hint" className="sr-only">Press Enter to send. Press Shift plus Enter to insert a new line.</span>
+            <label htmlFor={`${instance}-question`} className="sr-only">Ask Theia a question</label>
+            <span id={`${instance}-composer-hint`} className="sr-only">Press Enter to send. Press Shift plus Enter to insert a new line.</span>
             <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#50666b] bg-[#0b1720] p-0.5 transition-[border-color,box-shadow] focus-within:border-[#c9ec8a] focus-within:shadow-[0_0_0_2px_rgba(201,236,138,.15)] motion-reduce:transition-none">
               <textarea
-                id="agent-question"
+                id={`${instance}-question`}
                 ref={draftRef}
                 value={input}
                 onChange={event => setInput(event.target.value.slice(0, 900))}
                 onKeyDown={onKeyDown}
-                aria-describedby="theia-composer-hint"
+                aria-describedby={`${instance}-composer-hint`}
                 placeholder="Describe what you're working on…"
                 rows={1}
                 maxLength={900}
@@ -471,7 +385,7 @@ return (
               </button>
             </div>
             <div className="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-1 text-xs leading-5 text-[#c4d3ce]">
-              <p>Don't share sensitive information. Messages are processed by a third-party AI model.</p>
+              <p>Don&apos;t share sensitive information. Messages are processed by a third-party AI model.</p>
               <p aria-live="polite" className={remaining <= 2 ? "shrink-0 font-semibold text-[#ffd08a]" : "shrink-0 text-[#c4d3ce]"}>
                 {remaining} {remaining === 1 ? "message" : "messages"} left in this demo
               </p>
@@ -484,7 +398,7 @@ return (
             </div>
             {atLimit && (
               <p className="mt-2 text-xs leading-5 text-[#e3eecf]">
-                You've reached the demo limit. Start a new chat to continue, or <Link href="/contact" className="font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e2f6bd]">contact Metanomic</Link>.
+                You&apos;ve reached the demo limit. Start a new chat to continue, or <Link href="/contact" className="font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e2f6bd]">contact Metanomic</Link>.
               </p>
             )}
           </div>

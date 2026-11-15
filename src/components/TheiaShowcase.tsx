@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
-import { openTheia } from "@/lib/theia-entry";
+import dynamic from "next/dynamic";
+import { useTheiaDock } from "./TheiaDock";
+import { useTheiaConversation } from "./TheiaConversation";
+const InlineChat = dynamic(() => import("@/app/demo/AgentExperience"), { ssr: false });
 import { suggestions } from "@/lib/theia-suggestions";
 import TheiaLink from "./TheiaLink";
 import TheiaAvatar from "./TheiaAvatar";
@@ -32,8 +35,10 @@ function SampleExchange() {
   </div>;
 }
 export default function TheiaShowcase() {
+  const dock=useTheiaDock();
+  const chat=useTheiaConversation();
   const [prompt, setPrompt] = useState("");
-  function submit(event: FormEvent) { event.preventDefault(); openTheia({ prompt, source: "section-input" }); }
+  function submit(event: FormEvent) { event.preventDefault(); dock?.open("section-input", prompt);setPrompt(""); }
   return <section id="meet-theia" className="rule py-16 md:py-20 scroll-mt-36">
     <div className="container theia-showcase">
       <div className="min-w-0">
@@ -50,7 +55,7 @@ export default function TheiaShowcase() {
           <p className="mt-4 text-xs leading-6 text-[#b9cbc4]">Free live demo. Don&apos;t share sensitive information.</p>
         </form>
       </div>
-      <SampleExchange />
+      {chat.count > 0 && !dock?.drawerOpen ? <div className="theia-inline-chat"><InlineChat embedded instance="inline" /></div> : <SampleExchange />}
     </div>
   </section>;
 }

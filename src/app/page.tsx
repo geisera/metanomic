@@ -1,9 +1,9 @@
 import Link from "next/link";
 import styles from "./services.module.css";
+import { contextPrompts } from "@/lib/theia-dock";
 import TheiaLink from "@/components/TheiaLink";
 import TheiaNav from "@/components/TheiaNav";
 import TheiaShowcase from "@/components/TheiaShowcase";
-import TheiaAnnouncement from "@/components/TheiaAnnouncement";
 
 const services = [
   { number: "01", audience: "FOR ANALYSTS & EXPERTS", title: "Knowledge & research agents", outcome: "Answers your team can trace.", description: "Searches approved sources, compares evidence, and cites every finding.", icon: "M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 6 6M7 8h6M7 11h4" },
@@ -43,7 +43,6 @@ export default function Home() {
         <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>→</span></Link>
       </header>
       </div>
-      <TheiaAnnouncement />
     </div>
 
     <section id="home-hero" className="relative overflow-hidden">
@@ -54,7 +53,7 @@ export default function Home() {
           <p className="muted mt-8 max-w-[550px] text-[17px] leading-[1.85]">We build AI tools that give people greater reach and more room to do their best work. From custom agents to connected workflows, our mission is to turn human expertise, ambition, and ideas into meaningful results at a greater scale.</p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/contact" className="button button-primary">Start a conversation <span aria-hidden>→</span></Link>
-            <TheiaLink source="hero" className="button button-outline">Ask Theia, our AI advisor →</TheiaLink>
+            <TheiaLink source="hero" className="button button-outline">Describe a workflow, get a pilot plan →</TheiaLink>
           </div>
           <a href="#services" className="mt-5 inline-flex rounded py-2 text-sm text-[#d5e5dc]">Explore our services ↓</a>
         </div>
@@ -69,7 +68,7 @@ export default function Home() {
           <p className="muted mt-6 max-w-[65ch] text-lg leading-relaxed md:text-xl">We design, integrate, and run custom agents that use your knowledge and your tools to finish defined tasks, inside the permissions you set.</p>
         </div>
         <div className={styles.grid}>
-          {services.map((service) => <TheiaLink source="card" prompt={`I'm interested in ${service.title}.`} className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: Ask Theia about this`}>
+          {services.map((service) => <TheiaLink source="card" prompt={contextPrompts[service.title].replace(/…$/, ".")} id={`service-${service.number}`} data-theia-context={service.title} className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: Ask Theia about this`}>
             <svg className={styles.icon} width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={service.icon} /></svg>
             <svg className={styles.arrow} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             <p className="eyebrow mt-5">{service.number} / {service.audience}</p>

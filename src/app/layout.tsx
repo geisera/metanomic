@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import { TheiaConversationProvider } from "@/components/TheiaConversation";
+import TheiaDock from "@/components/TheiaDock";
 import IntelligenceVisual from "@/components/IntelligenceVisual";
 
 const geist = Geist({ subsets: ["latin"], display: "swap", variable: "--font-geist" });
@@ -20,5 +22,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className={geist.variable}><IntelligenceVisual /><div className="relative z-10">{children}</div></body></html>;
+  return <html lang="en"><body className={geist.variable}><IntelligenceVisual /><TheiaConversationProvider><TheiaDock><div className="relative z-10">{children}</div></TheiaDock></TheiaConversationProvider></body></html>;
 }

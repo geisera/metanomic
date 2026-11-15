@@ -4,7 +4,7 @@ import { consumeTheiaPrefill, openTheia, PREFILL_KEY } from '../src/lib/theia-en
 function storage() { const map = new Map();return {getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)}; }
 test('all sources navigate without putting prompt text in the URL; consuming and refreshing cannot resend',()=>{
  const store=storage();let url='';globalThis.window={sessionStorage:store,location:{assign:value=>url=value}};
- for(const source of ['nav','nav-popover','bar','bar-example','hero','card','section-input','section-chip','launcher','final-cta','footer']) {
+ for(const source of ['nav','nav-popover','hero','card','section-input','section-chip','final-cta','footer']) {
   openTheia({source,prompt:'Our intake forms take days to process.'});
   assert.equal(url,'/demo');assert.equal(consumeTheiaPrefill(store),'Our intake forms take days to process.');
   assert.equal(store.getItem(PREFILL_KEY),null);assert.equal(consumeTheiaPrefill(store),null);

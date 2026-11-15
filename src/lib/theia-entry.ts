@@ -1,4 +1,4 @@
-export type TheiaSource = "nav" | "nav-popover" | "bar" | "bar-example" | "hero" | "card" | "section-input" | "section-chip" | "launcher" | "final-cta" | "footer";
+export type TheiaSource = "nav" | "nav-popover" | "hero" | "card" | "section-input" | "section-chip" | "final-cta" | "footer";
 export const PREFILL_KEY = "theia:prefill";
 export function openTheia({ prompt, source }: { prompt?: string; source: TheiaSource }) {
   // Source is represented by data-theia-source. No analytics provider is installed.
