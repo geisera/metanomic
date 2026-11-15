@@ -119,6 +119,6 @@ The migration `supabase/migrations/20261115_theia_rag_pipeline.sql` adds:
 - Large documents may exceed the 60-second function duration: split oversized content until background jobs are added.
 - Source titles and revisions are displayed; optional externally approved source URLs are retained. Fine-grained paragraph anchors and automatic external-document citation links are future improvements.
 - Hybrid retrieval ranking should be tuned using evaluation questions to reduce false positives.
-- A complete browser acceptance test using a real admin session is still required; server-side SQL tests used rollback-only synthetic vectors, not live model-generated embeddings.
+- A complete browser acceptance test using a real admin session is still required; server-side SQL tests used synthetic vectors and verified that unpublished content is excluded. These tests did not exercise live model-generated embeddings. SQL test writes caused revision updates to the test document; the fixture was restored to Draft.
 - A published document with no successful index is **not searchable**, even if it remains marked Published in the editor.
 
