@@ -15,9 +15,9 @@ Routing categories:
 - **Knowledge:** A published, currently indexed knowledge passage with distinctive words that actually overlap with the visitor's question. Semantic proximity by itself is insufficient.
 - **Small talk:** Brief greetings and pleasantries.
 - **Out of scope:** Clearly unrelated sports scores, general trivia, recipes, unrelated creative-writing requests, celebrity/film trivia, and political trivia. The server returns a brief, neutral subject redirect without a second model call.
-- **Review:** Ambiguous and conversational follow-up queries are passed to Theia with explicit scope instructions rather than being automatically rejected on weak keywords.
+- **Review:** Ambiguous requests receive a separate, narrowly instructed classification call. Only requests classified as in scope reach Theia's general answer model. Classification failures fail closed with a gentle, optional Metanomic contact invitation.
 
-**Important:** The classifier is intentionally conservative about rejecting ambiguous questions; this is *not* a comprehensive intent-classification guarantee. Questions in the Review category depend on the model following the domain policy. A future enhancement may add a lightweight classification pass for ambiguous cases.
+**Important:** The regex classifier is intentionally conservative about rejecting ambiguous questions. A second, low-output-token model pass checks REVIEW intents against the professional domain, using recent conversational context. This adds a model request and latency **only for ambiguous questions**. A failed or inconclusive classification redirects rather than silently permitting an off-topic answer. This is a subject-routing mechanism, not a comprehensive semantic-security guarantee.
 
 AI-related goals take precedence over unrelated subject keywords; for example, "How could a baseball team use AI?" and "Can an AI agent help write novels?" are in scope.
 
@@ -43,7 +43,11 @@ npm run test:scope
 
 The test suite (`tests/theia-scope.test.mjs`) uses Node's built-in test runner and exercises relevant business questions, AI applications to other domains, greetings, unrelated trivia, unrelated creative writing, false-positive knowledge overlap, and Bellwether Hollow.
 
-Production acceptance cases:
+Production acceptance cases (expanded):
+- "How do I make a mocha latte?" → server-generated, gentle hospitality/AI redirection; no recipe.
+- "How do I fix a leaking faucet?" → ambiguity-classifier redirect, not plumbing instructions.
+- "How could a coffee shop use AI for inventory planning?" → substantive AI workflow answer.
+
 1. "Who won the 1986 World Series?" → polite server-side redirect.
 2. "Write a fantasy novel." → redirect.
 3. "How could a baseball team use AI for scouting?" → substantive in-scope answer.
