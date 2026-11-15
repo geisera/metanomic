@@ -92,6 +92,21 @@ export default function Home() {
       </div>
     </section>
 
+    <section id="approach" className="rule py-24 md:py-28">
+      <div className="container">
+        <p className="eyebrow">How we do it</p>
+        <h2 className="mt-4 max-w-[640px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">People lead. Intelligence amplifies.</h2>
+        <p className="muted mt-6 max-w-[650px] leading-8">Every engagement starts with the people whose work matters. We pair human judgment with thoughtfully designed AI to expand capability while keeping people in control.</p>
+        <div className="mt-14 grid gap-8 md:grid-cols-4">
+          {steps.map((step) => <div className="border-t border-[#426050] pt-5" key={step.index}>
+            <span className="text-xs font-bold text-[#c9ec8a]">{step.index}</span>
+            <h3 className="mt-7 text-xl font-semibold">{step.title}</h3>
+            <p className="muted mt-3 text-sm leading-7">{step.description}</p>
+          </div>)}
+        </div>
+      </div>
+    </section>
+
     <TheiaShowcase />
 
     <section aria-label="Explore the technology">
@@ -103,21 +118,6 @@ export default function Home() {
             <p className="muted mt-2 max-w-[650px] text-sm leading-7">Explore the models, agents, integrations, and infrastructure behind AI tools built for real work.</p>
           </div>
           <Link href="/enterprise-ai-stack" className="button button-outline">Explore the AI stack <span aria-hidden="true">→</span></Link>
-        </div>
-      </div>
-    </section>
-
-    <section id="approach" className="rule py-24 md:py-28">
-      <div className="container">
-        <p className="eyebrow">How we work</p>
-        <h2 className="mt-4 max-w-[640px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">People lead. Intelligence amplifies.</h2>
-        <p className="muted mt-6 max-w-[650px] leading-8">Every engagement starts with the people whose work matters. We pair human judgment with thoughtfully designed AI to expand capability while keeping people in control.</p>
-        <div className="mt-14 grid gap-8 md:grid-cols-4">
-          {steps.map((step) => <div className="border-t border-[#426050] pt-5" key={step.index}>
-            <span className="text-xs font-bold text-[#c9ec8a]">{step.index}</span>
-            <h3 className="mt-7 text-xl font-semibold">{step.title}</h3>
-            <p className="muted mt-3 text-sm leading-7">{step.description}</p>
-          </div>)}
         </div>
       </div>
     </section>
