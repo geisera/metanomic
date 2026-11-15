@@ -197,8 +197,25 @@ export default function KnowledgeManager() {
       setDirty(false);
       setShowHistory(false);
       setRevisions([]);
-      setMessage(status === "published" ? "Published. Theia retrieval remains disabled until the RAG integration phase."
-        : status === "archived" ? "Document archived." : "Draft saved.");
+      if (status === "published") {
+        setMessage("Published. Indexing approved knowledge for Theia…");
+        try {
+          const indexedReply = await fetch("/api/knowledge/index", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ documentId: saved.id, revision: saved.revision }),
+          });
+          const indexData = await decode(indexedReply);
+          if (!indexedReply.ok) throw new Error(errorOf(indexData, "Indexing could not be completed."));
+          setMessage("Published and indexed " + String(indexData.indexed) + " passages for Theia's knowledge retrieval.");
+        } catch (cause) {
+          setMessage("Document published, but indexing has not completed.");
+          setError(cause instanceof Error ? cause.message : "Indexing failed. Select Publish again to retry.");
+        }
+      } else {
+        setMessage(status === "archived" ? "Document archived. Retrieval of prior indexed revisions is now blocked." :
+          "Draft saved. Only current published revisions are searchable.");
+      }
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not save document."); }
     finally { setWorking(false); }
   }
@@ -257,7 +274,7 @@ export default function KnowledgeManager() {
           <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">Theia Knowledge Base</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#c8dcd3]">
             Manage approved company knowledge, technical references, and frequently asked questions.
-            Publishing stores content securely; live RAG retrieval will be enabled in a later milestone.
+            Published content is indexed for live retrieval. Drafts and archived documents are excluded.
           </p>
         </div>
         {view === "ready" && (
