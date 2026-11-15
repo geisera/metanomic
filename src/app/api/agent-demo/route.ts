@@ -3,7 +3,7 @@ import { checkCalendlyAvailability, type AvailabilityRequest, type AvailabilityR
 import { describeStack, estimateCapacity, guidedAnswer, mapOpportunity, resolveFocus, type Focus } from "@/lib/demo-agent";
 import { searchKnowledge, type SearchResult } from "@/lib/theia-rag";
 import { getKnowledgeAdmin } from "@/lib/knowledge-server";
-import { classifyScope, hasPertinentPublishedEvidence, OUT_OF_SCOPE_REPLY, SCOPE_INSTRUCTIONS } from "@/lib/theia-scope";
+import { classifyScope, hasPertinentPublishedEvidence, outOfScopeReply, SCOPE_INSTRUCTIONS } from "@/lib/theia-scope";
 
 export const runtime = "nodejs";
 export const maxDuration = 45;
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
   const scope = classifyScope(latest, pertinent);
   if (!calendarIntent && scope === "out_of_scope") {
     return json({
-      answer: OUT_OF_SCOPE_REPLY, mode: "guided",
+      answer: outOfScopeReply(latest), mode: "guided", contactInvitation: true,
       ...(showDiagnostics ? { scope, activities: [{ tool: "scope_router", label: "Applied Balanced subject policy", detail: "High-confidence unrelated request" }] } : {}),
     });
   }
