@@ -1,0 +1,18 @@
+/* Scoped to the services section; shared site tokens and controls stay unchanged. */
+.section { scroll-margin-top: 160px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.card { position: relative; display: block; min-width: 0; cursor: pointer; background: #152431; transition: border-color .2s, background-color .2s; }
+.card:hover, .card:focus-visible { border-color: var(--lime); background: #1b2a35; }
+.card:focus-visible, .ctas a:focus-visible { outline: 2px solid var(--lime); outline-offset: 4px; }
+.icon, .arrow { color: var(--lime); }
+.arrow { position: absolute; top: 30px; right: 30px; transition: transform .2s; }
+.card:hover .arrow, .card:focus-visible .arrow { transform: translateX(2px); }
+.outcome { margin-top: 20px; font-size: 16px; font-weight: 600; color: var(--foreground); line-height: 1.6; }
+.body { margin-top: 8px; font-size: 16px; line-height: 1.6; color: #d5e5dc; }
+.strip { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 40px; padding-block: 28px; border-block: 1px solid #273843; list-style: none; }
+.strip li { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 32px; }
+.ctas a { max-width: 100%; text-align: center; padding-block: 12px; }
+@media (min-width: 640px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { .card, .arrow, .ctas a { transition: none; } .card:hover .arrow, .card:focus-visible .arrow, .ctas a:hover { transform: none; } }

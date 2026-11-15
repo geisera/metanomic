@@ -1,13 +1,14 @@
 import Link from "next/link";
+import styles from "./services.module.css";
 import TheiaAnnouncement from "@/components/TheiaAnnouncement";
 
 const services = [
-  { number: "01", title: "Knowledge & research agents", description: "Find information across approved sources, compare evidence, and synthesize findings with citations. Give your team answers they can trace and use." },
-  { number: "02", title: "Operations agents", description: "Coordinate recurring work across your systems, gather missing information, and prepare actions for approval. Keep routine tasks moving and escalate exceptions to the right people." },
-  { number: "03", title: "Customer service agents", description: "Answer questions, investigate account issues, and carry out permitted service actions. Hand complex cases to your team with the context they need." },
-  { number: "04", title: "Sales & intake agents", description: "Qualify inquiries, collect requirements, update CRM records, and arrange next steps. Turn conversations into useful information and clear opportunities for your team." },
-  { number: "05", title: "Document-processing agents", description: "Read documents, extract and validate information, and flag missing or inconsistent details. Prepare follow-up work while keeping people in control of important decisions." },
-  { number: "06", title: "Salesforce agents", description: "Build agents around your CRM processes and connected systems. Investigate cases, recommend resolutions, and update approved fields within the permissions you define." }
+  { number: "01", audience: "FOR ANALYSTS & EXPERTS", title: "Knowledge & research agents", outcome: "Answers your team can trace.", description: "Searches approved sources, compares evidence, and cites every finding.", icon: "M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 6 6M7 8h6M7 11h4" },
+  { number: "02", audience: "FOR OPERATIONS", title: "Operations agents", outcome: "Routine work that doesn't stall.", description: "Coordinates recurring tasks across systems, chases missing information, and escalates exceptions.", icon: "M4 4h6v6H4zM14 14h6v6h-6zM10 7h7v7M7 10v7h7" },
+  { number: "03", audience: "FOR SUPPORT", title: "Customer service agents", outcome: "Faster resolutions, cleaner handoffs.", description: "Answers questions, investigates account issues, and passes complex cases to your team with full context.", icon: "M4 13v-2a8 8 0 0 1 16 0v2M4 12H2v6h4v-6H4Zm16 0h2v6h-4v-6h2Zm0 6v1a2 2 0 0 1-2 2h-6" },
+  { number: "04", audience: "FOR REVENUE TEAMS", title: "Sales & intake agents", outcome: "Every inquiry qualified and logged.", description: "Collects requirements, updates your CRM, and books the next step.", icon: "M4 4h16l-6 8v7l-4 2v-9L4 4ZM16 16l2 2 4-4" },
+  { number: "05", audience: "FOR BACK OFFICE", title: "Document-processing agents", outcome: "Documents in, validated data out.", description: "Extracts and checks information, flags gaps and inconsistencies, and queues follow-up.", icon: "M14 2H4v20h16V8l-6-6Zm0 0v6h6M8 15l3 3 5-6" },
+  { number: "06", audience: "FOR SALESFORCE ORGS", title: "Salesforce agents", outcome: "Agents native to your org.", description: "Investigates cases, recommends resolutions, and updates only the fields you approve.", icon: "M6 18a4 4 0 0 1-1-8 6 6 0 0 1 11-3 5 5 0 1 1 2 11H6ZM9 12l2 2 4-4" }
 ];
 const steps = [
   { index: "01", title: "Understand", description: "We begin with the people, their ambitions, and the work worth amplifying." },
@@ -56,20 +57,38 @@ export default function Home() {
       </div>
     </section>
 
-    <section id="services" className="rule py-24 md:py-30">
+    <section id="services" className={`rule py-24 md:py-30 ${styles.section}`}>
       <div className="container">
-        <div className="mb-12 flex flex-wrap items-end justify-between gap-8">
-          <div><p className="eyebrow">What we do</p><h2 className="mt-4 max-w-[620px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">Custom AI agents built around your business.</h2></div>
-          <p className="muted max-w-[320px] text-sm leading-7">We design, integrate, and operate agents that work with your knowledge, use your tools, and carry out defined tasks—with people in control.</p>
+        <div className="mb-12">
+          <p className="eyebrow">What we do</p>
+          <h2 className="mt-4 max-w-[900px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">AI agents that do the work. Your people make the calls.</h2>
+          <p className="muted mt-6 max-w-[65ch] text-lg leading-relaxed md:text-xl">We design, integrate, and run custom agents that use your knowledge and your tools to finish defined tasks, inside the permissions you set.</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          {services.map((service) => <article className="card group min-h-[255px]" key={service.number}>
-            <span className="eyebrow">{service.number} / Custom agents</span>
-            <h3 className="mt-7 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>
-            <p className="muted mt-4 max-w-[480px] text-sm leading-7">{service.description}</p>
-          </article>)}
+        <div className={styles.grid}>
+          {services.map((service) => <Link href="/demo" className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: talk with Theia`}>
+            <svg className={styles.icon} width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={service.icon} /></svg>
+            <svg className={styles.arrow} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" /></svg>
+            <p className="eyebrow mt-5">{service.number} / {service.audience}</p>
+            <h3 className="mt-5 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>
+            <p className={styles.outcome}>{service.outcome}</p>
+            <p className={styles.body}>{service.description}</p>
+          </Link>)}
         </div>
-        <p className="muted mt-8 max-w-[850px] text-sm leading-7">From a focused pilot to production: agent design, approved knowledge and memory, business integrations, controlled execution, evaluation, and ongoing operations. Every agent is built around clear permissions, human oversight, and measurable outcomes.</p>
+        <p className="mt-8 text-center text-base leading-relaxed">Every agent ships with defined permissions, human approval on consequential actions, and measured results.</p>
+        <ol className={styles.strip}>
+          <li><span className="eyebrow">1.</span><div><p className="font-semibold">Pilot.</p><p className={styles.body}>One focused use case, scoped to a measurable outcome.</p></div></li>
+          <li><span className="eyebrow">2.</span><div><p className="font-semibold">Production.</p><p className={styles.body}>Integrated with your systems, knowledge, and permissions.</p></div></li>
+          <li><span className="eyebrow">3.</span><div><p className="font-semibold">Operations.</p><p className={styles.body}>Evaluated, monitored, and improved continuously.</p></div></li>
+        </ol>
+        <div className={styles.ctas}>
+          <Link href="/contact" className="button button-primary">Start with a pilot</Link>
+          <Link href="/demo" className="button button-outline">Describe your challenge to Theia</Link>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Explore the technology">
+      <div className="container">
         <div className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-lg border border-[#31454b] bg-[#0e1d27]/85 p-6 backdrop-blur-sm md:p-8">
           <div>
             <p className="eyebrow">Explore the technology</p>
