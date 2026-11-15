@@ -122,6 +122,15 @@ describe("Conversation continuity and selective consultation", () => {
       ...history.slice(0, 2), { role: "user", content: "How do I make a mocha latte?" },
     ]), false);
   });
+  it("a later off-topic switch breaks earlier AI context", () => {
+    assert.equal(hasProfessionalFollowUp("What does it cost?", [
+      { role: "user", content: "What are tokens?" },
+      { role: "assistant", content: "AI tokens are text units." },
+      { role: "user", content: "How do I make a mocha latte?" },
+      { role: "assistant", content: "That's outside my specialty." },
+      { role: "user", content: "What does it cost?" },
+    ]), false);
+  });
   it("does not inherit an out-of-scope discussion", () => {
     assert.equal(hasProfessionalFollowUp("What does it cost?", [
       { role: "user", content: "How do I make a mocha latte?" },
