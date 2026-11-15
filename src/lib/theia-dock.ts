@@ -36,10 +36,10 @@ export function theiaEvent(name: string, source: EntrySource, section: string, e
 export type SavedMessage = { id: string; role: "user" | "assistant"; content: string };
 export function restoreConversation(raw: string | null): SavedMessage[] | null {
   try {
+    if (raw && raw.length > 5_000_000) return null;
     const data: unknown = JSON.parse(raw || "null");
-    if (!Array.isArray(data) || !data.length || data.length > 15) return null;
+    if (!Array.isArray(data) || !data.length) return null;
     if (!data.every(m => m && typeof m.id === "string" && ["user", "assistant"].includes(m.role) && typeof m.content === "string" && m.content.length <= 10000)) return null;
-    if (data.filter(m => m.role === "user").length > 7) return null;
     return data.map(({id, role, content}) => ({id, role, content}));
   } catch { return null; }
 }

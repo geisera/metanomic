@@ -32,7 +32,6 @@ function useConversationState() {
   const section = useRef("home-hero");
   const setSection = useCallback((value: string) => { section.current = value; }, []);
   const count = items.filter(item => item.role === "user").length;
-  const atLimit = count >= 7;
   useEffect(() => {
     const timer = setTimeout(() => {
       // Retire the previous promotion preference; it no longer controls any UI.
@@ -53,7 +52,7 @@ function useConversationState() {
   }, [items, ready]);
   async function submit(text: string, source: EntrySource = "typed") {
     const prompt = text.trim();
-    if (!ready || !prompt || sending.current || atLimit || prompt.length > 900) return false;
+    if (!ready || !prompt || sending.current || prompt.length > 900) return false;
     sending.current = true;
     const userItem: ChatItem = { id: "u-" + Date.now(), role: "user", content: prompt };
     const next = [...items, userItem];
@@ -112,7 +111,7 @@ function useConversationState() {
 
 
   function reset() { if (sending.current) return; try { sessionStorage.removeItem(CHAT_KEY); } catch {} setItems([{id:"intro",role:"assistant",content:intro}]); setError("");setLastMode(null); }
-  return { items, ready, busy, error, lastMode, count, atLimit, isKnowledgeAdmin, showDiagnostics, setShowDiagnostics, submit, reset, section, setSection };
+  return { items, ready, busy, error, lastMode, count, isKnowledgeAdmin, showDiagnostics, setShowDiagnostics, submit, reset, section, setSection };
 }
 const Conversation = createContext<ReturnType<typeof useConversationState> | null>(null);
 export function TheiaConversationProvider({children}:{children:ReactNode}) { const value=useConversationState();return <Conversation.Provider value={value}>{children}</Conversation.Provider>; }

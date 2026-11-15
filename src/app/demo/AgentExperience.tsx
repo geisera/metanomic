@@ -41,14 +41,13 @@ function formattedText(content: string) {
 }
 
 export default function AgentExperience({ embedded = false, instance = "demo" }: { embedded?: boolean; instance?: string }) {
-  const { items, ready, busy, error, lastMode, count, atLimit, isKnowledgeAdmin, showDiagnostics, setShowDiagnostics, submit: send, reset: resetConversation } = useTheiaConversation();
+  const { items, ready, busy, error, lastMode, count, isKnowledgeAdmin, showDiagnostics, setShowDiagnostics, submit: send, reset: resetConversation } = useTheiaConversation();
   const [input, setInput] = useState("");
   const [thinkingIndex, setThinkingIndex] = useState(0);
   const conversationRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLTextAreaElement>(null);
   const Heading = embedded ? "h3" : "h1";
-  const remaining = 7 - count;
-  const canSend = !busy && !atLimit && Boolean(input.trim());
+  const canSend = !busy && Boolean(input.trim());
   const statusLabel = busy ? "Preparing a reply" : lastMode === "guided" ? "Guided mode" : lastMode === "live" ? "Live model" : "Ready";
 
   // Rotate only while the request is pending. Never delay an actual response.
@@ -79,7 +78,7 @@ export default function AgentExperience({ embedded = false, instance = "demo" }:
   }, [input]);
 
   async function submit(text: string) {
-    if (!ready || busy || atLimit || !text.trim()) return;
+    if (!ready || busy || !text.trim()) return;
     setInput(""); setThinkingIndex(0);
     await send(text);
   }
@@ -182,7 +181,7 @@ return (
                   <button
                     type="button"
                     key={suggestion.label}
-                    disabled={busy || atLimit}
+                    disabled={busy}
                     onClick={() => void submit(suggestion.prompt)}
                     className="min-h-11 rounded-full border border-[#3c5757] bg-[#152b33] px-4 py-2.5 text-sm text-[#e0ece6] transition-colors hover:border-[#c9ec8a]/40 hover:bg-[#213c42] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] disabled:cursor-not-allowed disabled:opacity-55"
                   >
@@ -209,7 +208,7 @@ return (
                           <button
                             type="button"
                             onClick={() => void submit("I'd like you to book an appointment with Metanomic for me. Please check the available appointment times.")}
-                            disabled={!ready || busy || atLimit}
+                            disabled={!ready || busy}
                             className="disabled:cursor-not-allowed disabled:opacity-50 mt-2 inline-flex min-h-11 items-center rounded-md border border-[#506c53] px-3 py-1.5 text-xs font-semibold text-[#c9ec8a] transition-colors hover:border-[#c9ec8a] hover:bg-[#1d3531] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
                           >
                             Book an appointment <span aria-hidden="true" className="ml-2">→</span>
@@ -290,12 +289,12 @@ return (
                 placeholder="Describe what you're working on…"
                 rows={1}
                 maxLength={900}
-                disabled={busy || atLimit}
+                disabled={busy}
                 className="min-h-[44px] max-h-[164px] min-w-0 flex-1 resize-none overflow-y-hidden bg-transparent px-3 py-2 text-base leading-6 text-[#f0f7ef] outline-none placeholder:text-[#b9cdc7] disabled:cursor-not-allowed disabled:opacity-60"
               />
               <button
                 type="submit"
-                disabled={busy || !input.trim() || atLimit}
+                disabled={busy || !input.trim()}
                 aria-label="Send message"
                 className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] ${
                   canSend
@@ -309,9 +308,6 @@ return (
             </div>
             <div className="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-1 text-xs leading-5 text-[#c4d3ce]">
               <p>Don&apos;t share sensitive information. Messages are processed by a third-party AI model.</p>
-              <p aria-live="polite" className={remaining <= 2 ? "shrink-0 font-semibold text-[#ffd08a]" : "shrink-0 text-[#c4d3ce]"}>
-                {remaining} {remaining === 1 ? "message" : "messages"} left in this demo
-              </p>
               <Link
                 href="/contact"
                 className="inline-flex min-h-6 items-center rounded-sm font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e5f8c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
@@ -319,11 +315,7 @@ return (
                 Schedule a call <span aria-hidden="true" className="ml-1">→</span>
               </Link>
             </div>
-            {atLimit && (
-              <p className="mt-2 text-xs leading-5 text-[#e3eecf]">
-                You&apos;ve reached the demo limit. Start a new chat to continue, or <Link href="/contact" className="font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e2f6bd]">contact Metanomic</Link>.
-              </p>
-            )}
+
           </div>
         </form>
       </div>

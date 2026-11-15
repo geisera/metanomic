@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {restoreConversation,contextPrompts,dockChips,entrySource} from '../src/lib/theia-dock.ts';
-test('session restore retains conversation and limits, rejecting corrupt or oversized payloads',()=>{
+test('session restore retains long conversations, rejecting corrupt or oversized payloads',()=>{
  const items=[{id:'intro',role:'assistant',content:'Welcome'},{id:'u1',role:'user',content:'Help with intake'},{id:'a1',role:'assistant',content:'Pilot plan'}];
  assert.deepEqual(restoreConversation(JSON.stringify(items)),items);
- for(const raw of [null,'invalid','{}','[]',JSON.stringify([{id:'x',role:'system',content:'bad'}]),JSON.stringify(Array.from({length:8},(_,i)=>({id:String(i),role:'user',content:'hi'})))])assert.equal(restoreConversation(raw),null);
+ for(const raw of [null,'invalid','{}','[]',JSON.stringify([{id:'x',role:'system',content:'bad'}]),JSON.stringify([{id:'x',role:'user',content:'x'.repeat(10001)}])])assert.equal(restoreConversation(raw),null);
 });
 test('six service contexts map to use cases and context-aware chips',()=>{
  assert.equal(Object.keys(contextPrompts).length,6);
@@ -15,4 +15,9 @@ test('six service contexts map to use cases and context-aware chips',()=>{
 });
 test('CTA source taxonomy excludes message content',()=>{
  assert.equal(entrySource('card'),'card_link');assert.equal(entrySource('nav-popover'),'nav');assert.equal(entrySource('final-cta'),'footer');assert.equal(entrySource('section-chip'),'chip');
+});
+
+test('conversations beyond seven messages survive session restoration',()=>{
+ const messages=Array.from({length:40},(_,i)=>({id:String(i),role:i%2?'assistant':'user',content:'Message '+i}));
+ assert.deepEqual(restoreConversation(JSON.stringify(messages)),messages);
 });
