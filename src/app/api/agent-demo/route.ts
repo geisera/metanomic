@@ -7,7 +7,7 @@ import { CONTINUATION_LIMIT, finalizeAnswer, isTokenLimited, joinContinuation } 
 import { classifyScope, hasPertinentPublishedEvidence, hasProfessionalFollowUp, hasBusinessDiscussionIntent, outOfScopeReply, SCOPE_INSTRUCTIONS } from "@/lib/theia-scope";
 
 export const runtime = "nodejs";
-export const maxDuration = 45;
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 type Conversation = { role: "user" | "assistant"; content: string };
