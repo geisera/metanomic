@@ -125,7 +125,7 @@ function paint(
       star.opacity = Math.min(1, star.opacity + dt * 1.1);
 
       // Keep the drifting background populated across the entire viewport.
-      // Keep the unique red star within the visible bounds as it wraps.
+      // Keep the unique Metanomic-green star within visible bounds as it wraps.
       const margin = star.isRed ? 0 : 20;
       let wrapped = false;
       if (star.x < -margin) { star.x = width + margin; wrapped = true; }
@@ -134,7 +134,7 @@ function paint(
       else if (star.y > height + margin) { star.y = -margin; wrapped = true; }
 
       if (star.isRed && dt > 0) {
-        // Retain only the red star's recent positions; discard any trail at
+        // Retain only the accent star's recent positions; discard any trail at
         // viewport wraps so it cannot draw a streak across the entire screen.
         const trail = star.trail ?? (star.trail = []);
         if (wrapped) trail.length = 0;
@@ -148,19 +148,19 @@ function paint(
     const finalOpacity = (.21 + Math.min(1, star.size / 1.9) * .43) * twinkle * star.opacity;
     if (finalOpacity < .005) continue;
     context.fillStyle = star.isRed
-      ? `rgba(246,90,96,${Math.max(.7, finalOpacity)})`
+      ? `rgba(201,236,138,${Math.max(.94, finalOpacity)})`
       : star.tint > .73
         ? `rgba(149,199,208,${finalOpacity})`
         : `rgba(180,219,189,${finalOpacity})`;
 
-    // A faint, tapered ember-like wake follows the one persistent red star.
+    // A vivid Metanomic-green wake follows the one persistent accent star.
     // It bends with the star's actual path, fades into the background, and
     // remains subtle even when cursor gravity accelerates the star.
     if (!still && star.isRed && star.trail && star.trail.length > 1) {
       const trail = star.trail;
       context.save();
       context.lineCap = "round";
-      context.shadowColor = "rgba(255,58,76,.75)";
+      context.shadowColor = "rgba(201,236,138,.82)";
       context.shadowBlur = 18;
       for (let segment = 1; segment < trail.length; segment++) {
         // A brighter, thicker head tapers sharply into the fading red wake.
@@ -170,7 +170,7 @@ function paint(
         context.beginPath();
         context.moveTo(trail[segment - 1].x, trail[segment - 1].y);
         context.lineTo(trail[segment].x, trail[segment].y);
-        context.strokeStyle = `rgba(255,66,82,${(glow * .58).toFixed(3)})`;
+        context.strokeStyle = `rgba(201,236,138,${(glow * .58).toFixed(3)})`;
         context.lineWidth = 1.5 + freshness * 3.2;
         context.stroke();
       }
@@ -183,7 +183,7 @@ function paint(
       context.lineTo(star.x - star.vx * .028, star.y - star.vy * .028);
       context.lineWidth = Math.max(.4, star.size * .42);
       context.strokeStyle = star.isRed
-        ? `rgba(246,90,96,${finalOpacity * .32})`
+        ? `rgba(201,236,138,${finalOpacity * .32})`
         : star.tint > .73
           ? `rgba(149,199,208,${finalOpacity * .20})`
           : `rgba(180,219,189,${finalOpacity * .20})`;
@@ -346,7 +346,7 @@ export default function IntelligenceVisual() {
     for (let i = 0; i < configuration.initial; i++) {
       stars.push(newStar(random, width, height, true));
     }
-    // Exactly one persistent red star, present from the first frame.
+    // Exactly one persistent Metanomic-green star, present from the first frame.
     // It participates in gravity, touch interactions, and movement but never expires.
     const redStar = newStar(random, width, height, true);
     redStar.isRed = true;
