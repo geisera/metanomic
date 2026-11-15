@@ -1,3 +1,4 @@
+import { extractInvitation, INVITATION_INSTRUCTIONS } from "@/lib/theia-invitation";
 import { validateMessages } from "@/lib/theia-conversation";
 import { NextRequest, NextResponse } from "next/server";
 import { checkCalendlyAvailability, type AvailabilityRequest, type AvailabilityResult } from "@/lib/calendly";
@@ -381,7 +382,7 @@ export async function POST(request: NextRequest) {
         ? "Knowledge retrieval is temporarily unavailable. Do not pretend to have searched or cite an unverified document."
         : "";
   const history: ModelMessage[] = [
-    { role: "system", content: instructions + SCOPE_INSTRUCTIONS + "\nCurrent UTC time: " + new Date().toISOString() + ". Default scheduling time zone: America/New_York. Do not assume a date is available without a tool result." },
+    { role: "system", content: instructions + SCOPE_INSTRUCTIONS + INVITATION_INSTRUCTIONS + "\nCurrent UTC time: " + new Date().toISOString() + ". Default scheduling time zone: America/New_York. Do not assume a date is available without a tool result." },
     ...(sourceContext ? [{ role: "system" as const, content: sourceContext }] : []),
     ...messages.map((msg): ModelMessage => msg.role === "user"
       ? { role: "user", content: msg.content }
@@ -457,12 +458,13 @@ export async function POST(request: NextRequest) {
             }
           }
         }
-        const finalized = finalizeAnswer(answer, complete);
+        const invitation = extractInvitation(answer);
+        const finalized = finalizeAnswer(invitation.answer, complete);
         const sources = latestKnowledge?.matches.map((m, i) => ({
           number: i + 1, documentId: m.document_id, title: m.title, revision: m.revision,
           category: m.category, sourceUrl: m.source_url, excerpt: m.excerpt,
         })) ?? [];
-        return json({ answer: finalized.answer, incomplete: finalized.incomplete, mode: "live",
+        return json({ answer: finalized.answer, appointmentInvitation: invitation.invitation, incomplete: finalized.incomplete, mode: "live",
           contactInvitation: hasBusinessDiscussionIntent(latest),
           ...diagnosticActivity(activities), model: MODEL, booking, sources });
       }

@@ -14,6 +14,7 @@ type ChatItem = {
   content: string;
   mode?: "live" | "guided";
   notice?: string;
+  appointmentInvitation?: string;
   activities?: Activity[];
   sources?: KnowledgeSource[];
   booking?: AvailabilityResult;
@@ -144,6 +145,7 @@ export default function AgentExperience() {
         error?: string;
         mode?: "live" | "guided";
         notice?: string;
+  appointmentInvitation?: string;
         activities?: Activity[];
         sources?: KnowledgeSource[];
         booking?: AvailabilityResult;
@@ -156,6 +158,7 @@ export default function AgentExperience() {
         content: data.answer || "",
         mode: data.mode,
         notice: data.notice,
+        appointmentInvitation: data.appointmentInvitation,
         activities: data.activities,
         sources: data.sources,
         booking: data.booking,
@@ -278,7 +281,7 @@ return (
                     <div className="space-y-0.5">{formattedText(item.content)}</div>
                     {item.role === "assistant" && (
                       <div className="mt-4">
-                        <p>Would you like to book an appointment with Metanomic?</p>
+                        <p>{item.appointmentInvitation || "Would you like to book an appointment with Metanomic to discuss your AI and automation goals?"}</p>
                         {!item.booking && (
                           <a
                             href="https://calendly.com/metanomic"
