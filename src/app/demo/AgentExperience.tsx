@@ -13,6 +13,7 @@ type ChatItem = {
   content: string;
   mode?: "live" | "guided";
   notice?: string;
+  contactInvitation?: boolean;
   activities?: Activity[];
   sources?: KnowledgeSource[];
   booking?: AvailabilityResult;
@@ -143,6 +144,7 @@ export default function AgentExperience() {
         error?: string;
         mode?: "live" | "guided";
         notice?: string;
+        contactInvitation?: boolean;
         activities?: Activity[];
         sources?: KnowledgeSource[];
         booking?: AvailabilityResult;
@@ -155,6 +157,7 @@ export default function AgentExperience() {
         content: data.answer || "",
         mode: data.mode,
         notice: data.notice,
+        contactInvitation: data.contactInvitation,
         activities: data.activities,
         sources: data.sources,
         booking: data.booking,
@@ -275,6 +278,12 @@ return (
                     : "max-w-[97%] text-sm leading-7 text-[#dce8e3] sm:max-w-[90%]"}>
                     {item.role === "assistant" && <p className="mb-2 text-xs font-semibold uppercase tracking-[.1em] text-[#c9ec8a]">Theia</p>}
                     <div className="space-y-0.5">{formattedText(item.content)}</div>
+                    {item.role === "assistant" && item.contactInvitation && (
+                      <Link href="/contact"
+                        className="mt-3 inline-flex min-h-9 items-center rounded-md border border-[#506c53] px-3 py-1.5 text-xs font-semibold text-[#c9ec8a] transition-colors hover:border-[#c9ec8a] hover:bg-[#1d3531] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]">
+                        Discuss your needs with Metanomic <span aria-hidden="true" className="ml-2">↗</span>
+                      </Link>
+                    )}
                     {item.role === "assistant" && item.booking && (
                       <div className="mt-5 rounded-xl border border-[#506c53] bg-[#132a27] p-4" aria-label="Calendly scheduling options">
                         {item.booking.status === "available" && item.booking.slots?.length ? (
