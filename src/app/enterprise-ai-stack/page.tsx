@@ -1,272 +1,338 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import LayerNavigation from "./LayerNavigation";
+import styles from "./stack.module.css";
 
+const title = "The Enterprise AI Stack: 10 Layers from Pilot to Production | Metanomic";
+const description = "A practical guide to the ten layers of enterprise AI, the tools in each (OpenAI Agents SDK, Google ADK, n8n, Zapier, MCP), and how to choose between automating, assembling and building custom agents.";
 export const metadata: Metadata = {
-  title: "The Enterprise AI Technology Stack",
-  description:
-    "A practical guide to the ten layers of enterprise AI: models, agents, orchestration, data, integration, infrastructure, evaluation, and governance.",
+  title: { absolute: title }, description,
   alternates: { canonical: "/enterprise-ai-stack" },
-  openGraph: {
-    title: "The Enterprise AI Technology Stack | Metanomic",
-    description:
-      "Explore the tools and engineering layers behind reliable enterprise AI systems that magnify human impact.",
-    url: "https://metanomic.ai/enterprise-ai-stack",
-    type: "article",
-  },
+  openGraph: { title, description, url: "https://metanomic.ai/enterprise-ai-stack", type: "article" },
+  twitter: { card: "summary_large_image", title, description },
 };
+
+// Enable only after all proof placeholders below have approved real content.
+const SHOW_PROOF = false;
 
 const layers = [
   {
-    id: "models",
-    number: "01",
-    name: "AI models & APIs",
-    tools: ["OpenAI", "Anthropic Claude", "Google Gemini", "Meta Llama"],
-    description:
-      "The reasoning and generation layer. Models interpret information, produce responses, analyze content, and power the decisions or recommendations used by an AI application.",
-    purpose: "Reasoning, generation, analysis, and decision support",
+    "id": "models",
+    "number": "01",
+    "name": "AI models & APIs",
+    "description": "The reasoning and generation layer. Models interpret information, produce responses, analyze content, and power the decisions or recommendations used by an AI application.",
+    "groups": [
+      {
+        "label": "Hosted APIs",
+        "tools": [
+          "OpenAI",
+          "Anthropic Claude",
+          "Google Gemini"
+        ]
+      },
+      {
+        "label": "Open-weight / self-hosted",
+        "tools": [
+          "Meta Llama",
+          "Mistral"
+        ]
+      }
+    ],
+    "choose": "You need a model to interpret information, generate responses, or support decisions."
   },
   {
-    id: "agent-development",
-    number: "02",
-    name: "Agent development",
-    tools: ["OpenAI Agents SDK", "LangChain", "CrewAI", "Google ADK"],
-    description:
-      "Frameworks for building AI agents that can use tools, follow instructions, coordinate work, and take defined actions rather than simply return text.",
-    purpose: "Tool-using agents and task execution",
+    "id": "agent-development",
+    "number": "02",
+    "name": "Agent development",
+    "description": "Frameworks for building AI agents that can use tools, follow instructions, coordinate work, and take defined actions rather than simply return text. Custom agents are built here, in code, when an off-the-shelf builder can't meet your logic, data or compliance requirements.",
+    "groups": [
+      {
+        "label": "Vendor SDKs",
+        "tools": [
+          "OpenAI Agents SDK",
+          "Google ADK",
+          "Claude Agent SDK"
+        ]
+      },
+      {
+        "label": "Open frameworks",
+        "tools": [
+          "LangChain",
+          "CrewAI",
+          "LlamaIndex",
+          "Pydantic AI"
+        ]
+      }
+    ],
+    "choose": "You need an agent that uses tools and takes defined actions to complete a task."
   },
   {
-    id: "orchestration",
-    number: "03",
-    name: "Agent orchestration",
-    tools: ["LangGraph", "Temporal", "Microsoft Agent Framework"],
-    description:
-      "The control layer for multi-step operations. Orchestration helps manage execution state, retries, long-running work, handoffs, and human approval checkpoints.",
-    purpose: "Stateful workflows, reliability, and oversight",
+    "id": "orchestration",
+    "number": "03",
+    "name": "Agent orchestration",
+    "description": "The control layer for multi-step operations. Orchestration helps manage execution state, retries, long-running work, handoffs, and human approval checkpoints. Layer 02 builds one agent. Layer 03 keeps many steps and agents running reliably.",
+    "groups": [
+      {
+        "label": "Tools",
+        "tools": [
+          "LangGraph",
+          "Temporal",
+          "Microsoft Agent Framework"
+        ]
+      }
+    ],
+    "choose": "Your process needs multiple steps, retries, handoffs, or human approval checkpoints."
   },
   {
-    id: "enterprise-platforms",
-    number: "04",
-    name: "Enterprise AI platforms",
-    tools: ["Microsoft Foundry", "AWS Bedrock AgentCore", "Gemini Enterprise Agent Platform"],
-    description:
-      "Managed environments for operating AI systems at organizational scale, with platform services for deploying agents and applying enterprise controls.",
-    purpose: "Managed deployment, scaling, security, and governance",
+    "id": "enterprise-platforms",
+    "number": "04",
+    "name": "Enterprise AI platforms",
+    "description": "Managed environments for operating AI systems at organizational scale, with platform services for deploying agents and applying enterprise controls.",
+    "groups": [
+      {
+        "label": "Pro-code platforms",
+        "tools": [
+          "Microsoft Foundry",
+          "AWS Bedrock AgentCore",
+          "Gemini Enterprise Agent Platform"
+        ]
+      },
+      {
+        "label": "Low-code builders",
+        "tools": [
+          "Microsoft Copilot Studio",
+          "Salesforce Agentforce"
+        ]
+      }
+    ],
+    "choose": "You need a managed environment to deploy agents and apply controls across your organization."
   },
   {
-    id: "automation",
-    number: "05",
-    name: "Workflow automation",
-    tools: ["n8n", "Microsoft Power Automate", "UiPath", "Make"],
-    description:
-      "Connect intelligence to repeatable business processes. Automation tools move information between applications and coordinate work with or without a person in the loop.",
-    purpose: "Application workflows and process automation",
+    "id": "automation",
+    "number": "05",
+    "name": "Workflow automation",
+    "description": "Connect intelligence to repeatable business processes. Automation tools move information between applications and coordinate work with or without a person in the loop.",
+    "groups": [
+      {
+        "label": "No-code SaaS",
+        "tools": [
+          "Zapier",
+          "Make"
+        ]
+      },
+      {
+        "label": "Self-hostable",
+        "tools": [
+          "n8n"
+        ]
+      },
+      {
+        "label": "Enterprise and RPA",
+        "tools": [
+          "Microsoft Power Automate",
+          "UiPath",
+          "Workato"
+        ]
+      }
+    ],
+    "choose": "You need to move information between applications and coordinate a repeatable business process."
   },
   {
-    id: "retrieval",
-    number: "06",
-    name: "Data & retrieval",
-    tools: ["PostgreSQL / pgvector", "Pinecone", "Weaviate", "Elasticsearch"],
-    description:
-      "Provide relevant organizational context, from structured records to searchable documents, so AI systems can work with information beyond the model's built-in knowledge.",
-    purpose: "Knowledge access, storage, and semantic search",
+    "id": "retrieval",
+    "number": "06",
+    "name": "Data & retrieval",
+    "description": "Provide relevant organizational context, from structured records to searchable documents, so AI systems can work with information beyond the model's built-in knowledge. Connected to the sources you already have: SharePoint, Salesforce, Snowflake, Databricks.",
+    "groups": [
+      {
+        "label": "Tools",
+        "tools": [
+          "PostgreSQL / pgvector",
+          "Pinecone",
+          "Weaviate",
+          "Elasticsearch"
+        ]
+      }
+    ],
+    "choose": "Your AI system needs to use organizational records and documents beyond its built-in knowledge."
   },
   {
-    id: "integration",
-    number: "07",
-    name: "AI integration",
-    tools: ["MCP", "REST APIs", "Function calling", "MuleSoft"],
-    description:
-      "Make enterprise tools available to AI systems in a controlled way. Integrations connect agents to the services where people actually do their work.",
-    purpose: "Secure connections to business systems and tools",
+    "id": "integration",
+    "number": "07",
+    "name": "AI integration",
+    "description": "Make enterprise tools available to AI systems in a controlled way. Integrations connect agents to the services where people actually do their work.",
+    "groups": [
+      {
+        "label": "Standards",
+        "tools": [
+          "MCP",
+          "A2A",
+          "OpenAPI",
+          "Function calling"
+        ]
+      },
+      {
+        "label": "Platforms",
+        "tools": [
+          "MuleSoft",
+          "Zapier MCP"
+        ]
+      }
+    ],
+    "choose": "Your agents need controlled access to the business systems where work happens."
   },
   {
-    id: "evaluation",
-    number: "08",
-    name: "Evaluation & monitoring",
-    tools: ["LangSmith", "Langfuse", "Braintrust", "Arize Phoenix"],
-    description:
-      "Trace what agents do, assess output quality, investigate failures, and measure whether an AI system reliably completes the work it was designed to support.",
-    purpose: "Tracing, testing, quality, and production visibility",
+    "id": "evaluation",
+    "number": "08",
+    "name": "Evaluation & monitoring",
+    "description": "Trace what agents do, assess output quality, investigate failures, and measure whether an AI system reliably completes the work it was designed to support.",
+    "groups": [
+      {
+        "label": "Platforms",
+        "tools": [
+          "LangSmith",
+          "Langfuse",
+          "Braintrust",
+          "Arize Phoenix"
+        ]
+      },
+      {
+        "label": "Open standard",
+        "tools": [
+          "OpenTelemetry"
+        ]
+      }
+    ],
+    "choose": "You need to trace agent actions, assess quality, and investigate failures."
   },
   {
-    id: "infrastructure",
-    number: "09",
-    name: "Deployment infrastructure",
-    tools: ["Docker", "Kubernetes", "Azure", "AWS", "Google Cloud", "Vercel"],
-    description:
-      "The operational foundation for hosting applications, APIs, agents, and supporting services, with infrastructure choices matched to the demands of each environment.",
-    purpose: "Hosting, release management, and scalability",
+    "id": "infrastructure",
+    "number": "09",
+    "name": "Deployment infrastructure",
+    "description": "The operational foundation for hosting applications, APIs, agents, and supporting services, with infrastructure choices matched to the demands of each environment.",
+    "groups": [
+      {
+        "label": "Containers",
+        "tools": [
+          "Docker",
+          "Kubernetes"
+        ]
+      },
+      {
+        "label": "Cloud",
+        "tools": [
+          "Azure",
+          "AWS",
+          "Google Cloud"
+        ]
+      },
+      {
+        "label": "App hosting",
+        "tools": [
+          "Vercel"
+        ]
+      }
+    ],
+    "choose": "You need to host, release, and scale your AI application and its supporting services."
   },
   {
-    id: "governance",
-    number: "10",
-    name: "Security & governance",
-    tools: ["Microsoft Entra", "Okta", "HashiCorp Vault", "Cloud IAM"],
-    description:
-      "Control who and what can access data, credentials, tools, and sensitive actions. Governance turns technical capability into a system an organization can safely operate.",
-    purpose: "Identity, permissions, secrets, and access control",
-  },
+    "id": "governance",
+    "number": "10",
+    "name": "Security & governance",
+    "description": "Control who and what can access data, credentials, tools, and sensitive actions. Governance turns technical capability into a system an organization can safely operate.",
+    "groups": [
+      {
+        "label": "Identity and secrets",
+        "tools": [
+          "Microsoft Entra",
+          "Okta",
+          "HashiCorp Vault",
+          "Cloud IAM"
+        ]
+      },
+      {
+        "label": "Guardrails, audit and data protection",
+        "tools": [
+          "Microsoft Purview"
+        ]
+      }
+    ],
+    "choose": "You need to control access to data, credentials, tools, and sensitive actions."
+  }
 ] as const;
 
-const architecture = [
-  {
-    step: "01",
-    title: "Understand",
-    label: "Models + data",
-    description: "Interpret a request using the right model and relevant business knowledge.",
-  },
-  {
-    step: "02",
-    title: "Coordinate",
-    label: "Agents + orchestration",
-    description: "Plan steps, use tools, retain state, and request approval when needed.",
-  },
-  {
-    step: "03",
-    title: "Take action",
-    label: "Integrations + automation",
-    description: "Connect the AI system to the applications and workflows people rely on.",
-  },
-  {
-    step: "04",
-    title: "Operate responsibly",
-    label: "Infrastructure + evaluation + security",
-    description: "Deploy, observe, evaluate, protect, and improve the system over time.",
-  },
-] as const;
-
+const routes = [
+  { title: "Automate", fits: "Fits when the process is linear, uses SaaS apps and has low risk.", tools: ["Zapier", "Make", "n8n"] },
+  { title: "Assemble", fits: "Fits when you need agents inside a suite you already use.", tools: ["Microsoft Copilot Studio", "Salesforce Agentforce", "Gemini Enterprise"] },
+  { title: "Build custom", fits: "Fits when you have proprietary logic, regulated data or actions across several systems.", tools: ["OpenAI Agents SDK", "Google ADK", "Claude Agent SDK", "LangGraph", "MCP"] },
+  { title: "Platform", fits: "Fits when you run many agents and need central governance.", tools: ["Microsoft Foundry", "AWS Bedrock AgentCore"] },
+];
+const flow = [
+  { text: "A claims email arrives.", layers: [] },
+  { text: "Claude classifies it.", layers: ["01"] },
+  { text: "An agent built on the OpenAI Agents SDK pulls the policy through MCP.", layers: ["02", "07"] },
+  { text: "n8n routes it to a person for approval.", layers: ["05"] },
+  { text: "Langfuse logs the full trace.", layers: ["08"] },
+];
+function Tags({ tools }: { tools: readonly string[] }) {
+  return <div className="mt-2 flex flex-wrap gap-2">{tools.map(tool => <span key={tool} className="rounded border border-[#354750] bg-[#0b1720]/80 px-2.5 py-1.5 text-xs text-[#d3e0da]">{tool}</span>)}</div>;
+}
 export default function EnterpriseAIStackPage() {
-  return (
-    <main>
-      <div className="border-b border-[#20303b]">
-        <header className="container flex min-h-[86px] items-center justify-between gap-4">
-          <Link href="/" aria-label="Metanomic home" className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[#7b986d] bg-[#c9ec8a] text-lg font-black text-[#122322]">M</span>
-            <span className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[#c9ec8a]">.</span></span>
-          </Link>
-          <nav aria-label="Page navigation" className="flex items-center gap-4 sm:gap-7">
-            <Link href="/" className="navlink">Home</Link>
-            <Link href="/#services" className="navlink hidden sm:inline">Services</Link>
-            <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden="true">→</span></Link>
-          </nav>
-        </header>
+  return <main className={styles.page}>
+    <div className={styles.header}>
+      <header className="container flex h-[86px] items-center justify-between gap-3">
+        <Link href="/" aria-label="Metanomic home" className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[#7b986d] bg-[#c9ec8a] text-lg font-black text-[#122322]">M</span>
+          <span className="hidden text-[18px] font-semibold tracking-[-.035em] sm:inline">metanomic<span className="text-[#c9ec8a]">.</span></span>
+        </Link>
+        <nav aria-label="Page navigation" className="flex items-center gap-4 sm:gap-7">
+          <Link href="/" className="navlink">Home</Link><Link href="/#services" className="navlink">Services</Link>
+          <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk →</Link>
+        </nav>
+      </header>
+    </div>
+    <section className="relative border-b border-[#263843] py-20 md:py-28">
+      <div className="container">
+        <div className="max-w-[1000px]">
+          <p className="eyebrow">Field guide · 6 min read · Updated November 2026</p>
+          <h1 className="mt-6 text-[clamp(3rem,6.8vw,5.8rem)] font-semibold leading-[1.05] tracking-[-.07em]">The 10 layers between an AI pilot and <span className="text-[#c9ec8a]">a production system.</span></h1>
+          <p className="muted mt-8 max-w-[760px] text-[17px] leading-[1.9] md:text-lg">Most AI pilots stall because a model is only one of ten layers. Here is each layer, the tools that fill it (OpenAI Agents SDK, Google ADK, n8n, MCP and more), and how to choose.</p>
+          <div className="mt-9 flex flex-wrap gap-3"><Link href="/contact" className="button button-primary">Get a stack recommendation →</Link><a href="#layers" className="button button-outline">Explore the 10 layers ↓</a></div>
+        </div>
+        <div className="mt-14 grid gap-px overflow-hidden rounded-lg border border-[#30444a] bg-[#30444a] sm:grid-cols-3">{[["10","Layers explained"],["40+","Tools mapped"],["1","Decision framework"]].map(([value,label])=><div key={label} className="bg-[#111e27]/95 p-6"><p className="text-3xl font-semibold tracking-[-.06em] text-[#c9ec8a]">{value}</p><p className="muted mt-1 text-sm">{label}</p></div>)}</div>
       </div>
-
-      <section className="relative border-b border-[#263843] py-20 md:py-28">
-        <div className="container">
-          <div className="max-w-[880px]">
-            <p className="eyebrow">Metanomic / Field Guide 01</p>
-            <h1 className="mt-6 text-[clamp(3rem,6.8vw,5.8rem)] font-semibold leading-[1.05] tracking-[-.07em]">
-              The enterprise AI <span className="text-[#c9ec8a]">technology stack.</span>
-            </h1>
-            <p className="muted mt-8 max-w-[760px] text-[17px] leading-[1.9] md:text-lg">
-              What does it take to move from an AI experiment to a reliable business tool?
-              More than a model. Production AI brings together agents, data, integrations,
-              infrastructure, evaluation, and security—each layer serving the people who use it.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <a href="#layers" className="button button-primary">Explore the 10 layers <span aria-hidden="true">↓</span></a>
-              <a href="#architecture" className="button button-outline">See how they fit together</a>
-            </div>
-          </div>
-          <div className="mt-14 grid gap-px overflow-hidden rounded-lg border border-[#30444a] bg-[#30444a] sm:grid-cols-3">
-            <div className="bg-[#111e27]/95 p-6">
-              <p className="text-3xl font-semibold tracking-[-.06em] text-[#c9ec8a]">10</p>
-              <p className="muted mt-1 text-sm">Core technology layers</p>
-            </div>
-            <div className="bg-[#111e27]/95 p-6">
-              <p className="text-3xl font-semibold tracking-[-.06em] text-[#c9ec8a]">1</p>
-              <p className="muted mt-1 text-sm">Connected production system</p>
-            </div>
-            <div className="bg-[#111e27]/95 p-6">
-              <p className="text-3xl font-semibold tracking-[-.06em] text-[#c9ec8a]">Human</p>
-              <p className="muted mt-1 text-sm">Impact as the measure of success</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="layers" className="py-20 md:py-28">
-        <div className="container">
-          <div className="max-w-[780px]">
-            <p className="eyebrow">The essential components</p>
-            <h2 className="mt-4 text-4xl font-semibold tracking-[-.055em] md:text-5xl">Ten layers. One useful system.</h2>
-            <p className="muted mt-5 leading-8">
-              These are representative tools used across enterprise AI development—not a
-              ranking, and not a requirement to adopt every product. The right combination
-              depends on the organization, existing systems, and work to be done.
-            </p>
-          </div>
-          <nav aria-label="Technology layer index" className="mt-10 flex flex-wrap gap-2">
-            {layers.map(layer => (
-              <a key={layer.id} href={`#${layer.id}`} className="rounded-full border border-[#344c53] bg-[#12212b]/85 px-3 py-2 text-xs text-[#c5d5d0] transition-colors hover:border-[#c9ec8a] hover:text-white">
-                {layer.number} / {layer.name}
-              </a>
-            ))}
-          </nav>
-          <div className="mt-9 grid gap-4 md:grid-cols-2">
-            {layers.map(layer => (
-              <article id={layer.id} key={layer.id} className="card scroll-mt-8">
-                <div className="flex items-start justify-between gap-4">
-                  <p className="eyebrow">{layer.number} / Stack layer</p>
-                  <span aria-hidden="true" className="text-[#6b8b7a]">→</span>
-                </div>
-                <h3 className="mt-6 text-[26px] font-semibold tracking-[-.045em]">{layer.name}</h3>
-                <p className="muted mt-4 min-h-[90px] text-sm leading-7">{layer.description}</p>
-                <p className="mt-7 border-t border-[#31434d] pt-5 text-[11px] font-semibold uppercase tracking-[.15em] text-[#c9ec8a]">Representative tools</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {layer.tools.map(tool => (
-                    <span key={tool} className="rounded border border-[#354750] bg-[#0b1720]/80 px-2.5 py-1.5 text-xs text-[#d3e0da]">{tool}</span>
-                  ))}
-                </div>
-                <p className="mt-6 text-xs leading-6 text-[#a8bfb4]"><span className="font-semibold text-[#d7e8d7]">Primary role:</span> {layer.purpose}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="architecture" className="rule py-20 md:py-28">
-        <div className="container grid gap-12 lg:grid-cols-[.65fr_1fr]">
-          <div>
-            <p className="eyebrow">Putting the pieces together</p>
-            <h2 className="mt-4 max-w-[490px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">From capability to human impact.</h2>
-            <p className="muted mt-6 max-w-[510px] leading-8">
-              A working system connects the layers into a dependable flow. It starts with a
-              human goal and ends with a result people can understand, trust, and use.
-            </p>
-          </div>
-          <div className="overflow-hidden rounded-xl border border-[#31434d] bg-[#0e1d27]/90 backdrop-blur-sm">
-            {architecture.map((step, index) => (
-              <div key={step.step} className={`grid gap-4 p-6 sm:grid-cols-[58px_1fr] sm:gap-6 md:p-8 ${index ? "border-t border-[#31434d]" : ""}`}>
-                <span className="text-xl font-semibold tracking-[-.04em] text-[#c9ec8a]">{step.step}</span>
-                <div>
-                  <p className="eyebrow">{step.label}</p>
-                  <h3 className="mt-2 text-xl font-semibold">{step.title}</h3>
-                  <p className="muted mt-2 text-sm leading-7">{step.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-[#405242] bg-[#c9ec8a]/90 py-16 text-[#14231e] backdrop-blur-sm md:py-20">
-        <div className="container flex flex-wrap items-center justify-between gap-8">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.2em]">Build for meaningful outcomes</p>
-            <h2 className="mt-3 max-w-[680px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">The technology matters. People matter more.</h2>
-            <p className="mt-4 max-w-[600px] text-sm leading-7 text-[#244038]">Metanomic builds AI tools around the people, processes, and goals they are meant to support.</p>
-          </div>
-          <Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Talk with our team <span aria-hidden="true">→</span></Link>
-        </div>
-      </section>
-
-      <footer className="container flex flex-wrap items-center justify-between gap-5 py-10">
-        <Link href="/" className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[#c9ec8a]">.</span></Link>
-        <p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p>
-        <Link className="navlink" href="/">Back to home</Link>
-      </footer>
-    </main>
-  );
+    </section>
+    {SHOW_PROOF && <section aria-label="Guide author and proof" className="rule py-6"><div className="container"><p>By TODO: approved author · Updated November 2026</p><div className="mt-3 flex flex-wrap gap-6"><p>TODO: approved client logos</p><p>TODO: verified outcome metrics</p></div></div></section>}
+    <section id="layers" className="py-20 md:py-28">
+      <div className="container">
+        <div className="max-w-[780px]"><p className="eyebrow">The essential components</p><h2 className="mt-4 text-4xl font-semibold tracking-[-.055em] md:text-5xl">Ten layers. One useful system.</h2><p className="muted mt-5 leading-8">You don&apos;t need all ten on day one. Most teams start with three.</p></div>
+        <LayerNavigation layers={layers.map(({id,number,name})=>({id,number,name}))} />
+        <div className="mt-9 grid gap-4 md:grid-cols-2">{layers.map(layer=><article id={layer.id} key={layer.id} className={`card min-w-0 ${styles.layer}`}>
+          <p className="eyebrow">{layer.number}</p><h3 className="mt-6 text-[26px] font-semibold tracking-[-.045em]">{layer.name}</h3>
+          <p className="muted mt-4 text-sm leading-7">{layer.description}</p>
+          <p className="mt-6 text-sm leading-7 text-[#a8bfb4]"><strong className="text-[#d7e8d7]">Choose this when:</strong> {layer.choose}</p>
+          <p className="mt-7 border-t border-[#31434d] pt-5 text-[11px] font-semibold uppercase tracking-[.15em] text-[#c9ec8a]">{layer.id === "integration" ? "Representative standards & tools" : "Representative tools"}</p>
+          {layer.groups.map(group=><div key={group.label} className="mt-4"><p className="muted text-xs">{group.label}</p><Tags tools={group.tools}/></div>)}
+          <details className="mt-6 border-t border-[#31434d] pt-4"><summary className="cursor-pointer rounded py-2 text-sm font-semibold text-[#d7e8d7]">How we implement this</summary><p className="muted mt-3 text-sm leading-7">TODO: Add approved Metanomic implementation guidance for {layer.name}.</p></details>
+        </article>)}</div>
+        <p className="muted mt-6 text-xs leading-6">Tools shown are representative examples, not a ranking or a required set.</p>
+        <div className={styles.band}><p className="text-xl font-semibold">Not sure which layers you need?</p><Link href="/contact" className="button button-primary">Get a stack recommendation →</Link></div>
+      </div>
+    </section>
+    <section id="decide" className="rule py-20 md:py-28"><div className="container">
+      <p className="eyebrow">Choosing a path</p><h2 className="mt-4 text-4xl font-semibold tracking-[-.055em] md:text-5xl">Automate, assemble, or build?</h2><p className="muted mt-5 leading-8">Four common routes to production, and when each one fits.</p>
+      <div className="mt-10 grid gap-4 lg:grid-cols-4">{routes.map(route=><article key={route.title} className="card min-w-0"><h3 className="text-2xl font-semibold">{route.title}</h3><p className="muted mt-4 text-sm leading-7">{route.fits}</p><div className="mt-5"><Tags tools={route.tools}/></div></article>)}</div>
+      <div className={styles.band}><p className="text-xl font-semibold">Not sure which path fits?</p><Link href="/contact" className="button button-primary">Book a 30-minute stack review →</Link></div>
+    </div></section>
+    <section id="architecture" className="rule py-20 md:py-28"><div className="container">
+      <p className="eyebrow">Putting the pieces together</p><h2 className="mt-4 max-w-[850px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">How the layers work together on one request.</h2><p className="muted mt-6 leading-8">One example, traced through the stack.</p>
+      <ol className={styles.flow}>{flow.map(step=><li key={step.text} className="min-w-0 rounded-xl border border-[#31434d] bg-[#0e1d27]/90 p-6"><p className="mb-4 flex min-h-6 flex-wrap gap-3 text-xs font-semibold text-[#c9ec8a]">{step.layers.map(number=><a key={number} href={`#${layers.find(layer=>layer.number===number)!.id}`} className="underline underline-offset-4">Layer {number}</a>)}</p><p className="text-sm leading-7">{step.text}</p></li>)}</ol>
+    </div></section>
+    <section className={`border-y border-[#405242] bg-[#c9ec8a]/90 py-16 text-[#14231e] backdrop-blur-sm md:py-20 ${styles.closing}`}><div className="container">
+      <p className="text-xs font-bold uppercase tracking-[.2em]">Next step</p><h2 className="mt-3 max-w-[850px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">Find out which layers you need, and which you can skip.</h2>
+      <p className="mt-4 max-w-[680px] text-sm leading-7 text-[#244038]">In 30 minutes we map your current systems to the ten layers and show the shortest route to production. No slides, no obligation.</p>
+      <div className="mt-8 flex flex-wrap items-center gap-6"><Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Book a stack review →</Link><a href="#stack-pdf-todo" className="rounded font-semibold underline underline-offset-4">Download the stack as a one-page PDF</a></div>
+      <p id="stack-pdf-todo" className="mt-5 text-sm">TODO: Add the approved one-page PDF asset and email-capture/download delivery flow.</p>
+    </div></section>
+    <footer className="container flex flex-wrap items-center justify-between gap-5 py-10"><Link href="/" className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[#c9ec8a]">.</span></Link><p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p><nav aria-label="Footer navigation" className="flex gap-6"><Link className="navlink" href="/">Home</Link><Link className="navlink" href="/#services">Services</Link><Link className="navlink" href="/contact">Contact</Link></nav></footer>
+  </main>;
 }
