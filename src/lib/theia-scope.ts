@@ -15,6 +15,8 @@ type Evidence = { title: string; excerpt: string };
 const CORE = /\b(?:ai|artificial intelligence|machine learning|deep learning|llms?|large language models?|neural networks?|models?|prompt engineering|agents?|agentic|automation|automate|workflows?|process improvement|systems? integration|api|apis|salesforce|crm|copilot|chatbots?|rag|retrieval augmented generation|embeddings?|vector databases?|pgvector|supabase|vercel|data engineering|data privacy|cybersecurity|governance|human.in.the.loop|enterprise|business process|metanomic|theia|consultations?|ai strategy|software architecture|technical stack|technology stack)\b/i;
 // A short technical term needs no explicit "in AI" qualifier.
 const TECHNICAL_TERMS = /\b(?:tokens?|tokeniz(?:ation|ers?|ing)|context windows?|embeddings?|vector(?:s| databases?)?|hallucinat(?:ions?|ing)|inference|fine.tun(?:e|ing)|transformers?|parameters?|temperature|prompts?|grounding|model evaluations?|function call(?:s|ing)|tool call(?:s|ing)|orchestration|webhooks?|latency|throughput|guardrails?|neural networks?|attention mechanisms?|rag|llms?)\b/i;
+// Disambiguate ordinary senses of words that also occur in ML jargon.
+const CLEARLY_GENERAL_USAGE = /\b(?:weather|temperature (?:in|at|outside|today|tomorrow)|transformers? (?:movies?|toys?|cartoons?)|(?:subway|arcade|casino) tokens?)\b/i;
 const FOLLOW_UP = /^(?:and |but |so |then |okay[, ]*|ok[, ]*|what about |could you |can you )?(?:what (?:does|would|about|is|are|if)|how (?:does|would|much|about)|why|can (?:you|it|we)|could (?:you|it|we)|tell me more|explain (?:that|it)|go on|elaborate|give (?:me )?an example|is (?:that|it)|does (?:that|it)|would (?:that|it))\b.{0,95}[?!. ]*$/i;
 export type ScopeConversation = { role: "user" | "assistant"; content: string };
 export function hasProfessionalFollowUp(question: string, conversation: ScopeConversation[]): boolean {
@@ -86,7 +88,7 @@ export function classifyScope(
   if (SMALLTALK.test(prompt)) return "smalltalk";
   // The business/technical objective takes precedence over a broad noun
   // such as "baseball", "novel", or "election".
-  if (CORE.test(prompt) || TECHNICAL_TERMS.test(prompt)) return "core";
+  if (CORE.test(prompt) || (TECHNICAL_TERMS.test(prompt) && !CLEARLY_GENERAL_USAGE.test(prompt))) return "core";
   if (hasPertinentPublishedEvidence(prompt, publishedEvidence)) return "knowledge";
   if (OUT_OF_SCOPE.some(pattern => pattern.test(prompt))) return "out_of_scope";
   // Avoid keyword-only rejections of multi-turn or ambiguous queries.
