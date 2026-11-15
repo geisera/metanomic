@@ -79,3 +79,13 @@ This is useful before enabling account-level spend limits.
 - Evaluations, error budgets, quality metrics, and tracing
 - SSO/tenant isolation for a real enterprise customer
 - Distributed rate limiting and durable conversation storage (only with consent)
+
+## Completion reliability (November 2026)
+
+- Normal chat completions have a 1,500-token budget instead of 750 tokens.
+- The server checks the provider's `finish_reason`; `length` triggers a single additional **tool-free** request to finish the answer rather than silently treating a partial response as complete.
+- Continuation text is joined with simple overlap detection to minimize repeated sentences. Continuation is limited to one 850-token request to cap costs and latency.
+- Responses above 9,500 characters are explicitly marked incomplete when cropped; the previous silent 4,600-character truncation was removed.
+- If continuation fails or also reaches its token limit, the answer remains available with an explicit `Response incomplete` message. The API includes `incomplete: true`.
+- The client timeout is 58 seconds, with server maxDuration 60 seconds; no changes to tool permissions, RAG citations, booking, or scope policy.
+- Regression suite: `node --experimental-strip-types --test tests/theia-completion.test.mjs`.
