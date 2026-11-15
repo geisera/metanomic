@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { classifyScope, hasPertinentPublishedEvidence, outOfScopeReply } from "../src/lib/theia-scope.ts";
+import { classifyScope, hasPertinentPublishedEvidence, hasProfessionalFollowUp, hasBusinessDiscussionIntent, outOfScopeReply } from "../src/lib/theia-scope.ts";
 
 const bellwether = {
   title: "TEST FICTION — The Kingdom of Bellwether Hollow",
@@ -11,6 +11,17 @@ describe("Theia Balanced scope policy", () => {
   const cases = [
     ["How can AI improve Salesforce workflows?", "core"],
     ["What is RAG?", "core"],
+    ["What are tokens?", "core"],
+    ["What are tokens in AI?", "core"],
+    ["What is a context window?", "core"],
+    ["What's an agent?", "core"],
+    ["What is a vector?", "core"],
+    ["What is inference?", "core"],
+    ["What's a hallucination?", "core"],
+    ["What is fine tuning?", "core"],
+    ["What are embeddings?", "core"],
+    ["What is temperature?", "core"],
+    ["How do tokenizers work?", "core"],
     ["How could a baseball team use AI for scouting?", "core"],
     ["Can I use an AI agent to write novels?", "core"],
     ["How would AI assess election polling quality?", "core"],
@@ -83,11 +94,47 @@ describe("Gentle scope redirects and contact invitation", () => {
       assert.match(reply, /a little outside my specialty/i);
       assert.match(reply, /AI/i);
       assert.match(reply, /Metanomic/i);
-      assert.match(reply, /no-obligation discussion/i);
+      assert.doesNotMatch(reply, /no-obligation discussion/i);
       if (context === "sports") assert.match(reply, /analytics or operations in sports/i);
       if (context === "writing") assert.match(reply, /writing or publishing workflows/i);
       if (context === "hospitality") assert.match(reply, /hospitality or food-service workflow/i);
       assert.ok(reply.length < 500);
     });
   }
+});
+
+describe("Conversation continuity and selective consultation", () => {
+  const history = [
+    { role: "user", content: "What are tokens?" },
+    { role: "assistant", content: "In AI, tokens are pieces of text processed by the model." },
+    { role: "user", content: "What does it cost?" },
+  ];
+  it("carries professional context into elliptical follow-ups", () => {
+    assert.equal(hasProfessionalFollowUp("What does it cost?", history), true);
+    assert.equal(hasProfessionalFollowUp("Can you explain that further?", [
+      history[0], history[1], { role: "user", content: "Can you explain that further?" },
+    ]), true);
+  });
+  it("does not inherit context for an explicit topic change", () => {
+    assert.equal(hasProfessionalFollowUp("How do I make a mocha latte?", [
+      ...history.slice(0, 2), { role: "user", content: "How do I make a mocha latte?" },
+    ]), false);
+  });
+  it("does not inherit an out-of-scope discussion", () => {
+    assert.equal(hasProfessionalFollowUp("What does it cost?", [
+      { role: "user", content: "How do I make a mocha latte?" },
+      { role: "assistant", content: "That's outside my specialty." },
+      { role: "user", content: "What does it cost?" },
+    ]), false);
+  });
+  it("does not advertise during a basic technical definition", () => {
+    assert.equal(hasBusinessDiscussionIntent("What are tokens?"), false);
+    assert.equal(hasBusinessDiscussionIntent("What is RAG?"), false);
+    assert.equal(hasBusinessDiscussionIntent("How do vector embeddings work?"), false);
+  });
+  it("offers contact on real implementation needs", () => {
+    assert.equal(hasBusinessDiscussionIntent("Our team needs an AI workflow pilot"), true);
+    assert.equal(hasBusinessDiscussionIntent("What would implementation cost?"), true);
+    assert.equal(hasBusinessDiscussionIntent("My company wants to deploy agents"), true);
+  });
 });
