@@ -54,15 +54,15 @@ export default function Home() {
           <h1 className="mt-8 max-w-[790px] text-[clamp(3.4rem,7.5vw,6.9rem)] leading-[1.02] font-semibold tracking-[-.075em]">AI that magnifies<br/><span className="text-[#c9ec8a]">human impact.</span></h1>
           <p className="muted mt-8 max-w-[550px] text-[17px] leading-[1.85]">We build AI tools that give people greater reach and more room to do their best work. From custom agents to connected workflows, our mission is to turn human expertise, ambition, and ideas into meaningful results at a greater scale.</p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="/contact" className="button button-primary">Start a conversation <span aria-hidden>→</span></Link>
-            <TheiaLink source="hero" className="button button-outline">Describe a workflow, get a pilot plan →</TheiaLink>
+            <Link href="/contact" className="button button-primary">Talk with our team <span aria-hidden>→</span></Link>
+            <TheiaLink source="hero" className="button button-outline">Ask Theia, our AI advisor →</TheiaLink>
           </div>
           <a href="#services" className="mt-5 inline-flex rounded py-2 text-sm text-[#d5e5dc]">Explore our services ↓</a>
         </div>
       </div>
     </section>
 
-    <section id="services" className={`rule py-24 md:py-30 ${styles.section}`}>
+    <section id="services" className={`rule pt-24 pb-12 md:pt-30 md:pb-15 ${styles.section}`}>
       <div className="container">
         <div className="mb-12">
           <p className="eyebrow">What we do</p>
@@ -72,7 +72,6 @@ export default function Home() {
         <div className={styles.grid}>
           {services.map((service) => <TheiaLink source="card" prompt={contextPrompts[service.title].replace(/…$/, ".")} id={`service-${service.number}`} data-theia-context={service.title} className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: Ask Theia about this`}>
             <svg className={styles.icon} width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={service.icon} /></svg>
-            <svg className={styles.arrow} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             <p className="eyebrow mt-5">{service.number} / {service.audience}</p>
             <h3 className="mt-5 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>
             <p className={styles.outcome}>{service.outcome}</p>
@@ -88,7 +87,7 @@ export default function Home() {
         </ol>
         <div className={styles.ctas}>
           <Link href="/contact" className="button button-primary">Talk with our team →</Link>
-          <TheiaLink source="section-input" className="button button-outline">Ask Theia about your workflow →</TheiaLink>
+          <a href="#meet-theia" className="navlink rounded text-[#c9ec8a]">See it live: meet Theia ↓</a>
         </div>
       </div>
     </section>

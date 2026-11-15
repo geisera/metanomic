@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { createContext, useContext, useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import TheiaAvatar from "./TheiaAvatar";
 import { useTheiaConversation } from "./TheiaConversation";
 import { contextPrompts, defaultPrompts, dockChips, DOCK_KEY, entrySource, theiaEvent, type EntrySource } from "@/lib/theia-dock";
@@ -19,6 +19,13 @@ export default function TheiaDock({ children }: {children:ReactNode}) {
   const [source, setSource] = useState<EntrySource>("typed");
   const [minimized, setMinimized] = useState(false);
   const [heroVisible, setHeroVisible] = useState(true);
+  const [ctaVisible, setCtaVisible] = useState(false);
+  const [reserveHeight, setReserveHeight] = useState<number>();
+  const [example, setExample] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const examples = ["Our support queue is backed up.", "Intake forms take days to process.", "Reps spend hours updating the CRM."];
+  const skipPillFocus = useRef(false);
+  const trigger = useRef<HTMLElement | null>(null);
   const [demoVisible, setDemoVisible] = useState(false);
   const [context, setContext] = useState("");
   const [bottom, setBottom] = useState(16);
@@ -32,7 +39,7 @@ export default function TheiaDock({ children }: {children:ReactNode}) {
   const pill = useRef<HTMLButtonElement>(null);
   const dock = useRef<HTMLDivElement>(null);
   const lastScroll = useRef(0);
-  const visible = marketing && initialized && !heroVisible && !demoVisible && !drawerOpen;
+  const visible = marketing && initialized && !heroVisible && !demoVisible && !ctaVisible && !drawerOpen;
   const placeholder = contextPrompts[context] || defaultPrompts[rotation];
   function minimize(value: boolean) {
     setMinimized(value);
@@ -43,6 +50,9 @@ export default function TheiaDock({ children }: {children:ReactNode}) {
     const demo = document.getElementById("meet-theia")?.getBoundingClientRect();
     const visibleRect = (r?: DOMRect) => !!r && r.bottom > 86 && r.top < innerHeight;
     setHeroVisible(visibleRect(hero)); setDemoVisible(visibleRect(demo));
+    setCtaVisible([...document.querySelectorAll<HTMLElement>('[data-theia-source], a[href="#meet-theia"]')].some(el =>
+      !el.closest('header, .theia-dock, .theia-drawer') && el.matches('a, button') && el.getClientRects().length > 0 && visibleRect(el.getBoundingClientRect())
+    ));
     const sections = [...document.querySelectorAll("section[id]")];
     const current = sections.find(el => { const r=el.getBoundingClientRect();return r.top <= innerHeight*.5 && r.bottom > innerHeight*.5; });
     setSection(current?.id || pathname);
@@ -68,6 +78,20 @@ export default function TheiaDock({ children }: {children:ReactNode}) {
     document.addEventListener("pointerover",card);document.addEventListener("focusin",card);media.addEventListener("change",motion);
     return ()=>{clearTimeout(init);cancelAnimationFrame(frame);window.removeEventListener("scroll",scroll);window.removeEventListener("resize",scroll);document.removeEventListener("pointerover",card);document.removeEventListener("focusin",card);media.removeEventListener("change",motion);};
   },[pathname,setSection]);
+  useLayoutEffect(() => {
+    const element = dock.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => {
+      if (!element.classList.contains("is-minimized")) setReserveHeight(element.getBoundingClientRect().height);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [marketing]);
+  useEffect(() => {
+    if (!visible || minimized || reduced || focused || hovered) return;
+    const timer = setInterval(() => setExample(i => (i + 1) % 3), 6000);
+    return () => clearInterval(timer);
+  }, [visible, minimized, reduced, focused, hovered]);
   useEffect(()=>{
     if (!visible || reduced || focused || context) return;
     const timer=setTimeout(()=>{if(letters>=placeholder.length){setRotation(i=>(i+1)%defaultPrompts.length);setLetters(0);}else setLetters(i=>i+1);},letters>=placeholder.length?3500:60);
@@ -75,32 +99,35 @@ export default function TheiaDock({ children }: {children:ReactNode}) {
   },[visible,reduced,focused,context,letters,placeholder]);
   useEffect(()=>{if(visible)theiaEvent("theia_bar_shown",source,chat.section.current);},[visible,source,chat.section]);
   function openDrawer(prompt?:string, origin:EntrySource="typed") {
+    trigger.current = document.activeElement as HTMLElement;
     setSource(origin);setLoaded(true);setDrawerOpen(true);
     if(prompt?.trim()) {void chat.submit(prompt,origin);setText("");}
   }
   function open(origin:string,prompt?:string) {
     const mapped=entrySource(origin);setSource(mapped);
     if(prompt?.trim()){openDrawer(prompt,mapped);return;}
+    if(origin === "section-input") {openDrawer(undefined,mapped);return;}
     const hero=document.getElementById("home-hero")?.getBoundingClientRect();
     const demo=document.getElementById("meet-theia");
-    if ((hero && hero.bottom>86 && hero.top<innerHeight) || demoVisible) {
+    if ((hero && hero.bottom>86 && hero.top<innerHeight) || demoVisible || ctaVisible) {
       demo?.scrollIntoView({behavior:reduced?"instant":"smooth",block:"center"});
       document.getElementById("theia-workflow")?.focus({preventScroll:true});return;
     }
     minimize(false);requestAnimationFrame(()=>input.current?.focus({preventScroll:true}));
   }
   function closeDrawer() {
-    setDrawerOpen(false);minimize(true);
-    requestAnimationFrame(()=>{if(heroVisible||demoVisible)document.getElementById("theia-workflow")?.focus({preventScroll:true});else pill.current?.focus({preventScroll:true});});
+    skipPillFocus.current=true;setDrawerOpen(false);minimize(true);
+    requestAnimationFrame(()=>{if(heroVisible||demoVisible||ctaVisible)trigger.current?.focus({preventScroll:true});else pill.current?.focus({preventScroll:true});});
   }
   return <DockContext.Provider value={{open,drawerOpen}}>
     {children}
-    {marketing && <div className="theia-dock-reserve" aria-hidden="true" />}
-    {visible && <div ref={dock} className={`theia-dock ${minimized ? "is-minimized" : ""}`} style={{bottom:`max(${bottom}px, env(safe-area-inset-bottom))`}} onFocus={()=>{setFocused(true);theiaEvent("theia_bar_focus",source,chat.section.current);}} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setFocused(false);}}>
-      {minimized ? <button ref={pill} className="theia-dock-pill" onFocus={event=>{if(event.currentTarget.matches(":focus-visible")){minimize(false);requestAnimationFrame(()=>input.current?.focus({preventScroll:true}));}}} onClick={()=>{if(chat.count)openDrawer();else{minimize(false);requestAnimationFrame(()=>input.current?.focus());}}}>
+    {marketing && <div className="theia-dock-reserve" style={{height:reserveHeight}} aria-hidden="true" />}
+    {marketing && <div ref={dock} aria-hidden={!visible} inert={!visible} onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)} className={`theia-dock ${minimized ? "is-minimized" : ""}`} style={{bottom:`max(${bottom}px, env(safe-area-inset-bottom))`}} onFocus={()=>{setFocused(true);theiaEvent("theia_bar_focus",source,chat.section.current);}} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setFocused(false);}}>
+      {minimized ? <button ref={pill} className="theia-dock-pill" onFocus={event=>{if(skipPillFocus.current){skipPillFocus.current=false;return;}if(event.currentTarget.matches(":focus-visible")){minimize(false);requestAnimationFrame(()=>input.current?.focus({preventScroll:true}));}}} onClick={()=>{if(chat.count)openDrawer();else{minimize(false);requestAnimationFrame(()=>input.current?.focus());}}}>
         <TheiaAvatar status className="!h-8 !w-8 !text-sm" /><span>{chat.count ? "Pick up where you left off with Theia →" : "Got a slow workflow? Theia will map the pilot."}</span>
       </button> : <>
-        <div className="theia-dock-chips">{dockChips(context).map(chip=><button key={chip.label} type="button" disabled={chat.busy||chat.atLimit||!chat.ready} onClick={()=>{setText(chip.prompt);theiaEvent("theia_chip_tap","chip",chat.section.current,{chip_label:chip.label});openDrawer(chip.prompt,"chip");}}>{chip.label}</button>)}<button type="button" aria-label="Minimize Theia prompt bar" onClick={()=>{minimize(true);requestAnimationFrame(()=>pill.current?.focus());}}>−</button></div>
+        <div className="theia-dock-chips">{dockChips(context).map(chip=><button key={chip.label} type="button" disabled={chat.busy||chat.atLimit||!chat.ready} onClick={()=>{setText(chip.prompt);theiaEvent("theia_chip_tap","chip",chat.section.current,{chip_label:chip.label});openDrawer(chip.prompt,"chip");}}>{chip.label}</button>)}<button type="button" aria-label="Minimize Theia prompt bar" onClick={()=>{skipPillFocus.current=true;minimize(true);requestAnimationFrame(()=>pill.current?.focus());}}>−</button></div>
+        <button type="button" className="theia-dock-example" disabled={chat.busy||chat.atLimit||!chat.ready} onClick={()=>{theiaEvent("theia_chip_tap","chip",chat.section.current,{chip_label:examples[reduced ? 0 : example]});openDrawer(examples[reduced ? 0 : example],"chip");}}>{examples[reduced ? 0 : example]} <span aria-hidden="true">→</span></button>
         <form onSubmit={event=>{event.preventDefault();if(text.trim())openDrawer(text);}} className="theia-dock-form">
           <TheiaAvatar status className="!h-8 !w-8 !text-sm" />
           <label htmlFor="theia-dock-input" className="sr-only">Describe a workflow to Theia</label>

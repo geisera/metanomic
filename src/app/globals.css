@@ -7,7 +7,7 @@ body { margin:0; background:var(--background); color:var(--foreground); font-fam
 ::selection { background:var(--lime); color:#0b1520; }
 a { text-decoration:none; }
 .container { width:min(1160px, calc(100% - 48px)); margin-inline:auto; }
-.eyebrow { color:var(--lime); text-transform:uppercase; letter-spacing:.21em; font-size:11px; font-weight:700; }
+.eyebrow { color:var(--lime); text-transform:uppercase; letter-spacing:.21em; font-size:12px; font-weight:700; }
 .muted { color:var(--muted); }
 .grid-lines { background-image:linear-gradient(rgba(223,237,237,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(223,237,237,.035) 1px,transparent 1px); background-size:60px 60px; }
 .button { display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:48px; padding:0 20px; border-radius:6px; font-weight:700; font-size:13px; transition:transform .2s, background .2s; }
@@ -46,7 +46,7 @@ body:has(.theia-demo) .metanomic-starfield { opacity:.5; }
 
 /* Shared Theia entry points retain native links and accessible keyboard focus. */
 [data-theia-source]:focus-visible, .theia-workflow-input:focus-visible,
-a[href="#services"]:focus-visible, a[href="/contact"]:focus-visible {
+a[href="#meet-theia"]:focus-visible, a[href="#services"]:focus-visible, a[href="/contact"]:focus-visible {
   outline:2px solid var(--lime); outline-offset:4px;
 }
 .theia-showcase { display:grid; grid-template-columns:minmax(0,1fr); align-items:center; gap:40px; border:1px solid #3a5452; border-radius:12px; background:#10252ae6; padding:28px; }
@@ -86,3 +86,8 @@ section.bg-\[\#c9ec8a\]\/90 :is(a,button):focus-visible { outline-color:#14231e;
 .theia-inline-chat { display:flex; min-width:0; height:650px; max-height:80dvh; }
 @media(max-width:639px) { .theia-dock { width:100%; padding:10px max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); border-radius:12px 12px 0 0; } .theia-dock-form { flex-wrap:wrap; } .theia-dock-form input { width:calc(100% - 48px); } .theia-dock-form .button { width:100%; } .theia-dock-reserve { height:260px; } .theia-dock-micro { font-size:10px; } }
 @media(prefers-reduced-motion:reduce) { .theia-dock,.theia-dock *,.theia-drawer * { transition:none !important; animation:none !important; } }
+
+.theia-home-chips { display:flex; gap:8px; overflow-x:auto; padding:4px; margin-inline:-4px; }
+.theia-home-chips .theia-chip { flex-shrink:0; white-space:nowrap; padding-inline:10px; }
+.theia-dock-example { display:block; width:100%; margin-bottom:10px; padding:5px; text-align:left; font-size:13px; color:var(--lime); cursor:pointer; }
+.theia-dock[aria-hidden="true"] { visibility:hidden; pointer-events:none; }
