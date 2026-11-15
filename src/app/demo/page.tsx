@@ -4,7 +4,7 @@ import AgentExperience from "./AgentExperience";
 
 export const metadata: Metadata = {
   title: "Meet Theia — AI Workflow Advisor",
-  description: "Meet Theia, Metanomic's AI guide. Explore practical AI use cases, inspect tool activity, and design a human-centered workflow pilot.",
+  description: "Meet Theia, Metanomic's AI guide. Explore practical AI use cases, review trusted knowledge sources, and design a human-centered workflow pilot.",
   alternates: { canonical: "/demo" },
   openGraph: {
     title: "Meet Theia — Metanomic's AI Guide",
