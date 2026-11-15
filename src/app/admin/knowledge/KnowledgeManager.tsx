@@ -72,6 +72,10 @@ export default function KnowledgeManager() {
   const [query, setQuery] = useState("");
   const [revisions, setRevisions] = useState<Revision[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [testQuery, setTestQuery] = useState("");
+  const [testBusy, setTestBusy] = useState(false);
+  const [testResults, setTestResults] = useState<Array<{ title: string; excerpt: string; revision: number; score: number }>>([]);
+  const [testMessage, setTestMessage] = useState("");
   const selected = documents.find(document => document.id === selectedId) ?? null;
 
   const filtered = useMemo(() => {
@@ -220,6 +224,26 @@ export default function KnowledgeManager() {
     finally { setWorking(false); }
   }
 
+  async function testKnowledge(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (testBusy || testQuery.trim().length < 2) return;
+    setTestBusy(true);
+    setTestMessage("");
+    setTestResults([]);
+    try {
+      const response = await fetch("/api/knowledge/test", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: testQuery.trim() }),
+      });
+      const body = await decode(response);
+      if (!response.ok) throw new Error(errorOf(body, typeof body.message === "string" ? body.message : "Search failed."));
+      const matches = Array.isArray(body.matches) ? body.matches : [];
+      setTestResults(matches.map(item => item as { title: string; excerpt: string; revision: number; score: number }));
+      setTestMessage(typeof body.message === "string" ? body.message : "Search complete.");
+    } catch (cause) { setTestMessage(cause instanceof Error ? cause.message : "Search failed."); }
+    finally { setTestBusy(false); }
+  }
+
   async function loadHistory() {
     if (!selected) return;
     setError("");
@@ -348,6 +372,26 @@ export default function KnowledgeManager() {
                 </button>
               ))}
             </div>
+            <form className="mt-6 border-t border-[#385552] pt-5" onSubmit={event => void testKnowledge(event)}>
+              <h3 className="text-base font-semibold">Test Knowledge</h3>
+              <p className="mt-2 text-xs leading-5 text-[#bdcec3]">Search published, indexed documents. Drafts and archived material cannot appear.</p>
+              <label htmlFor="knowledge-test-query" className={label + " mt-3"}>Ask a question</label>
+              <textarea id="knowledge-test-query" className={field} maxLength={400} rows={3}
+                placeholder="What is the capital of Bellwether Hollow?"
+                value={testQuery} onChange={event => setTestQuery(event.target.value)} />
+              <button className={secondary + " mt-3 w-full"} type="submit" disabled={testBusy || testQuery.trim().length < 2}>
+                {testBusy ? "Searching…" : "Search indexed knowledge"}
+              </button>
+              {testMessage && <p role="status" className="mt-3 text-xs leading-5 text-[#d6e5d6]">{testMessage}</p>}
+              <div className="mt-3 space-y-3">
+                {testResults.map((item, index) => (
+                  <article key={index} className="rounded-lg border border-[#405e56] bg-[#142c32] p-3 text-xs">
+                    <p className="font-semibold">[{index+1}] {item.title} (rev. {item.revision})</p>
+                    <p className="mt-2 whitespace-pre-wrap leading-5 text-[#c6d9cd]">{item.excerpt}</p>
+                  </article>
+                ))}
+              </div>
+            </form>
           </aside>
 
           <main className="min-w-0 rounded-xl border border-[#3b5854] bg-[#0f202a] p-4 sm:p-6">
