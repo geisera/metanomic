@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkCalendlyAvailability, type AvailabilityRequest, type AvailabilityResult } from "@/lib/calendly";
 import { describeStack, estimateCapacity, guidedAnswer, mapOpportunity, resolveFocus, type Focus } from "@/lib/demo-agent";
 import { searchKnowledge, type SearchResult } from "@/lib/theia-rag";
+import { getKnowledgeAdmin } from "@/lib/knowledge-server";
 
 export const runtime = "nodejs";
 export const maxDuration = 45;
@@ -259,6 +260,12 @@ export async function POST(request: NextRequest) {
   const messages = validateMessages((payload as { messages?: unknown } | null)?.messages);
   if (!messages) return json({ error: "Please send a short conversation ending with your question." }, 400);
 
+  // Tool diagnostics require an existing, verified knowledge-administrator session.
+  // Ordinary visitors never receive tool activity metadata in the API response.
+  const wantsDiagnostics = (payload as { debug?: unknown } | null)?.debug === true;
+  const showDiagnostics = wantsDiagnostics && (await getKnowledgeAdmin()).kind === "authenticated";
+  const diagnosticActivity = (entries: Activity[]) => showDiagnostics ? { activities: entries } : {};
+
   const latest = messages[messages.length - 1].content;
   // Availability questions always require actual Calendly data, never plausible-looking model guesses.
   const calendarIntent = /\b(?:calendly|availability|openings?|appointment times?|meeting times?|time slots?)\b/i.test(latest)
@@ -275,7 +282,8 @@ export async function POST(request: NextRequest) {
   }
   const auth = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
   if (!auth || process.env.DEMO_AGENT_LIVE === "false") {
-    return json({ ...guidedAnswer(latest), mode: "guided", notice: "Live model access is not configured. Showing an explicitly rule-based preview." });
+    const preview = guidedAnswer(latest);
+    return json({ answer: preview.answer, ...diagnosticActivity(preview.activities), mode: "guided", notice: "Live model access is not configured. Showing an explicitly rule-based preview." });
   }
 
   const history: ModelMessage[] = [
@@ -316,7 +324,7 @@ export async function POST(request: NextRequest) {
                 : ". Select Book here to confirm inside Theia, or Calendly to book on their site.") +
               " Times may change until confirmed."
             : booking.message;
-          return json({ answer, mode: "live", activities, model: MODEL, booking });
+          return json({ answer, mode: "live", ...diagnosticActivity(activities), model: MODEL, booking });
         }
         continue;
       }
@@ -326,12 +334,10 @@ export async function POST(request: NextRequest) {
           number: i + 1, documentId: m.document_id, title: m.title, revision: m.revision,
           category: m.category, sourceUrl: m.source_url, excerpt: m.excerpt,
         })) ?? [];
-        const citationNote = sources.length
-          ? "\n\nSources: " + sources.map((source) => "[" + source.number + "] " +
-              source.title + " (revision " + source.revision + ")").join("; ")
-          : "";
-        const text = answer.slice(0, Math.max(0, 4600 - citationNote.length)) + citationNote;
-        return json({ answer: text, mode: "live", activities, model: MODEL, booking, sources });
+        // The UI renders distinct source documents in a compact attribution row.
+        // Do not append an additional verbose sources list to the message body.
+        return json({ answer: answer.slice(0, 4600), mode: "live",
+          ...diagnosticActivity(activities), model: MODEL, booking, sources });
       }
     }
     throw new Error("no_final_answer");
@@ -339,14 +345,15 @@ export async function POST(request: NextRequest) {
     if (booking) return json({
       answer: booking.message,
       booking,
-      activities,
+      ...diagnosticActivity(activities),
       mode: "guided",
       notice: "Live model response was unavailable. This result came from the read-only Calendly availability tool.",
     });
     // Explicitly labeled fallback; never misrepresent deterministic content as model output.
     const fallback = guidedAnswer(latest);
     return json({
-      ...fallback,
+      answer: fallback.answer,
+      ...diagnosticActivity(fallback.activities),
       mode: "guided",
       notice: "The live model is currently unavailable. This is a rule-based workflow preview, not a generated AI response.",
     });
