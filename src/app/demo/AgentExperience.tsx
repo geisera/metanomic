@@ -6,7 +6,7 @@ import TheiaAvatar from "@/components/TheiaAvatar";
 import { consumeTheiaPrefill } from "@/lib/theia-entry";
 import { suggestions } from "@/lib/theia-suggestions";
 import { useTheiaConversation } from "@/components/TheiaConversation";
-import BookingForm from "./BookingForm";
+import BookingOptions from "./BookingOptions";
 
 // Lighthearted waiting copy, not a claim about specific model tools or hidden reasoning.
 const thinkingMessages = [
@@ -44,7 +44,6 @@ export default function AgentExperience({ embedded = false, instance = "demo" }:
   const { items, ready, busy, error, lastMode, count, atLimit, isKnowledgeAdmin, showDiagnostics, setShowDiagnostics, submit: send, reset: resetConversation } = useTheiaConversation();
   const [input, setInput] = useState("");
   const [thinkingIndex, setThinkingIndex] = useState(0);
-  const [selectedBooking, setSelectedBooking] = useState<{ messageId: string; startTime: string } | null>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLTextAreaElement>(null);
   const Heading = embedded ? "h3" : "h1";
@@ -67,7 +66,7 @@ export default function AgentExperience({ embedded = false, instance = "demo" }:
     if (items.length === 1 && !busy && !error) return;
     const conversation = conversationRef.current;
     if (conversation) conversation.scrollTop = conversation.scrollHeight;
-  }, [items, busy, error, selectedBooking]);
+  }, [items, busy, error]);
 
   useLayoutEffect(() => {
     const draft = draftRef.current;
@@ -113,7 +112,6 @@ export default function AgentExperience({ embedded = false, instance = "demo" }:
     if (busy) return;
     resetConversation();
     setInput("");
-    setSelectedBooking(null);
   }
 
 return (
@@ -214,87 +212,7 @@ return (
                         )}
                       </div>
                     )}
-                    {item.role === "assistant" && item.booking && (
-                      <div className="mt-5 rounded-xl border border-[#506c53] bg-[#132a27] p-4" aria-label="Calendly scheduling options">
-                        {item.booking.status === "available" && item.booking.slots?.length ? (
-                          <>
-                            <p className="text-sm font-semibold text-[#e6f7d4]">
-                              Available {item.booking.eventType ? item.booking.eventType + " " : ""}appointments
-                            </p>
-                            <p className="mt-1 text-xs text-[#c6dacb]">
-                              {item.booking.timeZone || "America/New_York"} · Times may change before booking.
-                            </p>
-                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                              {item.booking.slots.map(slot => (
-                                <div key={slot.startTime}
-                                  className="rounded-lg border border-[#77946f] bg-[#1e3a33] p-3">
-                                  <p className="font-semibold text-[#e7f8dc]">{slot.label}</p>
-                                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
-                                    {item.booking?.eventTypeUri && item.booking.directBookingSupported !== false && (
-                                      <button
-                                        type="button"
-                                        onClick={() => setSelectedBooking({ messageId: item.id, startTime: slot.startTime })}
-                                        className="inline-flex min-h-11 items-center rounded-lg bg-[#c9ec8a] px-3 text-xs font-bold text-[#112026] hover:bg-[#def8ad] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
-                                        aria-label={"Book " + slot.label + " directly in Theia"}
-                                        aria-expanded={selectedBooking?.messageId === item.id && selectedBooking?.startTime === slot.startTime}
-                                      >
-                                        Book here
-                                      </button>
-                                    )}
-                                    <a href={slot.bookingUrl} target="_blank" rel="noopener noreferrer"
-                                      className="inline-flex min-h-11 items-center text-xs font-semibold text-[#d5ecc4] underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]">
-                                      Calendly ↗
-                                    </a>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            {selectedBooking?.messageId === item.id && item.booking.eventTypeUri && (
-                              <BookingForm
-                                key={item.id + ":" + selectedBooking.startTime}
-                                slot={item.booking.slots.find(slot => slot.startTime === selectedBooking.startTime) ?? item.booking.slots[0]}
-                                eventType={item.booking.eventType || "Consultation"}
-                                eventTypeUri={item.booking.eventTypeUri}
-                                timeZone={item.booking.timeZone || "America/New_York"}
-                                onCancel={() => setSelectedBooking(null)}
-                              />
-                            )}
-                            <p className="mt-3 text-xs text-[#c5d7c9]">
-                              {item.booking.directBookingSupported === false
-                                ? (item.booking.directBookingReason || "This event requires Calendly's booking page.")
-                                : "Choose Book here to confirm inside Theia, or Calendly to book on its website."}
-                            </p>
-                          </>
-                        ) : item.booking.status === "choose_event" && item.booking.eventTypes?.length ? (
-                          <>
-                            <p className="text-sm font-semibold text-[#e6f7d4]">Choose a meeting type</p>
-                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                              {item.booking.eventTypes.map(eventType => (
-                                <a
-                                  key={eventType.name}
-                                  href={eventType.bookingUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-lg border border-[#77946f] px-3 py-2 text-sm text-[#e6f7d4] hover:bg-[#29473b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
-                                >
-                                  <span>{eventType.name}</span><span aria-hidden="true">↗</span>
-                                </a>
-                              ))}
-                            </div>
-                            <p className="mt-3 text-xs text-[#c5d7c9]">Or tell me which meeting type to check.</p>
-                          </>
-                        ) : (
-                          <a
-                            href={item.booking.bookingUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex min-h-11 items-center gap-2 rounded-md font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e5f8c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
-                          >
-                            Open Metanomic&apos;s Calendly page <span aria-hidden="true">↗</span>
-                          </a>
-                        )}
-                      </div>
-                    )}
+                    {item.role === "assistant" && item.booking && <BookingOptions initial={item.booking} />}
                     {item.role === "assistant" && item.sources && item.sources.length > 0 && (
                       <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#bed0c0]"
                         aria-label="Knowledge sources">

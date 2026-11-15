@@ -31,6 +31,8 @@ export type AvailabilityRequest = {
   timeOfDay?: unknown;
   eventTypeName?: unknown;
   limit?: unknown;
+  after?: unknown;
+  eventTypeUri?: unknown;
 };
 
 export type AvailabilityResult = {
@@ -43,6 +45,8 @@ export type AvailabilityResult = {
   directBookingSupported?: boolean;
   directBookingReason?: string;
   slots?: AvailableSlot[];
+  hasMore?: boolean;
+  query?: { startDate: string; endDate: string; timeZone: string; timeOfDay: string; eventTypeUri: string };
   eventTypes?: Array<{ name: string; bookingUrl: string }>;
 };
 
@@ -264,13 +268,19 @@ export async function checkCalendlyAvailability(input: AvailabilityRequest): Pro
 
   const limit = typeof input.limit === "number" && Number.isFinite(input.limit)
     ? Math.max(1, Math.min(6, Math.floor(input.limit)))
-    : 4;
+    : 6;
+  const after = input.after;
+  if (after !== undefined && (typeof after !== "string" || !Number.isFinite(Date.parse(after)))) {
+    return { ...base, status: "invalid_request", message: "Please refresh the available times." };
+  }
   try {
     const events = await findEventTypes(token);
     if (events.length === 0) {
       return { ...base, status: "unavailable", message: "No active Calendly meeting types were found. Please book from the Calendly page." };
     }
-    const chosen = chooseEvent(events, input.eventTypeName);
+    const chosen = input.eventTypeUri
+      ? events.find(event => event.uri === input.eventTypeUri) || null
+      : chooseEvent(events, input.eventTypeName);
     if (!chosen) {
       const name = typeof input.eventTypeName === "string" ? input.eventTypeName : "";
       return {
@@ -301,7 +311,7 @@ export async function checkCalendlyAvailability(input: AvailabilityRequest): Pro
     const response = await requestCalendly("/event_type_available_times?" + params, token);
     if (!Array.isArray(response.collection)) throw new Error("calendly_slots_invalid");
 
-    const slots: AvailableSlot[] = response.collection
+    const matching = response.collection
       .filter(isRecord)
       .filter(item => item.status === "available" && typeof item.start_time === "string")
       .map(item => {
@@ -313,8 +323,10 @@ export async function checkCalendlyAvailability(input: AvailabilityRequest): Pro
         const day = localDay(item.time, zone);
         return day >= startDate && day <= endDate && inPeriod(localHour(item.time, zone), String(period));
       })
+      .filter(item => !after || item.time.getTime() > Date.parse(after as string))
       .sort((a, b) => a.time.getTime() - b.time.getTime())
-      .slice(0, limit)
+      .filter((item, index, all) => index === 0 || item.time.getTime() !== all[index - 1].time.getTime());
+    const slots: AvailableSlot[] = matching.slice(0, limit)
       .map(item => ({
         startTime: item.time.toISOString(),
         label: displaySlot(item.time, zone),
@@ -333,6 +345,8 @@ export async function checkCalendlyAvailability(input: AvailabilityRequest): Pro
       timeZone: zone,
       bookingUrl,
       slots,
+      hasMore: matching.length > limit,
+      query: { startDate, endDate, timeZone: zone, timeOfDay: String(period), eventTypeUri: chosen.uri },
     };
   } catch (error) {
     const code = error instanceof Error ? error.message : "unknown";
