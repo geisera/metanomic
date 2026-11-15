@@ -367,10 +367,10 @@ return (
                             ? <a key={source.documentId} href={source.sourceUrl} target="_blank"
                                 rel="noopener noreferrer"
                                 className="underline decoration-[#799583] underline-offset-2 hover:text-[#e1f5d6]">
-                                [{source.number}] {source.title}
+                                [{item.sources?.filter(candidate => candidate.documentId === source.documentId).map(candidate => candidate.number).join(", ")}] {source.title}
                               </a>
                             : <span key={source.documentId} title={"Revision " + source.revision}>
-                                [{source.number}] {source.title}
+                                [{item.sources?.filter(candidate => candidate.documentId === source.documentId).map(candidate => candidate.number).join(", ")}] {source.title}
                               </span>
                         ))}
                       </div>
