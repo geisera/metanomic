@@ -22,6 +22,9 @@ export type ScopeConversation = { role: "user" | "assistant"; content: string };
 export function hasProfessionalFollowUp(question: string, conversation: ScopeConversation[]): boolean {
   if (!FOLLOW_UP.test(question.trim())) return false;
   const precedingUsers = conversation.slice(0, -1).filter(m => m.role === "user").slice(-3);
+  // A newer unrelated topic breaks continuity with an older AI discussion.
+  const mostRecent = precedingUsers.at(-1);
+  if (!mostRecent || classifyScope(mostRecent.content) === "out_of_scope") return false;
   return precedingUsers.some(m => classifyScope(m.content) === "core");
 }
 export function hasBusinessDiscussionIntent(question: string): boolean {
