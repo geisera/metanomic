@@ -8,6 +8,7 @@ type Star = {
   size: number; phase: number; speed: number; tint: number;
   age: number; lifetime: number; opacity: number;
   isRed: boolean;
+  trail?: { x: number; y: number }[];
 };
 
 const TAU = Math.PI * 2;
@@ -126,10 +127,20 @@ function paint(
       // Keep the drifting background populated across the entire viewport.
       // Keep the unique red star within the visible bounds as it wraps.
       const margin = star.isRed ? 0 : 20;
-      if (star.x < -margin) star.x = width + margin;
-      else if (star.x > width + margin) star.x = -margin;
-      if (star.y < -margin) star.y = height + margin;
-      else if (star.y > height + margin) star.y = -margin;
+      let wrapped = false;
+      if (star.x < -margin) { star.x = width + margin; wrapped = true; }
+      else if (star.x > width + margin) { star.x = -margin; wrapped = true; }
+      if (star.y < -margin) { star.y = height + margin; wrapped = true; }
+      else if (star.y > height + margin) { star.y = -margin; wrapped = true; }
+
+      if (star.isRed && dt > 0) {
+        // Retain only the red star's recent positions; discard any trail at
+        // viewport wraps so it cannot draw a streak across the entire screen.
+        const trail = star.trail ?? (star.trail = []);
+        if (wrapped) trail.length = 0;
+        trail.push({ x: star.x, y: star.y });
+        if (trail.length > 42) trail.shift();
+      }
     }
 
     const twinkle = .9 + .1 * Math.sin(elapsed * star.speed * 1.7 + star.phase);
@@ -141,7 +152,28 @@ function paint(
         ? `rgba(149,199,208,${finalOpacity})`
         : `rgba(180,219,189,${finalOpacity})`;
 
-    if (!still && Math.hypot(star.vx, star.vy) > 185 && star.size > 1) {
+    // A faint, tapered ember-like wake follows the one persistent red star.
+    // It bends with the star's actual path, fades into the background, and
+    // remains subtle even when cursor gravity accelerates the star.
+    if (!still && star.isRed && star.trail && star.trail.length > 1) {
+      const trail = star.trail;
+      context.save();
+      context.lineCap = "round";
+      context.shadowColor = "rgba(255,65,78,.4)";
+      context.shadowBlur = 9;
+      for (let segment = 1; segment < trail.length; segment++) {
+        const strength = segment / (trail.length - 1);
+        context.beginPath();
+        context.moveTo(trail[segment - 1].x, trail[segment - 1].y);
+        context.lineTo(trail[segment].x, trail[segment].y);
+        context.strokeStyle = `rgba(246,68,87,${(strength * strength * .21).toFixed(3)})`;
+        context.lineWidth = .45 + strength * .95;
+        context.stroke();
+      }
+      context.restore();
+    }
+
+    if (!still && !star.isRed && Math.hypot(star.vx, star.vy) > 185 && star.size > 1) {
       context.beginPath();
       context.moveTo(star.x, star.y);
       context.lineTo(star.x - star.vx * .028, star.y - star.vy * .028);
@@ -254,6 +286,8 @@ export default function IntelligenceVisual() {
       for (const star of stars) {
         star.x = oldWidth ? star.x * width / oldWidth : star.x;
         star.y = oldHeight ? star.y * height / oldHeight : star.y;
+        // A resize should not leave a ghost trail at old viewport coordinates.
+        if (star.isRed) star.trail = [];
       }
       paint(context, stars, width, height, elapsed, 0, pointer.current, still);
     };
