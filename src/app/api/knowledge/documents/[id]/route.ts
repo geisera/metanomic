@@ -16,7 +16,10 @@ export async function PATCH(request: NextRequest, context: Context) {
   if (!validId(id)) return NextResponse.json({ error: "Invalid document ID." }, { status: 400 });
   const auth = await getKnowledgeAdmin();
   if (auth.kind !== "authenticated") return protectedError(auth.kind);
-  const body = await parseBody(request);
+  if (Number(request.headers.get("content-length") || 0) > 4_400_000) {
+    return NextResponse.json({ error: "Document request exceeds the hosting payload limit. Split it into smaller files." }, { status: 413 });
+  }
+  const body = await parseBody(request, 4_400_000);
   const fields = body && validateDocument(body);
   if (!fields || typeof body?.revision !== "number" || !Number.isInteger(body.revision) ||
       body.revision < 1 || body.revision > 1_000_000) {

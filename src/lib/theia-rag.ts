@@ -39,8 +39,6 @@ export function chunkDocument(text: string): string[] {
     }
   }
   if (current) chunks.push(current);
-  // The RPC caps indexing at 150 passages.
-  if (chunks.length > 150) throw new Error("document_too_many_chunks");
   return chunks;
 }
 

@@ -79,8 +79,8 @@ No Supabase service-role or secret key is required for this milestone. The authe
 
 ### Operational limits
 
-- 100 most recently updated documents per list request, max 100,000 characters per document.
-- Upload from local `.txt` and `.md` files, max 100 KB per import.
+- 100 most recently updated documents per list request. No fixed document character cap.
+- Upload from local `.txt` and `.md` files without the former 100 KB import cap. Document save requests allow up to 4.4 MB of serialized UTF-8 JSON, below Vercel’s 4.5 MB platform payload limit.
 - Password login uses short-lived sessions (up to 55 minutes); admins sign in again when expired.
 - Login rate limiting is per serverless instance, not a shared distributed limiter. Consider WAF/distributed rate limiting for public launch.
 - Only real authorized administrators should be provisioned. Supabase Auth policies and password/MFA choices should be reviewed before broad team access.
@@ -118,9 +118,13 @@ The migration `supabase/migrations/20261115_theia_rag_pipeline.sql` adds:
 
 - Text and Markdown only in the editor. PDF extraction and Supabase Storage ingestion are not yet implemented.
 - Indexing uses a request initiated by an administrator publishing the document. There is no scheduled background index-retry worker or resilient job queue yet.
-- Large documents may exceed the 60-second function duration: split oversized content until background jobs are added.
+- Large documents may exceed the 60-second function duration: split oversized content until background jobs are added. The old 150-passage application/RPC cap has been removed; per-chunk validation remains.
 - Source titles and revisions are displayed; optional externally approved source URLs are retained. Fine-grained paragraph anchors and automatic external-document citation links are future improvements.
 - Hybrid retrieval ranking should be tuned using evaluation questions to reduce false positives.
 - A complete browser acceptance test using a real admin session is still required; server-side SQL tests used synthetic vectors and verified that unpublished content is excluded. These tests did not exercise live model-generated embeddings. SQL test writes caused revision updates to the test document; the fixture was restored to Draft.
 - A published document with no successful index is **not searchable**, even if it remains marked Published in the editor.
 
+
+## Document size limit removal
+
+Apply `20261115193917_remove_knowledge_document_size_cap.sql` before deploying the editor/API changes. This removes only the content-length constraint and indexing passage-count ceiling; RLS, publication/revision gates, and administrator checks remain. Imports and the editor no longer enforce 100 KB / 100,000 characters. Authentication and small control endpoints retain their existing request bounds. Indexing still has a 60-second execution window; larger documents are not guaranteed to index in one request. No automatic paid retry loop was added.

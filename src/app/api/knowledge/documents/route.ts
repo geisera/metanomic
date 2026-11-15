@@ -31,7 +31,10 @@ export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) return errorMessage("Cross-origin requests are not permitted.", 403);
   const auth = await getKnowledgeAdmin();
   if (auth.kind !== "authenticated") return protectedError(auth.kind);
-  const body = await parseBody(request);
+  if (Number(request.headers.get("content-length") || 0) > 4_400_000) {
+    return NextResponse.json({ error: "Document request exceeds the hosting payload limit. Split it into smaller files." }, { status: 413 });
+  }
+  const body = await parseBody(request, 4_400_000);
   const fields = body && validateDocument(body);
   if (!fields) return errorMessage("Invalid document fields. Published documents must have content.", 400);
   try {

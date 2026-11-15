@@ -112,13 +112,12 @@ export function sameOrigin(request: Request): boolean {
   } catch { return false; }
 }
 
-export async function parseBody(request: Request): Promise<Record<string, unknown> | null> {
-  const max = 140_000;
+export async function parseBody(request: Request, max = 140_000): Promise<Record<string, unknown> | null> {
   if (!request.headers.get("content-type")?.includes("application/json") ||
       Number(request.headers.get("content-length") || 0) > max) return null;
   try {
     const raw = await request.text();
-    if (raw.length > max) return null;
+    if (new TextEncoder().encode(raw).byteLength > max) return null;
     const value: unknown = JSON.parse(raw);
     return value && typeof value === "object" && !Array.isArray(value)
       ? value as Record<string, unknown> : null;
@@ -135,7 +134,7 @@ export function validateDocument(input: Record<string, unknown>): {
   const status = input.status;
   const source_url = typeof input.source_url === "string" ? input.source_url.trim() : "";
   if (title.length < 3 || title.length > 160 || summary.length > 600 ||
-      content.length > 100_000 || source_url.length > 500 ||
+      source_url.length > 500 ||
       !CATEGORIES.includes(category as typeof CATEGORIES[number]) ||
       !STATUSES.includes(status as typeof STATUSES[number])) return null;
   if (status === "published" && !content) return null;

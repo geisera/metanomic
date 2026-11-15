@@ -42,6 +42,7 @@ function fromDoc(doc: KnowledgeDocument): Editor {
 }
 
 async function decode(response: Response): Promise<Record<string, unknown>> {
+  if (response.status === 413) return { error: "This request exceeds the hosting payload limit. Split the document into smaller files." };
   try {
     const payload: unknown = await response.json();
     return payload && typeof payload === "object" && !Array.isArray(payload)
@@ -274,13 +275,7 @@ export default function KnowledgeManager() {
     if (!/\.(md|markdown|txt)$/i.test(file.name)) {
       setError("Only Markdown (.md) and plain text (.txt) files are supported in this milestone."); return;
     }
-    if (file.size > 100_000) {
-      setError("File must be smaller than 100 KB."); return;
-    }
     const text = await file.text();
-    if (text.length > 100_000) {
-      setError("File content exceeds the 100,000-character limit."); return;
-    }
     setDraft(previous => ({
       ...previous, content: text,
       title: previous.title || file.name.replace(/\.(md|markdown|txt)$/i, "").replace(/[-_]/g, " "),
@@ -447,11 +442,11 @@ export default function KnowledgeManager() {
                   </label>
                 </div>
                 <textarea id="knowledge-content" className={field + " min-h-[330px] resize-y font-mono text-sm leading-6"}
-                  maxLength={100000} rows={14}
+                  rows={14}
                   placeholder={"# Approved information\n\nWrite source material here.\n\nOnly publish facts you are comfortable sharing with visitors."}
                   value={draft.content} onChange={event => change("content", event.target.value)} />
                 <p className="mt-2 text-xs text-[#b9cbc4]">
-                  {draft.content.length.toLocaleString()} / 100,000 characters. HTML is treated as plain text.
+                  {draft.content.length.toLocaleString()} characters. HTML is treated as plain text.
                   PDF ingestion and vector indexing are not enabled in this milestone.
                 </p>
               </div>
