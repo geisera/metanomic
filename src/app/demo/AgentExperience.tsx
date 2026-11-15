@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import type { AvailabilityResult } from "@/lib/calendly";
+import { boundConversation } from "@/lib/theia-conversation";
 import BookingForm from "./BookingForm";
 
 type Activity = { tool: string; label: string; detail: string };
@@ -129,10 +130,10 @@ export default function AgentExperience() {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 58000);
     try {
-      const messages = next.filter(item => item.id !== "intro").slice(-10).map(item => ({
+      const messages = boundConversation(next.filter(item => item.id !== "intro").slice(-10).map(item => ({
         role: item.role,
         content: item.content,
-      }));
+      })));
       const response = await fetch("/api/agent-demo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

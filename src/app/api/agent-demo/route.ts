@@ -1,3 +1,4 @@
+import { validateMessages } from "@/lib/theia-conversation";
 import { NextRequest, NextResponse } from "next/server";
 import { checkCalendlyAvailability, type AvailabilityRequest, type AvailabilityResult } from "@/lib/calendly";
 import { describeStack, estimateCapacity, guidedAnswer, mapOpportunity, resolveFocus, type Focus } from "@/lib/demo-agent";
@@ -147,22 +148,6 @@ function limit(key: string) {
   return next.count <= MAX_PER_IP && instanceWindow.count <= MAX_PER_INSTANCE;
 }
 
-function validateMessages(value: unknown): Conversation[] | null {
-  if (!Array.isArray(value) || value.length === 0 || value.length > 10) return null;
-  const messages: Conversation[] = [];
-  let chars = 0;
-  for (const item of value) {
-    if (!item || typeof item !== "object") return null;
-    const msg = item as Record<string, unknown>;
-    if ((msg.role !== "assistant" && msg.role !== "user") || typeof msg.content !== "string") return null;
-    const cleaned = msg.content.trim();
-    if (cleaned.length < 1 || cleaned.length > 1200) return null;
-    chars += cleaned.length;
-    messages.push({ role: msg.role, content: cleaned });
-  }
-  return chars <= 6400 && messages.at(-1)?.role === "user" ? messages : null;
-}
-
 async function runTool(name: string, raw: string): Promise<{ result: object; activity: Activity; availability?: AvailabilityResult; knowledge?: SearchResult }> {
   let data: Record<string, unknown> = {};
   try {
@@ -299,7 +284,7 @@ export async function POST(request: NextRequest) {
   if (origin && origin !== request.nextUrl.origin) return json({ error: "This demo is available on the Metanomic website." }, 403);
   if (request.headers.get("sec-fetch-site") === "cross-site") return json({ error: "Cross-site requests are blocked." }, 403);
   if (!request.headers.get("content-type")?.includes("application/json")) return json({ error: "Expected JSON." }, 415);
-  if (Number(request.headers.get("content-length") ?? 0) > 11000) return json({ error: "Message too long." }, 413);
+  if (Number(request.headers.get("content-length") ?? 0) > 110000) return json({ error: "Message too long." }, 413);
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous";
   if (!limit(ip)) return json({ error: "Demo usage limit reached. Please try again later." }, 429);
@@ -307,7 +292,7 @@ export async function POST(request: NextRequest) {
   let payload: unknown;
   try {
     const raw = await request.text();
-    if (raw.length > 11000) return json({ error: "Message too long." }, 413);
+    if (raw.length > 110000) return json({ error: "Message too long." }, 413);
     payload = JSON.parse(raw);
   } catch {
     return json({ error: "Invalid JSON request." }, 400);
