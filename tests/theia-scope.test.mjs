@@ -80,7 +80,7 @@ describe("Approved document exception", () => {
   });
 });
 
-describe("Gentle scope redirects and contact invitation", () => {
+describe("Gentle scope redirects without unnecessary sales pitches", () => {
   const scenarios = [
     ["Who won the 1986 World Series?", "sports"],
     ["Write a fantasy novel.", "writing"],
@@ -89,11 +89,10 @@ describe("Gentle scope redirects and contact invitation", () => {
     ["What is the capital of France?", "business"],
   ];
   for (const [prompt, context] of scenarios) {
-    it(`gently redirects ${context} request and invites contact`, () => {
+    it(`gently redirects ${context} request`, () => {
       const reply = outOfScopeReply(prompt);
       assert.match(reply, /a little outside my specialty/i);
       assert.match(reply, /AI/i);
-      assert.match(reply, /Metanomic/i);
       assert.doesNotMatch(reply, /no-obligation discussion/i);
       if (context === "sports") assert.match(reply, /analytics or operations in sports/i);
       if (context === "writing") assert.match(reply, /writing or publishing workflows/i);
