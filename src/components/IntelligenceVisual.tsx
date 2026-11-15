@@ -8,7 +8,7 @@ type Star = {
   size: number; phase: number; speed: number; tint: number;
   age: number; lifetime: number; opacity: number;
   isRed: boolean;
-  trail?: { x: number; y: number }[];
+  trail?: { x: number; y: number; time: number }[];
 };
 
 const TAU = Math.PI * 2;
@@ -138,8 +138,9 @@ function paint(
         // viewport wraps so it cannot draw a streak across the entire screen.
         const trail = star.trail ?? (star.trail = []);
         if (wrapped) trail.length = 0;
-        trail.push({ x: star.x, y: star.y });
-        if (trail.length > 42) trail.shift();
+        trail.push({ x: star.x, y: star.y, time: elapsed });
+        // A short-lived wake (~0.38s) fades consistently across frame rates.
+        while (trail.length > 1 && elapsed - trail[0].time > .38) trail.shift();
       }
     }
 
@@ -159,15 +160,18 @@ function paint(
       const trail = star.trail;
       context.save();
       context.lineCap = "round";
-      context.shadowColor = "rgba(255,65,78,.4)";
-      context.shadowBlur = 9;
+      context.shadowColor = "rgba(255,58,76,.75)";
+      context.shadowBlur = 18;
       for (let segment = 1; segment < trail.length; segment++) {
-        const strength = segment / (trail.length - 1);
+        // A brighter, thicker head tapers sharply into the fading red wake.
+        const freshness = Math.max(0, 1 - (elapsed - trail[segment].time) / .38);
+        const glow = freshness * freshness * freshness;
+        if (glow < .003) continue;
         context.beginPath();
         context.moveTo(trail[segment - 1].x, trail[segment - 1].y);
         context.lineTo(trail[segment].x, trail[segment].y);
-        context.strokeStyle = `rgba(246,68,87,${(strength * strength * .21).toFixed(3)})`;
-        context.lineWidth = .45 + strength * .95;
+        context.strokeStyle = `rgba(255,66,82,${(glow * .58).toFixed(3)})`;
+        context.lineWidth = 1.5 + freshness * 3.2;
         context.stroke();
       }
       context.restore();
