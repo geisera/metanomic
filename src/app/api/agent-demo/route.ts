@@ -405,9 +405,9 @@ export async function POST(request: NextRequest) {
         sourceUrl: match.source_url, excerpt: match.excerpt,
       }));
       const quote = verified.map((match, index) =>
-        "[" + (index + 1) + "] " + match.excerpt.slice(0, 900)).join("\\n\\n");
+        "[" + (index + 1) + "] " + match.excerpt.slice(0, 900)).join("\n\n");
       return json({
-        answer: "I found relevant published knowledge, but couldn't generate a full answer right now. Here are the source passages:\\n\\n" + quote,
+        answer: "I found relevant published knowledge, but couldn't generate a full answer right now. Here are the source passages:\n\n" + quote,
         mode: "guided", sources, ...diagnosticActivity(activities),
         notice: "Showing verified published source excerpts, not a generated response.",
       });
