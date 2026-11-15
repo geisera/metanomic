@@ -51,7 +51,15 @@ export function hasPertinentPublishedEvidence(question: string, matches: Evidenc
   return matches.some(match => {
     const source = words(match.title + " " + match.excerpt);
     const shared = anchors.filter(word => source.has(word));
-    return shared.length >= 2 || (shared.length === 1 && shared[0].length >= 7 &&
+    const distinctive = shared.length === 1 && (
+      shared[0].length >= 7 ||
+      // Fictional proper names can be short ("Hush", "Nim").
+      new RegExp("\\b" + shared[0] + "\\b", "i").test(question) &&
+        (question.match(/\\b[A-Z][a-z]{3,}\\b/g) || []).some(
+          name => name.toLowerCase() === shared[0]
+        )
+    );
+    return shared.length >= 2 || (distinctive &&
       !["business","process","services","company","system","systems","request","support","general","history","fiction","fictional","chapter","capital","kingdom"].includes(shared[0]));
   });
 }
