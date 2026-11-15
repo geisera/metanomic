@@ -395,6 +395,23 @@ export async function POST(request: NextRequest) {
       mode: "guided",
       notice: "Live model response was unavailable. This result came from the read-only Calendly availability tool.",
     });
+    // If model generation fails after a successful knowledge lookup, preserve
+    // actual evidence instead of displaying an unrelated AI pilot template.
+    if (latestKnowledge?.matches.length) {
+      const verified = latestKnowledge.matches.slice(0, 3);
+      const sources = verified.map((match, index) => ({
+        number: index + 1, documentId: match.document_id, title: match.title,
+        revision: match.revision, category: match.category,
+        sourceUrl: match.source_url, excerpt: match.excerpt,
+      }));
+      const quote = verified.map((match, index) =>
+        "[" + (index + 1) + "] " + match.excerpt.slice(0, 900)).join("\\n\\n");
+      return json({
+        answer: "I found relevant published knowledge, but couldn't generate a full answer right now. Here are the source passages:\\n\\n" + quote,
+        mode: "guided", sources, ...diagnosticActivity(activities),
+        notice: "Showing verified published source excerpts, not a generated response.",
+      });
+    }
     // Explicitly labeled fallback; never misrepresent deterministic content as model output.
     const fallback = guidedAnswer(latest);
     return json({
