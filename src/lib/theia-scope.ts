@@ -55,7 +55,7 @@ export function hasPertinentPublishedEvidence(question: string, matches: Evidenc
       shared[0].length >= 7 ||
       // Fictional proper names can be short ("Hush", "Nim").
       new RegExp("\\b" + shared[0] + "\\b", "i").test(question) &&
-        (question.match(/\\b[A-Z][a-z]{3,}\\b/g) || []).some(
+        (question.match(/[A-Z][a-z]{3,}/g) || []).some(
           name => name.toLowerCase() === shared[0]
         )
     );
