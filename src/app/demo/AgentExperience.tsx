@@ -112,6 +112,9 @@ export default function AgentExperience({ embedded = false, instance = "demo" }:
     if (busy) return;
     resetConversation();
     setInput("");
+    requestAnimationFrame(() => {
+      (draftRef.current || document.getElementById("theia-workflow"))?.focus({ preventScroll: true });
+    });
   }
 
 return (
@@ -145,10 +148,12 @@ return (
               <button
                 type="button"
                 onClick={reset}
+                aria-label="Clear chat history"
+                title="Clear this conversation and its saved session history"
                 disabled={busy}
                 className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#52676c] px-3 text-sm text-[#d2e0d9] hover:border-[#9cbc92] hover:bg-[#20333c] disabled:cursor-not-allowed disabled:opacity-55"
               >
-                New chat
+                Clear chat
               </button>
             )}
           </div>

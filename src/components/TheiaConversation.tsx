@@ -46,7 +46,10 @@ function useConversationState() {
   }, []);
   useEffect(() => {
     if (!ready) return;
-    try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(items.map(({id,role,content}) => ({id,role,content})))); } catch {}
+    try {
+      if (items.every(item => item.id === "intro")) sessionStorage.removeItem(CHAT_KEY);
+      else sessionStorage.setItem(CHAT_KEY, JSON.stringify(items.map(({id,role,content}) => ({id,role,content}))));
+    } catch {}
   }, [items, ready]);
   async function submit(text: string, source: EntrySource = "typed") {
     const prompt = text.trim();
@@ -108,7 +111,7 @@ function useConversationState() {
   }
 
 
-  function reset() { if (sending.current) return; setItems([{id:"intro",role:"assistant",content:intro}]); setError("");setLastMode(null); }
+  function reset() { if (sending.current) return; try { sessionStorage.removeItem(CHAT_KEY); } catch {} setItems([{id:"intro",role:"assistant",content:intro}]); setError("");setLastMode(null); }
   return { items, ready, busy, error, lastMode, count, atLimit, isKnowledgeAdmin, showDiagnostics, setShowDiagnostics, submit, reset, section, setSection };
 }
 const Conversation = createContext<ReturnType<typeof useConversationState> | null>(null);
