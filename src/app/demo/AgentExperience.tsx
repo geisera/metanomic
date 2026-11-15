@@ -18,6 +18,15 @@ type ChatItem = {
 
 const intro = "Tell me what you're working on and I'll map out how AI can help. Or ask how I'm built—model, tools, architecture, safeguards.";
 
+// Lighthearted waiting copy, not a claim about specific model tools or hidden reasoning.
+const thinkingMessages = [
+  "Connecting the dots…",
+  "Making sure the dots actually connect…",
+  "Checking for suspiciously convenient assumptions…",
+  "Giving the electrons something useful to do…",
+  "Putting the finishing touches on a thought…",
+] as const;
+
 const suggestions = [
   { label: "Explore a use case", prompt: "How would you design a human-supervised AI pilot for repetitive customer support requests?" },
   { label: "What tools can you use?", prompt: "Which server-side tools can you use, and what are their limits?" },
@@ -51,6 +60,7 @@ export default function AgentExperience() {
   const [items, setItems] = useState<ChatItem[]>([{ id: "intro", role: "assistant", content: intro }]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [thinkingIndex, setThinkingIndex] = useState(0);
   const [lastMode, setLastMode] = useState<"live" | "guided" | null>(null);
   const [error, setError] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<{ messageId: string; startTime: string } | null>(null);
@@ -60,7 +70,16 @@ export default function AgentExperience() {
   const atLimit = count >= 7;
   const remaining = 7 - count;
   const canSend = !busy && !atLimit && Boolean(input.trim());
-  const statusLabel = busy ? "Thinking" : lastMode === "guided" ? "Guided mode" : lastMode === "live" ? "Live model" : "Ready";
+  const statusLabel = busy ? "Preparing a reply" : lastMode === "guided" ? "Guided mode" : lastMode === "live" ? "Live model" : "Ready";
+
+  // Rotate only while the request is pending. Never delay an actual response.
+  useEffect(() => {
+    if (!busy) return;
+    const interval = window.setInterval(() => {
+      setThinkingIndex(index => (index + 1) % thinkingMessages.length);
+    }, 2800);
+    return () => window.clearInterval(interval);
+  }, [busy]);
 
   // Scroll only the conversation panel. scrollIntoView() also scrolls the page
   // and was causing the entire demo to jump each time a message arrived.
@@ -88,6 +107,7 @@ export default function AgentExperience() {
     setItems(next);
     setInput("");
     setError("");
+    setThinkingIndex(0);
     setBusy(true);
     setLastMode(null);
 
@@ -326,13 +346,13 @@ return (
                 </div>
               ))}
               {busy && (
-                <div className="flex items-center gap-3 text-sm text-[#cdded0]" role="status" aria-live="polite">
+                <div className="flex items-center gap-3 text-sm text-[#cdded0]" role="status" aria-label="Theia is preparing a reply" aria-live="off">
                   <span className="flex gap-1" aria-hidden="true">
                     <span className="h-1.5 w-1.5 motion-safe:animate-pulse rounded-full bg-[#c9ec8a]" />
                     <span className="h-1.5 w-1.5 motion-safe:animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:150ms]" />
                     <span className="h-1.5 w-1.5 motion-safe:animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:300ms]" />
                   </span>
-                  Theia is typing…
+                  <span className="min-w-0 motion-safe:transition-opacity">{thinkingMessages[thinkingIndex]}</span>
                 </div>
               )}
               {error && <div role="alert" className="rounded-lg border border-red-300/25 bg-red-950/30 px-4 py-3 text-xs leading-6 text-[#f3d2d2]">{error}</div>}
