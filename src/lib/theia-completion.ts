@@ -23,17 +23,17 @@ export function joinContinuation(previous: string, next: string): string {
       return left + right.slice(length);
     }
   }
-  if (/\\s$/.test(previous) || /^[,.;:!?)]/.test(right)) return left + " " + right;
-  return left + (/[\\w]$/.test(left) && /^[\\w]/.test(right) ? " " : "\\n") + right;
+  if (/\s$/.test(previous) || /^[,.;:!?)]/.test(right)) return left + " " + right;
+  return left + (/[\w]$/.test(left) && /^[\w]/.test(right) ? " " : "\n") + right;
 }
 
 export function finalizeAnswer(answer: string, complete: boolean): { answer: string; incomplete: boolean } {
   let text = answer.trim();
   if (text.length > RESPONSE_CHAR_LIMIT) {
-    const cut = text.lastIndexOf("\\n", RESPONSE_CHAR_LIMIT);
+    const cut = text.lastIndexOf("\n", RESPONSE_CHAR_LIMIT);
     text = text.slice(0, cut > RESPONSE_CHAR_LIMIT * .75 ? cut : RESPONSE_CHAR_LIMIT).trimEnd();
     complete = false;
   }
-  if (!complete) text += "\\n\\n[Response incomplete — please ask me to continue.]";
+  if (!complete) text += "\n\n[Response incomplete — please ask me to continue.]";
   return { answer: text, incomplete: !complete };
 }
