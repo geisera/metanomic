@@ -1,125 +1,69 @@
 "use client";
-
-import Link from "next/link";
 import { useEffect, useState } from "react";
-
+import { createPortal } from "react-dom";
+import TheiaAvatar from "./TheiaAvatar";
+import TheiaLink from "./TheiaLink";
 const DISMISS_KEY = "theia-bar-dismissed";
-const NAV_HEIGHT = 86;
-
-function sectionVisibleBelowNav(element: Element) {
-  const rect = element.getBoundingClientRect();
-  return rect.top < window.innerHeight && rect.bottom > NAV_HEIGHT;
-}
-
+const messages = [
+  "Describe a business challenge. Theia, our AI advisor, maps a pilot in minutes.",
+  "Our support queue is backed up.",
+  "Intake forms take days to process.",
+  "Reps spend hours updating the CRM.",
+];
 export default function TheiaAnnouncement() {
   const [ready, setReady] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [compact, setCompact] = useState(false);
-  const [theiaVisible, setTheiaVisible] = useState(false);
-
+  const [heroGone, setHeroGone] = useState(false);
+  const [obstructed, setObstructed] = useState(false);
+  const [reduced, setReduced] = useState(true);
+  const [paused, setPaused] = useState(false);
+  const [index, setIndex] = useState(0);
   useEffect(() => {
-    // Start visually hidden until storage has been checked; returning visitors
-    // never see an announcement they previously dismissed.
-    try {
-      setDismissed(window.localStorage.getItem(DISMISS_KEY) === "1");
-    } catch {
-      // Storage can be blocked by browser/privacy settings.
-    }
-
-    const hero = document.getElementById("home-hero");
-    const theia = document.getElementById("meet-theia");
-
-    function measure() {
-      if (hero) setCompact(hero.getBoundingClientRect().bottom <= NAV_HEIGHT);
-      if (theia) setTheiaVisible(sectionVisibleBelowNav(theia));
-    }
-
-    measure();
-    setReady(true);
-
-    if (typeof IntersectionObserver === "undefined") {
-      window.addEventListener("scroll", measure, { passive: true });
-      window.addEventListener("resize", measure);
-      return () => {
-        window.removeEventListener("scroll", measure);
-        window.removeEventListener("resize", measure);
-      };
-    }
-
-    const heroObserver = new IntersectionObserver(
-      ([entry]) => setCompact(!entry.isIntersecting && entry.boundingClientRect.bottom <= NAV_HEIGHT),
-      { rootMargin: `-${NAV_HEIGHT}px 0px 0px 0px` }
-    );
-    const theiaObserver = new IntersectionObserver(
-      ([entry]) => setTheiaVisible(entry.isIntersecting),
-      { rootMargin: `-${NAV_HEIGHT}px 0px 0px 0px` }
-    );
-
-    if (hero) heroObserver.observe(hero);
-    if (theia) theiaObserver.observe(theia);
-    return () => {
-      heroObserver.disconnect();
-      theiaObserver.disconnect();
+    let frame = 0;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => setReduced(media.matches);
+    const measure = () => {
+      setHeroGone((document.getElementById("home-hero")?.getBoundingClientRect().bottom ?? Infinity) <= 86);
+      const blockers = document.querySelectorAll('footer, [role="dialog"], [aria-modal="true"], [id*="cookie" i], [class*="cookie-banner" i], [id*="consent" i]');
+      setObstructed(Array.from(blockers).some(el => {
+        const r = el.getBoundingClientRect(); const style = getComputedStyle(el);
+        return r.width > 0 && r.height > 0 && r.top < innerHeight && r.bottom > 0 && style.visibility !== "hidden" && style.display !== "none";
+      }));
     };
+    const schedule = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(measure); };
+    const init = window.setTimeout(() => {
+      try { setDismissed(localStorage.getItem(DISMISS_KEY) === "1"); } catch {}
+      syncMotion(); measure(); setReady(true);
+    }, 0);
+    media.addEventListener("change", syncMotion);
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "aria-hidden", "open"] });
+    return () => { clearTimeout(init); cancelAnimationFrame(frame); media.removeEventListener("change", syncMotion); window.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule); observer.disconnect(); };
   }, []);
-
+  useEffect(() => {
+    if (!ready || dismissed || paused || reduced) return;
+    const timer = window.setInterval(() => setIndex(i => (i + 1) % messages.length), 6000);
+    return () => window.clearInterval(timer);
+  }, [ready, dismissed, paused, reduced]);
   function dismiss() {
     setDismissed(true);
-    try {
-      window.localStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      // Dismiss for this page even when storage is unavailable.
-    }
+    try { localStorage.setItem(DISMISS_KEY, "1"); } catch {}
   }
-
-  const visible = ready && !dismissed && !theiaVisible;
-
-  return (
-    <section
-      aria-label="Meet Theia announcement"
-      aria-hidden={!visible}
-      className={`absolute inset-x-0 top-full border-b-2 border-[#c9ec8a] bg-[#142820]/98 shadow-[0_6px_20px_rgba(0,0,0,.20)] backdrop-blur-sm transition-[height,opacity,visibility] duration-200 motion-reduce:transition-none ${
-        compact ? "h-[48px] sm:h-[36px]" : "h-[48px] sm:h-[43px]"
-      } ${visible ? "visible opacity-100" : "invisible pointer-events-none opacity-0"}`}
-    >
-      {/* Stretch across the entire announcement, not just the content container. */}
-      <Link
-        href="/demo"
-        aria-label="Open Theia chat"
-        tabIndex={visible ? 0 : -1}
-        className="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#c9ec8a]"
-      />
-
-      <div className="container pointer-events-none relative z-10 flex h-full items-center justify-center px-12 sm:px-11 lg:px-0">
-        <div className="pointer-events-none flex w-full max-w-max min-w-0 items-center justify-center gap-2 sm:gap-4">
-          {!compact && (
-            <span aria-hidden="true" className="relative hidden h-5 w-5 shrink-0 items-center justify-center rounded border border-[#73936d] bg-[#243c31] text-xs font-semibold text-[#ddf4c5] sm:flex sm:h-6 sm:w-6 sm:text-sm">
-              T
-              <span className="theia-online-dot absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#c9ec8a]" />
-            </span>
-          )}
-          <p className="hidden min-w-0 flex-1 text-center text-[10px] font-medium leading-[13px] text-[#e6f0e7] sm:block sm:flex-none sm:whitespace-nowrap sm:text-[11px] lg:text-xs">
-            Describe a business challenge. Theia maps the AI solution.
-          </p>
-          <Link
-            href="/demo"
-            tabIndex={visible ? 0 : -1}
-            className="pointer-events-auto relative inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-md bg-[#c9ec8a] px-2 text-[10px] font-bold text-[#101a1b] transition-colors before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-[''] hover:bg-[#dcf7af] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:gap-2 sm:px-3 sm:text-xs sm:before:hidden"
-          >
-            Talk with Theia <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
+  const current = reduced ? 0 : index;
+  return <>
+    <noscript><style>{`.theia-pending { visibility:visible; } .theia-dismiss { display:none; }`}</style></noscript>
+    {!dismissed && <section aria-label="Theia announcement" className={`theia-announcement ${ready ? "" : "theia-pending"}`} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}>
+      <div className="container flex items-center gap-3 py-3 pr-10 sm:justify-center">
+        <TheiaAvatar status className="!h-8 !w-8 !text-sm" />
+        <TheiaLink source={current ? "bar-example" : "bar"} prompt={current ? messages[current] : undefined} className="theia-bar-link">
+          <span>{messages[current]}</span><span className="theia-bar-button">Ask Theia →</span>
+        </TheiaLink>
       </div>
-
-      <button
-        type="button"
-        tabIndex={visible ? 0 : -1}
-        onClick={dismiss}
-        aria-label="Dismiss announcement"
-        className="pointer-events-auto absolute right-1 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-xl leading-none text-[#e6f0e7] transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#c9ec8a] sm:right-4"
-      >
-        <span aria-hidden="true">×</span>
-      </button>
-    </section>
-  );
+      <button type="button" onClick={dismiss} aria-label="Dismiss announcement" className="theia-dismiss">×</button>
+    </section>}
+    {ready && (dismissed || heroGone) && !obstructed && window.location.pathname !== "/demo" && createPortal(
+      <TheiaLink source="launcher" aria-label="Ask Theia, our AI workflow advisor" className="theia-launcher"><TheiaAvatar status className="!h-8 !w-8 !text-sm" />Ask Theia <span aria-hidden="true">→</span></TheiaLink>, document.body)}
+  </>;
 }

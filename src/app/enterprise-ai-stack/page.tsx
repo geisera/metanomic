@@ -147,7 +147,7 @@ export default function EnterpriseAIStackPage() {
           <nav aria-label="Page navigation" className="flex items-center gap-4 sm:gap-7">
             <Link href="/" className="navlink">Home</Link>
             <Link href="/#services" className="navlink hidden sm:inline">Services</Link>
-            <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden="true">↗</span></Link>
+            <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden="true">→</span></Link>
           </nav>
         </header>
       </div>
@@ -209,7 +209,7 @@ export default function EnterpriseAIStackPage() {
               <article id={layer.id} key={layer.id} className="card scroll-mt-8">
                 <div className="flex items-start justify-between gap-4">
                   <p className="eyebrow">{layer.number} / Stack layer</p>
-                  <span aria-hidden="true" className="text-[#6b8b7a]">↗</span>
+                  <span aria-hidden="true" className="text-[#6b8b7a]">→</span>
                 </div>
                 <h3 className="mt-6 text-[26px] font-semibold tracking-[-.045em]">{layer.name}</h3>
                 <p className="muted mt-4 min-h-[90px] text-sm leading-7">{layer.description}</p>
@@ -258,7 +258,7 @@ export default function EnterpriseAIStackPage() {
             <h2 className="mt-3 max-w-[680px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">The technology matters. People matter more.</h2>
             <p className="mt-4 max-w-[600px] text-sm leading-7 text-[#244038]">Metanomic builds AI tools around the people, processes, and goals they are meant to support.</p>
           </div>
-          <Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Talk with Metanomic <span aria-hidden="true">↗</span></Link>
+          <Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Talk with our team <span aria-hidden="true">→</span></Link>
         </div>
       </section>
 

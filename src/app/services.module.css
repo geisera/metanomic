@@ -1,7 +1,7 @@
 /* Scoped to the services section; shared site tokens and controls stay unchanged. */
 .section { scroll-margin-top: 160px; }
 .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-.card { position: relative; display: block; min-width: 0; cursor: pointer; background: #152431; transition: border-color .2s, background-color .2s; }
+.card { position: relative; display: flex; flex-direction: column; min-width: 0; cursor: pointer; background: #152431; transition: border-color .2s, background-color .2s; }
 .card:hover, .card:focus-visible { border-color: var(--lime); background: #1b2a35; }
 .card:focus-visible, .ctas a:focus-visible { outline: 2px solid var(--lime); outline-offset: 4px; }
 .icon, .arrow { color: var(--lime); }

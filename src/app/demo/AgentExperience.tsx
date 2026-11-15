@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import type { AvailabilityResult } from "@/lib/calendly";
 import { boundConversation } from "@/lib/theia-conversation";
+import TheiaAvatar from "@/components/TheiaAvatar";
+import { consumeTheiaPrefill } from "@/lib/theia-entry";
+import { suggestions } from "@/lib/theia-suggestions";
 import BookingForm from "./BookingForm";
 
 type Activity = { tool: string; label: string; detail: string };
@@ -31,12 +34,6 @@ const thinkingMessages = [
   "Putting the finishing touches on a thought…",
 ] as const;
 
-const suggestions = [
-  { label: "Explore a use case", prompt: "How would you design a human-supervised AI pilot for repetitive customer support requests?" },
-  { label: "What tools can you use?", prompt: "Which server-side tools can you use, and what are their limits?" },
-  { label: "What's your stack?", prompt: "What technology stack are you built on, and how do the parts fit together?" },
-  { label: "How is my data handled?", prompt: "How do you handle my messages, and what safeguards and limitations does this demo have?" },
-];
 
 function formattedText(content: string) {
   // Lightweight, safe display: render plain text and simple headings without HTML injection.
@@ -173,6 +170,17 @@ export default function AgentExperience() {
     }
   }
 
+  const sendPrefill = useEffectEvent((text: string) => { void submit(text); });
+  useEffect(() => {
+    // Defer until mounted; Strict Mode cleanup cancels its probe timer.
+    const timer = window.setTimeout(() => {
+      let prompt: string | null = null;
+      try { prompt = consumeTheiaPrefill(window.sessionStorage); } catch { /* Storage disabled. */ }
+      if (prompt) sendPrefill(prompt);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void submit(input);
@@ -199,13 +207,11 @@ return (
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-y border-[#385250] bg-[#0c1a23] shadow-[0_24px_90px_rgba(0,0,0,.20)] sm:rounded-xl sm:border">
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[#30464f] px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#b3db98]/35 bg-[#223a32] text-lg font-semibold text-[#d9f5b8]">
-              T
-            </span>
+            <TheiaAvatar />
             <div className="min-w-0">
               <p className="text-lg font-semibold leading-tight tracking-[-.02em] text-[#edf5e9]">Theia</p>
-              {count > 0 && <h1 className="sr-only">Theia — AI Workflow Advisor</h1>}
-              <p className="mt-0.5 hidden text-xs text-[#c2d1ca] sm:block">AI Workflow Advisor</p>
+              {count > 0 && <h1 className="sr-only">Theia — AI workflow advisor</h1>}
+              <p className="mt-0.5 hidden text-xs text-[#c2d1ca] sm:block">AI workflow advisor</p>
             </div>
           </div>
           <div className="flex items-center gap-3 sm:gap-5">
@@ -473,7 +479,7 @@ return (
                 href="/contact"
                 className="inline-flex min-h-6 items-center rounded-sm font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e5f8c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
               >
-                Schedule a call <span aria-hidden="true" className="ml-1">↗</span>
+                Schedule a call <span aria-hidden="true" className="ml-1">→</span>
               </Link>
             </div>
             {atLimit && (

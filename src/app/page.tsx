@@ -1,5 +1,8 @@
 import Link from "next/link";
 import styles from "./services.module.css";
+import TheiaLink from "@/components/TheiaLink";
+import TheiaNav from "@/components/TheiaNav";
+import TheiaShowcase from "@/components/TheiaShowcase";
 import TheiaAnnouncement from "@/components/TheiaAnnouncement";
 
 const services = [
@@ -30,14 +33,14 @@ export default function Home() {
       <div className="border-b border-[#20303b] bg-[#091019]/95 backdrop-blur-sm">
         <header className="container flex min-h-[86px] items-center justify-between gap-4">
         <Logo />
-        <nav aria-label="Primary navigation" className="hidden items-center gap-8 md:flex">
+        <nav aria-label="Primary navigation" className="hidden items-center gap-8 lg:flex">
           <a className="navlink" href="#services">What we do</a>
           <a className="navlink" href="#approach">Our approach</a>
           <Link className="navlink" href="/enterprise-ai-stack">AI stack</Link>
-          <Link className="navlink" href="/demo">Meet Theia</Link>
+          <TheiaNav />
           <a className="navlink" href="#about">About</a>
         </nav>
-        <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>↗</span></Link>
+        <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>→</span></Link>
       </header>
       </div>
       <TheiaAnnouncement />
@@ -50,9 +53,10 @@ export default function Home() {
           <h1 className="mt-8 max-w-[790px] text-[clamp(3.4rem,7.5vw,6.9rem)] leading-[1.02] font-semibold tracking-[-.075em]">AI that magnifies<br/><span className="text-[#c9ec8a]">human impact.</span></h1>
           <p className="muted mt-8 max-w-[550px] text-[17px] leading-[1.85]">We build AI tools that give people greater reach and more room to do their best work. From custom agents to connected workflows, our mission is to turn human expertise, ambition, and ideas into meaningful results at a greater scale.</p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="/contact" className="button button-primary">Start a conversation <span aria-hidden>↗</span></Link>
-            <a href="#services" className="button button-outline">Explore our services <span aria-hidden>↓</span></a>
+            <Link href="/contact" className="button button-primary">Start a conversation <span aria-hidden>→</span></Link>
+            <TheiaLink source="hero" className="button button-outline">Ask Theia, our AI advisor →</TheiaLink>
           </div>
+          <a href="#services" className="mt-5 inline-flex rounded py-2 text-sm text-[#d5e5dc]">Explore our services ↓</a>
         </div>
       </div>
     </section>
@@ -65,14 +69,15 @@ export default function Home() {
           <p className="muted mt-6 max-w-[65ch] text-lg leading-relaxed md:text-xl">We design, integrate, and run custom agents that use your knowledge and your tools to finish defined tasks, inside the permissions you set.</p>
         </div>
         <div className={styles.grid}>
-          {services.map((service) => <Link href="/demo" className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: talk with Theia`}>
+          {services.map((service) => <TheiaLink source="card" prompt={`I'm interested in ${service.title}.`} className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: Ask Theia about this`}>
             <svg className={styles.icon} width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={service.icon} /></svg>
-            <svg className={styles.arrow} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" /></svg>
+            <svg className={styles.arrow} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             <p className="eyebrow mt-5">{service.number} / {service.audience}</p>
             <h3 className="mt-5 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>
             <p className={styles.outcome}>{service.outcome}</p>
             <p className={styles.body}>{service.description}</p>
-          </Link>)}
+            <span className="mt-auto pt-6 text-sm font-semibold text-[#c9ec8a]">Ask Theia about this →</span>
+          </TheiaLink>)}
         </div>
         <p className="mt-8 text-center text-base leading-relaxed">Every agent ships with defined permissions, human approval on consequential actions, and measured results.</p>
         <ol className={styles.strip}>
@@ -81,11 +86,13 @@ export default function Home() {
           <li><span className="eyebrow">3.</span><div><p className="font-semibold">Operations.</p><p className={styles.body}>Evaluated, monitored, and improved continuously.</p></div></li>
         </ol>
         <div className={styles.ctas}>
-          <Link href="/contact" className="button button-primary">Start with a pilot</Link>
-          <Link href="/demo" className="button button-outline">Describe your challenge to Theia</Link>
+          <Link href="/contact" className="button button-primary">Talk with our team →</Link>
+          <TheiaLink source="section-input" className="button button-outline">Ask Theia about your workflow →</TheiaLink>
         </div>
       </div>
     </section>
+
+    <TheiaShowcase />
 
     <section aria-label="Explore the technology">
       <div className="container">
@@ -95,19 +102,8 @@ export default function Home() {
             <h3 className="mt-2 text-xl font-semibold tracking-[-.035em]">What goes into an enterprise AI system?</h3>
             <p className="muted mt-2 max-w-[650px] text-sm leading-7">Explore the models, agents, integrations, and infrastructure behind AI tools built for real work.</p>
           </div>
-          <Link href="/enterprise-ai-stack" className="button button-outline">Explore the AI stack <span aria-hidden="true">↗</span></Link>
+          <Link href="/enterprise-ai-stack" className="button button-outline">Explore the AI stack <span aria-hidden="true">→</span></Link>
         </div>
-      </div>
-    </section>
-
-    <section id="meet-theia" className="rule py-16 md:py-20">
-      <div className="container flex flex-wrap items-center justify-between gap-8 rounded-xl border border-[#3a5452] bg-[#10252a]/90 p-8 backdrop-blur-lg md:p-12">
-        <div className="max-w-[700px]">
-          <p className="eyebrow">See the technology in action</p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-[-.05em] md:text-4xl">Meet Theia. An AI guide with a real job to do.</h2>
-          <p className="muted mt-4 max-w-[600px] leading-8">Describe a business challenge. Theia, our interactive AI guide, helps turn it into a bounded pilot with practical tools, safeguards, and measurable outcomes.</p>
-        </div>
-        <Link href="/demo" className="button button-primary">Talk with Theia <span aria-hidden="true">↗</span></Link>
       </div>
     </section>
 
@@ -130,7 +126,7 @@ export default function Home() {
       <div className="container grid gap-10 md:grid-cols-[.55fr_1fr]">
         <p className="eyebrow pt-2">The Metanomic perspective</p>
         <div><h2 className="text-4xl font-semibold leading-[1.15] tracking-[-.06em] md:text-[3.3rem]">Human potential is the point.</h2>
-          <p className="muted mt-7 max-w-[660px] leading-8">The promise of AI isn't to replace the people who do meaningful work. It's to extend their expertise, creativity, and ability to act. We build practical tools that put more possibility in human hands—helping individuals and organizations solve bigger problems and make a greater difference.</p>
+          <p className="muted mt-7 max-w-[660px] leading-8">The promise of AI isn&apos;t to replace the people who do meaningful work. It&apos;s to extend their expertise, creativity, and ability to act. We build practical tools that put more possibility in human hands—helping individuals and organizations solve bigger problems and make a greater difference.</p>
         </div>
       </div>
     </section>
@@ -138,9 +134,9 @@ export default function Home() {
     <section className="border-y border-[#405242] bg-[#c9ec8a]/90 py-20 text-[#14231e] backdrop-blur-sm">
       <div className="container flex flex-wrap items-center justify-between gap-8">
         <div><p className="text-xs font-bold uppercase tracking-[.2em]">Build what comes next</p><h2 className="mt-3 max-w-[660px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">Let&apos;s make a bigger impact.</h2></div>
-        <Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Talk with Metanomic <span aria-hidden>↗</span></Link>
+        <div className="flex flex-wrap items-center gap-5"><Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Talk with our team →</Link><TheiaLink source="final-cta" className="rounded py-3 font-semibold">Or start with Theia →</TheiaLink></div>
       </div>
     </section>
-    <footer className="container flex flex-wrap items-center justify-between gap-5 py-10"><Logo/><p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p><Link className="navlink" href="/contact">Contact</Link></footer>
+    <footer className="container flex flex-wrap items-center justify-between gap-5 py-10"><Logo/><p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p><nav aria-label="Footer navigation" className="flex flex-wrap gap-6"><TheiaLink source="footer" className="navlink rounded">Try Theia →</TheiaLink><Link className="navlink" href="/contact">Contact our team →</Link></nav></footer>
   </main>;
 }
