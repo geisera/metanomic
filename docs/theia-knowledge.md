@@ -91,6 +91,7 @@ No Supabase service-role or secret key is required for this milestone. The authe
 The migration `supabase/migrations/20261115_theia_rag_pipeline.sql` adds:
 - An administrator-only `knowledge_index_document` RPC for atomic replacement of each document's embedded chunks.
 - A read-only `knowledge_search` RPC combining PostgreSQL full-text search and pgvector semantic ranking (reciprocal rank fusion).
+- A follow-up migration `supabase/migrations/20261115_theia_search_relevance.sql` caps queries and filters out low-similarity semantic results; keyword matching remains available for exact terms.
 - A generated full-text index and a revision check that **immediately excludes** edited, archived, unpublished or not-yet-reindexed documents.
 
 ### Indexing an approved document
