@@ -167,6 +167,8 @@ create policy knowledge_revisions_admin_read on public.knowledge_revisions
 drop policy if exists knowledge_revisions_admin_insert on public.knowledge_revisions;
 create policy knowledge_revisions_admin_insert on public.knowledge_revisions
   for insert to authenticated with check (
+    -- Revisions must originate from the document trigger, never a direct client INSERT.
+    pg_trigger_depth() > 0 and
     exists (select 1 from public.knowledge_admins a where a.user_id = (select auth.uid()))
   );
 
