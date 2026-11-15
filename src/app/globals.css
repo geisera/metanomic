@@ -60,22 +60,7 @@ a[href="#meet-theia"]:focus-visible, a[href="#services"]:focus-visible, a[href="
 /* Dark focus outlines remain visible on the final accent-colored CTA block. */
 section.bg-\[\#c9ec8a\]\/90 :is(a,button):focus-visible { outline-color:#14231e; }
 
-/* Space is reserved from first paint; the dock itself never changes document flow. */
-.theia-dock-reserve { height:220px; }
-.theia-dock { position:fixed; left:50%; transform:translateX(-50%); width:min(620px,calc(100% - 32px)); z-index:45; border:1px solid #506c53; border-radius:12px; background:var(--background); padding:12px; color:var(--foreground); transition:padding .15s; }
-.theia-dock.is-minimized { width:min(560px,calc(100% - 32px)); padding:0; border-radius:999px; }
-.theia-dock-pill { display:flex; width:100%; align-items:center; gap:12px; padding:12px 16px; border-radius:inherit; text-align:left; font-size:14px; cursor:pointer; }
-.theia-dock-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
-.theia-dock-chips button { padding:6px 10px; border:1px solid #49664e; border-radius:999px; font-size:12px; cursor:pointer; }
-.theia-dock-chips button:last-child { margin-left:auto; min-width:32px; }
-.theia-dock-form { display:flex; align-items:center; gap:10px; }
-.theia-dock-form input { min-width:0; flex:1; background:#0c1a23; border:1px solid #506c53; border-radius:6px; padding:12px; font-size:16px; color:var(--foreground); }
-.theia-dock-form input::placeholder { color:#b9cdc7; }
-.theia-dock-form .button { min-height:44px; padding:0 12px; }
-.theia-dock button:disabled { opacity:.6; cursor:not-allowed; }
-.theia-dock-micro { margin-top:10px; font-size:11px; text-align:center; color:#c4d3ce; }
-.theia-dock-resume { display:block; margin:8px auto 0; color:var(--lime); font-size:12px; }
-.theia-dock :is(input,button):focus-visible, .theia-drawer :is(a,button,textarea):focus-visible { outline:2px solid var(--lime); outline-offset:3px; }
+.theia-drawer :is(a,button,textarea):focus-visible { outline:2px solid var(--lime); outline-offset:3px; }
 .theia-drawer { position:fixed; inset:0 0 0 auto; margin:0; padding:0; width:min(680px,100%); height:100dvh; max-width:100%; max-height:100dvh; border:1px solid #385250; background:#0c1a23; color:var(--foreground); }
 .theia-drawer[open] { display:flex; flex-direction:column; }
 .theia-drawer::backdrop { background:#091019; opacity:.8; }
@@ -84,10 +69,8 @@ section.bg-\[\#c9ec8a\]\/90 :is(a,button):focus-visible { outline-color:#14231e;
 .theia-drawer-heading button { min-width:44px; min-height:44px; border-radius:6px; font-size:24px; cursor:pointer; }
 .theia-handoff { flex-shrink:0; padding:12px 16px max(12px,env(safe-area-inset-bottom)); font-size:14px; color:var(--lime); text-align:center; }
 .theia-inline-chat { display:flex; min-width:0; height:650px; max-height:80dvh; }
-@media(max-width:639px) { .theia-dock { width:100%; padding:10px max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); border-radius:12px 12px 0 0; } .theia-dock-form { flex-wrap:wrap; } .theia-dock-form input { width:calc(100% - 48px); } .theia-dock-form .button { width:100%; } .theia-dock-reserve { height:260px; } .theia-dock-micro { font-size:10px; } }
-@media(prefers-reduced-motion:reduce) { .theia-dock,.theia-dock *,.theia-drawer * { transition:none !important; animation:none !important; } }
 
 .theia-home-chips { display:flex; gap:8px; overflow-x:auto; padding:4px; margin-inline:-4px; }
 .theia-home-chips .theia-chip { flex-shrink:0; white-space:nowrap; padding-inline:10px; }
-.theia-dock-example { display:block; width:100%; margin-bottom:10px; padding:5px; text-align:left; font-size:13px; color:var(--lime); cursor:pointer; }
-.theia-dock[aria-hidden="true"] { visibility:hidden; pointer-events:none; }
+
+@media(prefers-reduced-motion:reduce) { .theia-drawer * { transition:none !important; animation:none !important; } }
