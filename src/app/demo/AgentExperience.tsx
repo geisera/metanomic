@@ -203,14 +203,14 @@ return (
                       <div className="mt-4">
                         <p>{item.appointmentInvitation || "Would you like to book an appointment with Metanomic to discuss your AI and automation goals?"}</p>
                         {!item.booking && (
-                          <a
-                            href="https://calendly.com/metanomic"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 inline-flex min-h-11 items-center rounded-md border border-[#506c53] px-3 py-1.5 text-xs font-semibold text-[#c9ec8a] transition-colors hover:border-[#c9ec8a] hover:bg-[#1d3531] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+                          <button
+                            type="button"
+                            onClick={() => void submit("I'd like you to book an appointment with Metanomic for me. Please check the available appointment times.")}
+                            disabled={!ready || busy || atLimit}
+                            className="disabled:cursor-not-allowed disabled:opacity-50 mt-2 inline-flex min-h-11 items-center rounded-md border border-[#506c53] px-3 py-1.5 text-xs font-semibold text-[#c9ec8a] transition-colors hover:border-[#c9ec8a] hover:bg-[#1d3531] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
                           >
-                            Book an appointment <span aria-hidden="true" className="ml-2">↗</span>
-                          </a>
+                            Book an appointment <span aria-hidden="true" className="ml-2">→</span>
+                          </button>
                         )}
                       </div>
                     )}
