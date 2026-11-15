@@ -53,7 +53,7 @@ function errorOf(data: Record<string, unknown>, fallback: string): string {
   return typeof data.error === "string" ? data.error : fallback;
 }
 function isDocument(value: unknown): value is KnowledgeDocument {
-  return Boolean(value) && typeof value === "object" && "id" in value && "revision" in value;
+  return value !== null && typeof value === "object" && "id" in value && "revision" in value;
 }
 
 export default function KnowledgeManager() {
