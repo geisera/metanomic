@@ -85,7 +85,7 @@ keywords as (
  order by rn limit 40
 ),
 semantic as (
- select id, row_number() over (order by embedding <=> p_embedding, id) as rn
+ select id, row_number() over (order by embedding operator(extensions.<=>) p_embedding, id) as rn
  from eligible
  where p_embedding is not null and embedding is not null
  order by rn limit 40
