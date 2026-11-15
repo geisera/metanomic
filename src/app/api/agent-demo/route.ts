@@ -334,11 +334,15 @@ export async function POST(request: NextRequest) {
       notice: "Live Calendly availability needs a server-side API token. No times have been checked.",
     });
   }
-  // Retrieve knowledge deterministically. Prompt-only instructions to search are
-  // insufficient: the model may skip an optional tool and invent an answer.
-  // Scheduling is exempt because it must use the dedicated live Calendly tool.
-  const knowledge: SearchResult | undefined = calendarIntent
-    ? undefined : await searchKnowledge(latest);
+  // General AI terminology and pleasantries need no embedding/RAG call.
+  // Preserve the mandatory retrieval path for company-specific questions,
+  // uncertain knowledge topics, and published fictional test material.
+  const preliminaryScope = classifyScope(latest);
+  const companyDocumentation = /\\b(?:metanomic|theia|your (?:company|services|pricing|policies|documentation|knowledge|offerings|team|stack)|published (?:document|knowledge)|according to (?:your|the) (?:documentation|knowledge))\\b/i.test(latest);
+  const knowledgeNeeded = !calendarIntent && preliminaryScope !== "smalltalk" &&
+    (preliminaryScope !== "core" || companyDocumentation);
+  const knowledge: SearchResult | undefined = knowledgeNeeded
+    ? await searchKnowledge(latest) : undefined;
   // Scope enforcement is server-side, rather than a prompt-only suggestion.
   // A vector-nearest result is NOT sufficient to make an unrelated subject
   // eligible: it must overlap with distinctive terms in the user's question.
