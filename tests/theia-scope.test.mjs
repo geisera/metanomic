@@ -21,6 +21,12 @@ describe("Theia Balanced scope policy", () => {
     ["Who won the 1986 World Series?", "out_of_scope"],
     ["What was the final score?", "out_of_scope"],
     ["Give me a pasta recipe.", "out_of_scope"],
+    ["How do I make a mocha latte?", "out_of_scope"],
+    ["How can I make a cappuccino at home?", "out_of_scope"],
+    ["How to brew iced coffee?", "out_of_scope"],
+    ["How do you bake bread?", "out_of_scope"],
+    ["How do I prepare a smoothie?", "out_of_scope"],
+    ["How can AI improve coffee-shop order workflows?", "core"],
     ["Write a fantasy novel.", "out_of_scope"],
     ["Who is the president?", "out_of_scope"],
     ["What's the capital of France?", "out_of_scope"],
@@ -68,6 +74,7 @@ describe("Gentle scope redirects and contact invitation", () => {
     ["Who won the 1986 World Series?", "sports"],
     ["Write a fantasy novel.", "writing"],
     ["Give me a pasta recipe.", "hospitality"],
+    ["How do I make a mocha latte?", "hospitality"],
     ["What is the capital of France?", "business"],
   ];
   for (const [prompt, context] of scenarios) {
