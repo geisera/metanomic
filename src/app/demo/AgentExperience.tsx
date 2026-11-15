@@ -127,7 +127,7 @@ export default function AgentExperience() {
     setLastMode(null);
 
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 40000);
+    const timeout = window.setTimeout(() => controller.abort(), 58000);
     try {
       const messages = next.filter(item => item.id !== "intro").slice(-10).map(item => ({
         role: item.role,
