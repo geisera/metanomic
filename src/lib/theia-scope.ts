@@ -20,6 +20,8 @@ const SMALLTALK = /^(?:hi|hello|hey|good (?:morning|afternoon|evening)|thanks|th
 const OUT_OF_SCOPE = [
   /\b(?:who (?:won|lost)|what(?:'s| is| was| were) (?:the )?(?:final )?score|latest (?:sports )?scores?|league standings|playoff results?)\b/i,
   /\b(?:world series|super bowl|nba finals|nfl scores?|mlb scores?|premier league standings|sports scores?)\b/i,
+  // Ordinary food/drink preparation questions often omit the word "recipe".
+  /\b(?:how (?:do|can|should|would) (?:i|you|we) (?:make|prepare|brew|cook|bake|mix)|how to (?:make|prepare|brew|cook|bake|mix)|(?:give|show|tell|share|find|suggest|recommend)(?: me)?(?: a| the)? (?:way to make|recipe for))\b.{0,85}\b(?:mocha|lattes?|cappuccinos?|espresso|coffees?|smoothies?|cocktails?|tea|hot chocolate|dinner|cake|soup|meal|pasta|pizza|bread|sandwich|food|drinks?|breakfast|lunch)\b/i,
   /\b(?:give me|share|provide|find|suggest|recommend|how (?:do|can) i (?:make|cook|bake))\b.{0,38}\b(?:recipe|dinner|cake|soup|meal|pasta)\b/i,
   /\b(?:write|compose|draft|create)\b.{0,24}\b(?:poem|song|novel|fantasy story|fairy tale|short story|fanfiction|screenplay)\b/i,
   /\b(?:who (?:is|was) (?:the )?(?:president|prime minister)|election results?|who should i vote for|political polls?)\b/i,
@@ -85,7 +87,7 @@ export function outOfScopeReply(question: string): string {
     ? "If you're curious how AI can support analytics or operations in sports, I can explore that with you."
     : /\b(?:novel|story|poem|screenplay|creative writing|fanfiction)\b/i.test(question)
       ? "I can, however, help explore how AI tools could support writing or publishing workflows."
-      : /\b(?:recipe|dinner|cake|cook|pasta|meal)\b/i.test(question)
+      : /\b(?:recipe|dinner|cake|cook|pasta|meal|mocha|latte|coffee|espresso|cappuccino|drink|smoothie)\b/i.test(question)
         ? "If you're thinking about automating a hospitality or food-service workflow, that's something I can help with."
         : "If there's a business process, AI opportunity, or technology challenge behind your question, I'd be glad to explore it.";
   return "That's a little outside my specialty. I focus on practical AI, intelligent automation, and helping organizations improve their workflows. " +
