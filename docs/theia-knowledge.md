@@ -109,6 +109,7 @@ The migration `supabase/migrations/20261115_theia_rag_pipeline.sql` adds:
 - Retrieval is a bounded, anonymous, read-only RPC which returns **only current-revision Published chunks**; stale vectors are never returned.
 - Public retrieval never uses a service-role key. The database function enforces publication status and index revision in SQL.
 - A failed or interrupted indexing attempt cannot expose stale content; the atomic RPC writes the new index and completion state together.
+- Supabase's advisor warns that `knowledge_search` is a publicly callable `SECURITY DEFINER` function and that authenticated users may call the administrator indexing `SECURITY DEFINER` function. Those permissions are intentional for the respective RPCs. The search function returns only a small projection from current published indexed revisions; the indexing function explicitly verifies `auth.uid()` membership in `knowledge_admins` and checks current published revision under a row lock. Review these exceptions before broad public rollout.
 - The contents of retrieved excerpts are untrusted source material and cannot override Theia's system or tool instructions.
 - `AI_GATEWAY_API_KEY` is used server-side for embeddings (`openai/text-embedding-3-small`, 1,536 dimensions).
 
