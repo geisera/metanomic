@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { classifyScope, hasPertinentPublishedEvidence } from "../src/lib/theia-scope.ts";
+import { classifyScope, hasPertinentPublishedEvidence, outOfScopeReply } from "../src/lib/theia-scope.ts";
 
 const bellwether = {
   title: "TEST FICTION — The Kingdom of Bellwether Hollow",
@@ -61,4 +61,26 @@ describe("Approved document exception", () => {
     assert.equal(hasPertinentPublishedEvidence("What is the capital of Japan?", [bellwether]), false);
     assert.equal(classifyScope("What is the capital of Japan?", [bellwether]), "out_of_scope");
   });
+});
+
+describe("Gentle scope redirects and contact invitation", () => {
+  const scenarios = [
+    ["Who won the 1986 World Series?", "sports"],
+    ["Write a fantasy novel.", "writing"],
+    ["Give me a pasta recipe.", "hospitality"],
+    ["What is the capital of France?", "business"],
+  ];
+  for (const [prompt, context] of scenarios) {
+    it(`gently redirects ${context} request and invites contact`, () => {
+      const reply = outOfScopeReply(prompt);
+      assert.match(reply, /a little outside my specialty/i);
+      assert.match(reply, /AI/i);
+      assert.match(reply, /Metanomic/i);
+      assert.match(reply, /no-obligation discussion/i);
+      if (context === "sports") assert.match(reply, /analytics or operations in sports/i);
+      if (context === "writing") assert.match(reply, /writing or publishing workflows/i);
+      if (context === "hospitality") assert.match(reply, /hospitality or food-service workflow/i);
+      assert.ok(reply.length < 500);
+    });
+  }
 });
