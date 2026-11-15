@@ -37,10 +37,12 @@ export default function Home() {
           <a className="navlink" href="#services">What we do</a>
           <a className="navlink" href="#approach">Our approach</a>
           <Link className="navlink" href="/enterprise-ai-stack">AI stack</Link>
-          <TheiaNav />
           <a className="navlink" href="#about">About</a>
         </nav>
-        <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>→</span></Link>
+        <div className="flex shrink-0 items-center gap-5">
+          <div className="hidden sm:block"><Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>→</span></Link></div>
+          <TheiaNav />
+        </div>
       </header>
       </div>
     </div>
