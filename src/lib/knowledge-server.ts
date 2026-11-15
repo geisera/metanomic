@@ -49,12 +49,8 @@ function requestHeaders(config: Config, token?: string): HeadersInit {
   };
 }
 
-export async function getKnowledgeAdmin(): Promise<KnowledgeAuthResult> {
-  const config = getKnowledgeConfig();
-  if (!config) return { kind: "not_configured" };
-  const token = (await cookies()).get(KNOWLEDGE_COOKIE)?.value;
+export async function checkKnowledgeToken(config: Config, token: string): Promise<KnowledgeAuthResult> {
   if (!token || token.length > 5000) return { kind: "unauthenticated" };
-
   try {
     const userResponse = await fetch(config.url + "/auth/v1/user", {
       headers: requestHeaders(config, token),
@@ -89,6 +85,13 @@ export async function getKnowledgeAdmin(): Promise<KnowledgeAuthResult> {
     console.error("Knowledge administration session lookup failed", error instanceof Error ? error.message : "unknown");
     return { kind: "unavailable" };
   }
+}
+
+export async function getKnowledgeAdmin(): Promise<KnowledgeAuthResult> {
+  const config = getKnowledgeConfig();
+  if (!config) return { kind: "not_configured" };
+  const token = (await cookies()).get(KNOWLEDGE_COOKIE)?.value;
+  return token ? checkKnowledgeToken(config, token) : { kind: "unauthenticated" };
 }
 
 export function protectedError(kind: Exclude<KnowledgeAuthResult["kind"], "authenticated">) {
