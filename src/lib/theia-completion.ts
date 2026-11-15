@@ -24,7 +24,7 @@ export function joinContinuation(previous: string, next: string): string {
     }
   }
   if (/\s$/.test(previous) || /^[,.;:!?)]/.test(right)) return left + " " + right;
-  return left + (/[\w]$/.test(left) && /^[\w]/.test(right) ? " " : "\n") + right;
+  return left + (/^(?:[-*] |\\d+[.)] )/.test(right) ? "\n" : " ") + right;
 }
 
 export function finalizeAnswer(answer: string, complete: boolean): { answer: string; incomplete: boolean } {
