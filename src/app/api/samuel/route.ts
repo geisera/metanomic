@@ -35,7 +35,7 @@ export async function POST(request:Request){
   if(body.action==='index-search')return json(await searchIndex(auth.session,body));
   if(body.action==='search'){
    let filters;try{filters=parseFilters(body.filters);}catch(e){return json({error:e instanceof Error?e.message:'Invalid filters.'},400);}
-   return json(await searchSelectedSource(filters,body.source,{extract:searchExtract,reserve:()=>db(auth.session,'rpc/samuel_reserve_budget',{p_count:1,p_limit:dailyLimit(process.env.SAMUEL_DAILY_REQUEST_LIMIT)})}));
+   return json(await searchSelectedSource(filters,body.source,{extract:f=>searchExtract((path,payload)=>db(auth.session,path,payload),f),reserve:()=>db(auth.session,'rpc/samuel_reserve_budget',{p_count:1,p_limit:dailyLimit(process.env.SAMUEL_DAILY_REQUEST_LIMIT)})}));
   }
   if(body.action==='update')return json(await updateIndex(auth.session,body));
   if(body.action==='brief'){

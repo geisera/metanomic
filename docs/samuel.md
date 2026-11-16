@@ -4,17 +4,41 @@ Private workspace: https://metanomic.ai/samuel
 
 ## Current user workflow
 
-One keyword box searches titles AND available descriptions in the official public SAM.gov active-notice CSV extract. There is no collection setup, mandatory agency/NAICS filter, paid provider or API-key requirement for search. Case-insensitive substring matching requires every entered word somewhere in the combined title and description. The existing optional filters and 364-day default date window remain. Results sort newest first, with stable notice-ID tie-breaking, 20 per page (up to 50 pages).
+One keyword box searches titles AND available descriptions from the official public SAM.gov active-notice CSV extract. There is no collection setup, mandatory agency/NAICS filter, paid provider or API-key requirement for search. The existing optional filters and 364-day default date window remain. Results sort newest first, with stable notice-ID tie-breaking, 20 per page (up to 50 pages).
 
 Source: https://s3.amazonaws.com/falextracts/Contract%20Opportunities/datagov/ContractOpportunitiesFullCSV.csv
 
-The server streams and validates the entire CSV into a projected NDJSON disk cache before serving results. Search does not download just title matches. Cache refresh is demand-driven after six hours, single-flight per instance, with atomic replacement. Failed refreshes retain the last valid cache and display a stale warning. Empty, malformed or oversized extracts are rejected; no silent title-only fallback. The source date, notice count and available-description count are displayed. No archives or attachments are searched; source descriptions can be incomplete or shortened. Published active status does not guarantee an open response period.
+Keyword matching uses Postgres full-text search (`simple` configuration, no stemming). Every entered word must appear as a whole word in the combined title and description, case-insensitively. `"Quoted phrases"` and `-excluded` words are supported. Punctuation separates words on both sides, so `Salesforce.com` and `follow-on` match their parts. This replaces the earlier substring match: `sales` no longer matches `Salesforce`.
 
-This is an ephemeral per-server cache, not a durable shared database index. A cold instance downloads the approximately 213 MB extract; subsequent searches reuse the projected file. The download has a 240-second timeout and 400 MB source cap; projected output is limited to 240 MB, allowing old and replacement files within the server's temporary disk budget. The route allows 300 seconds. The first search can be slower; warm searches scan locally. No scheduled job or new dependency is added.
+### Extract store
 
-Live AI briefs still retrieve the selected notice and description through the public API with the existing global request budget; only briefs require a company profile. Search no longer spends that API budget. Legacy protected collection/index endpoints remain available internally but are not part of the user workflow.
+Searches read a shared Postgres store (`samuel_extract_notices`) through `samuel_extract_search`. A search never downloads the source file, so there is no cold-start download and every server instance returns the same version. Schema: `supabase/migrations/20261116_samuel_extract_store.sql`.
 
-Verification on the November 16, 2026 extract: 70,669 records, 59,147 with descriptions. Salesforce in the default date window matched 4 notices: 1 title match and 3 description-only matches. Local preparation took approximately 14 seconds excluding download; warm search approximately 1 second. This does not establish parity with SAM.gov website search or production latency.
+A scheduled job, `GET /api/samuel/ingest`, keeps the store current:
+
+1. It sends a `HEAD` request to the source and compares `ETag` (or `Last-Modified`) with the published version. An unchanged file is not downloaded; only the check time is recorded.
+2. A changed file is streamed, validated and projected to a temporary disk file. Empty, malformed, oversized or schema-changed files are rejected, as is a file with more than 20% fewer notices than the published version.
+3. Only notices whose content hash changed are written. Notices that left the extract are removed and the new version is published in one transaction, which also verifies that the stored notice count equals the extract's.
+
+Runs are single-flight across instances. A failed run leaves the published version in place and is recorded in `samuel_extract_versions`. A run that reaches its time budget is recorded as `partial`; the next run skips rows already written and continues. Changed rows become visible as they are written, while removals and the version switch are atomic. Descriptions are stored up to 100,000 characters.
+
+Schedule (`vercel.json`): four daily checks at 05:23, 09:23, 14:23 and 20:23 UTC. Each cron entry runs once a day, which every Vercel plan allows; on Pro these can be replaced by one hourly entry.
+
+Setup, in this order:
+
+1. Apply the migration to the Metanomic Supabase project.
+2. Add `SUPABASE_SECRET_KEY` (a Supabase secret key; `SUPABASE_SERVICE_ROLE_KEY` is also accepted) and `CRON_SECRET` (any long random string) to the Vercel Production environment. Both are server-only; never use a `NEXT_PUBLIC_` prefix.
+3. Deploy, then run the first load: `curl -H "Authorization: Bearer $CRON_SECRET" https://metanomic.ai/api/samuel/ingest`. Repeat while the response status is `partial`.
+
+Until the first load completes, extract search returns a "not been loaded yet" error; live API search is unaffected. `?force=1` reloads an unchanged file and accepts a file the shrink guard rejected.
+
+### Freshness shown to users
+
+Results show SAM.gov's own publication time for the loaded file (or "unknown publication date" when the source did not report one), the load time, the notice count and the available-description count. A warning appears when the latest refresh failed, when no scheduled check has succeeded for 26 hours, or when the loaded file is more than 36 hours old. No archives or attachments are searched; source descriptions can be incomplete or shortened. Published active status does not guarantee an open response period.
+
+Live AI briefs still retrieve the selected notice and description through the public API with the existing global request budget; only briefs require a company profile. Search does not spend that API budget. Legacy protected collection/index endpoints remain available internally but are not part of the user workflow.
+
+Verification: unit tests cover source-change detection, incremental writes and removals, duplicate rows, rejection of bad files, partial runs and single-flight. The migration and the ingest-to-search path were exercised against an in-process Postgres with synthetic data. Not yet verified: a load of the real ~213 MB extract, its duration on Vercel, and behavior against the production Supabase project.
 
 ## Retained index backend
 
@@ -29,7 +53,7 @@ Collections and indexed notices live in the existing Metanomic Supabase database
 
 ## Request controls
 
-- No schedules, automatic collection loops, or retries are introduced.
+- The extract ingest above is the only scheduled job; it calls no SAM.gov API and spends no request budget. No automatic collection loops or API retries are introduced.
 - `SAM_GOV_API_KEY` is server-only. Never use `NEXT_PUBLIC_` for this key.
 - `SAMUEL_DAILY_REQUEST_LIMIT` optionally sets an integer 1–1000; default is **10 reservations per UTC day**, shared across Samuel administrators and server instances. This is an application ceiling, not a claim about the account's SAM.gov allowance. Choose a value no greater than the account's actual allowance, allowing for any other key usage.
 - A batch reserves its entire chosen allowance atomically before upstream calls. Failed and unused reservations count against the cap, deliberately favoring conservative consumption after crashes. There is no refund race.
