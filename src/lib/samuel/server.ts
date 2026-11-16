@@ -73,3 +73,12 @@ export async function createBrief(id:string,posted:string,profile:string,evidenc
  if(typeof answer!=='string'||!answer.trim()||choice.finish_reason==='length')throw new SamuelError('Samuel could not produce a complete brief. Please try again.');
  return {...(entity?{entityUsed:{uei:entity.uei,name:entity.name,fetchedAt:entity.fetchedAt}}:{}),notice,brief:answer,description:description.slice(0,24000),descriptionTruncated:truncated,descriptionAvailable:!!description,fetchedAt:new Date().toISOString()};
 }
+
+export async function searchSelectedSource(filters:Filters,source:unknown,dependencies:{reserve:()=>Promise<boolean>;extract:(filters:Filters)=>Promise<SearchResult>}):Promise<SearchResult>{
+ const selected=source===undefined?'extract':source;
+ if(selected!=='live'&&selected!=='extract')throw new SamuelError('Choose live search or public extract.',400);
+ if(selected==='extract')return {...await dependencies.extract(filters),source:'extract'};
+ if(!process.env.SAM_GOV_API_KEY?.trim())throw new SamuelError('Live search requires the configured SAM.gov API key. Choose Public extract to search without it.',503);
+ if(!await dependencies.reserve())throw new SamuelError('The daily SAM.gov request budget has been reached. Choose Public extract or try after the next UTC day.',429);
+ return {...await searchOpportunities(filters),source:'live'};
+}

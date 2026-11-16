@@ -4,7 +4,7 @@ import { getKnowledgeAdmin, parseBody, sameOrigin } from '@/lib/knowledge-server
 import { parseFilters,validNoticeId } from '@/lib/samuel/core';
 import { searchExtract } from '@/lib/samuel/extract-server';
 import { dailyLimit } from '@/lib/samuel/index-core';
-import { SamuelError,createBrief } from '@/lib/samuel/server';
+import { SamuelError,createBrief,searchSelectedSource } from '@/lib/samuel/server';
 import { ensureScope,coverage,listScopes,searchIndex,updateIndex,indexedBrief,db } from '@/lib/samuel/index-server';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -35,7 +35,7 @@ export async function POST(request:Request){
   if(body.action==='index-search')return json(await searchIndex(auth.session,body));
   if(body.action==='search'){
    let filters;try{filters=parseFilters(body.filters);}catch(e){return json({error:e instanceof Error?e.message:'Invalid filters.'},400);}
-   return json(await searchExtract(filters));
+   return json(await searchSelectedSource(filters,body.source,{extract:searchExtract,reserve:()=>db(auth.session,'rpc/samuel_reserve_budget',{p_count:1,p_limit:dailyLimit(process.env.SAMUEL_DAILY_REQUEST_LIMIT)})}));
   }
   if(body.action==='update')return json(await updateIndex(auth.session,body));
   if(body.action==='brief'){
