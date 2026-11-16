@@ -59,3 +59,13 @@ Run changed-file ESLint, TypeScript, `node --experimental-strip-types --test tes
 Database transaction tests verify description-only matching, exact/related separation, status filtering, lock exclusion, budget rejection, and non-admin isolation. Test records and budget changes are rolled back. Unit tests verify resumable batches, request caps, safe source retrieval, no external calls for index searches, and cached briefing. Live authenticated collection and visual workspace QA still require an administrator session.
 
 Date boundary: defaults and validation use a 364-day interval to avoid the upstream rejection at the full-year boundary. Longer custom ranges are rejected locally before reserving or using an API call.
+
+## Optional SAM.gov entity record
+
+The company sidebar includes independent, default-off controls for showing the entity panel and using the selected record in fit briefs. Enter a 12-character UEI, look up the registered public entity, and confirm the business. Confirming a different entity resets brief usage to off. Remove clears the selection and disables entity context. UEI and preferences are stored under `samuel:entity:v1:<userId>` in this browser; full entity records are not persisted. After reload, use Look up / refresh to display the record again. Hiding the panel does not change brief usage.
+
+Authenticated same-origin lookups use the existing SAM_GOV_API_KEY with the documented `/entity-information/v3/entities` endpoint, exact UEI and entityRegistration/coreData/assertions sections. Only a whitelist of business name, UEI, CAGE, registration dates/status, NAICS and business classifications is returned. Financial, tax, banking, contact and security-level fields are discarded. Non-public, mismatched and ambiguous records are rejected. Records not registered with SAM.gov (UEI-only) are not included by this endpoint's default query.
+
+Lookup reserves one request against the existing shared daily limit. A brief with entity context reserves three (entity, notice, description), instead of two. The browser submits only the selected UEI; the server freshly retrieves the entity before the AI call. Failure stops the brief rather than silently dropping requested entity context. No increase to the daily ceiling. Briefs distinguish self-reported capabilities from registry-reported entity facts and show the entity and retrieval time used. Entity data does not verify ownership or establish eligibility for any solicitation.
+
+Validation: unit tests cover sanitization, exact matching, independent toggles, missing/ambiguous records, API permission failure, and opt-in/out AI context. Live access with the production key and an authenticated user's UEI remains unverified; no key is exposed or retrieved for local testing.
