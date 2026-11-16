@@ -2,7 +2,15 @@
 
 Private workspace: https://metanomic.ai/samuel
 
-## Search and collection
+## Current user workflow
+
+Samuel opens directly to a title keyword search. There is no collection setup or mandatory agency/NAICS filter. The default is the past 365 days, all agencies, all NAICS codes and all notice types. Optional filters are collapsed; reset restores the broad defaults while retaining the keyword. SAM.gov requires a posting-date range no longer than one year.
+
+Searches request 20 notices per page from the official public API. Briefs fetch the selected notice and its description. A company profile is needed only for a fit brief. The existing global daily request ceiling remains: one reservation per search page and two per live brief. No background updates run.
+
+The persisted index and protected collection endpoints are retained for future use, but are not part of the user-facing search workflow. The following section documents that retained backend, not required user steps.
+
+## Retained index backend
 
 1. Sign in with an existing Metanomic knowledge administrator account.
 2. Create a collection using an agency and/or NAICS code, optional notice type and set-aside, and a fixed posted-date window (maximum one year). The editable initial suggestion is NAICS 541512 over the previous 90 days. This is not a claim about the company's registered codes.

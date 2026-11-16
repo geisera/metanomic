@@ -33,3 +33,9 @@ export function normalizeNotice(raw: unknown): Opportunity | null {
 export function plainText(s:string):string {
  return s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\s+/g,' ').trim();
 }
+
+export function defaultSearchFilters(now=new Date()):Filters {
+ const end=now.toISOString().slice(0,10);
+ const start=new Date(Date.parse(end)-365*86400000).toISOString().slice(0,10);
+ return {keyword:'',agency:'',naics:'',noticeType:'',setAside:'',postedFrom:start,postedTo:end,page:0};
+}

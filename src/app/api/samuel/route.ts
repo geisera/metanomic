@@ -1,6 +1,8 @@
 import { getKnowledgeAdmin, parseBody, sameOrigin } from '@/lib/knowledge-server';
-import { SamuelError } from '@/lib/samuel/server';
-import { ensureScope,coverage,listScopes,searchIndex,updateIndex,indexedBrief } from '@/lib/samuel/index-server';
+import { parseFilters,validNoticeId } from '@/lib/samuel/core';
+import { dailyLimit } from '@/lib/samuel/index-core';
+import { SamuelError,searchOpportunities,createBrief } from '@/lib/samuel/server';
+import { ensureScope,coverage,listScopes,searchIndex,updateIndex,indexedBrief,db } from '@/lib/samuel/index-server';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export const maxDuration=60;
@@ -21,11 +23,22 @@ export async function POST(request:Request){
  try {
   if(body.action==='collections')return json({collections:await listScopes(auth.session)});
   if(body.action==='collection'){const scope=await ensureScope(auth.session,body.filters);return json({scope,coverage:await coverage(auth.session,scope.id)});}
-  if(body.action==='search')return json(await searchIndex(auth.session,body));
+  if(body.action==='index-search')return json(await searchIndex(auth.session,body));
+  if(body.action==='search'){
+   let filters;try{filters=parseFilters(body.filters);}catch(e){return json({error:e instanceof Error?e.message:'Invalid filters.'},400);}
+   if(!process.env.SAM_GOV_API_KEY?.trim())return json({error:'SAM.gov is not configured.'},503);
+   if(!await db(auth.session,'rpc/samuel_reserve_budget',{p_count:1,p_limit:dailyLimit(process.env.SAMUEL_DAILY_REQUEST_LIMIT)}))return json({error:'The daily SAM.gov request budget has been reached. Try again after the next UTC day.'},429);
+   return json(await searchOpportunities(filters));
+  }
   if(body.action==='update')return json(await updateIndex(auth.session,body));
   if(body.action==='brief'){
    if(!allow(auth.session.userId))return json({error:'Samuel’s hourly AI briefing limit has been reached. Try again later.'},429);
-   return json(await indexedBrief(auth.session,body));
+   if(body.scopeId)return json(await indexedBrief(auth.session,body));
+   if(!validNoticeId(body.id)||typeof body.posted!=='string'||typeof body.profile!=='string'||body.profile.trim().length<20||body.profile.length>6000)return json({error:'Choose a notice and enter a company profile of 20–6,000 characters.'},400);
+   try{parseFilters({postedFrom:body.posted.slice(0,10),postedTo:body.posted.slice(0,10)});}catch{return json({error:'The notice has an invalid posting date.'},400);}
+   if(!process.env.SAM_GOV_API_KEY?.trim())return json({error:'SAM.gov is not configured.'},503);
+   if(!await db(auth.session,'rpc/samuel_reserve_budget',{p_count:2,p_limit:dailyLimit(process.env.SAMUEL_DAILY_REQUEST_LIMIT)}))return json({error:'The daily SAM.gov request budget has been reached. Try again after the next UTC day.'},429);
+   return json(await createBrief(body.id,body.posted,body.profile.trim()));
   }
   return json({error:'Unsupported action.'},400);
  }catch(e){return json({error:e instanceof SamuelError?e.message:'Samuel could not complete this request. Please try again.'},e instanceof SamuelError?e.status:500);}
