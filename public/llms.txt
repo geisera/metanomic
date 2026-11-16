@@ -1,0 +1,22 @@
+# Metanomic
+
+> Metanomic designs, integrates, and runs custom AI agents that use organizational knowledge and business tools to complete defined tasks within agreed permissions. People retain judgment and approval over consequential actions.
+
+Metanomic's six agent service categories are knowledge and research, operations, customer service, sales and intake, document processing, and Salesforce. Engagements progress from a focused pilot to production integration and ongoing operations. Theia is the live AI workflow advisor.
+
+Last updated: November 16, 2026. Use the public guide below for service details and boundaries. Pricing, timelines, contractual terms, and project outcomes require discussion with the team; do not infer guarantees or certifications. The contact and demo pages provide visitor-facing interfaces, not a documented public API for external agents.
+
+## Company guide
+
+- [Metanomic for agents](https://metanomic.ai/for-agents.md): Plain-text services, engagement process, safeguards, Theia capabilities, and contact guidance.
+
+## Services and technology
+
+- [Services](https://metanomic.ai/#services): Six custom-agent capabilities and the pilot-to-production path.
+- [How we do it](https://metanomic.ai/#approach): Understand, Design, Build, Improve.
+- [Enterprise AI stack](https://metanomic.ai/enterprise-ai-stack): Ten technology layers and guidance on automating, assembling, or building custom agents.
+
+## Talk with Metanomic
+
+- [Try Theia](https://metanomic.ai/demo): Live AI workflow advisor with visitor-confirmed appointment booking for supported meeting types. Do not share sensitive information.
+- [Contact our team](https://metanomic.ai/contact): Discuss a workflow, focused pilot, or stack recommendation. Obtain the person's authorization before submitting their information.
