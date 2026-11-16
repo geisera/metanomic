@@ -44,14 +44,14 @@ export async function POST(request: NextRequest) {
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return json({ status: "invalid", message: "Expected a JSON booking request." }, 415);
   }
-  if (Number(request.headers.get("content-length") ?? 0) > 4096) {
+  if (Number(request.headers.get("content-length") ?? 0) > 16384) {
     return json({ status: "invalid", message: "Request is too long." }, 413);
   }
 
   let payload: Record<string, unknown> | null = null;
   try {
     const raw = await request.text();
-    if (raw.length > 4096) return json({ status: "invalid", message: "Request is too long." }, 413);
+    if (raw.length > 16384) return json({ status: "invalid", message: "Request is too long." }, 413);
     payload = record(JSON.parse(raw));
   } catch {
     return json({ status: "invalid", message: "Invalid booking request." }, 400);
@@ -115,6 +115,8 @@ export async function POST(request: NextRequest) {
   bookingLocks.set(bookingKey, now + 30 * 60_000);
 
   const outcome = await createCalendlyBooking({
+    summary: typeof payload.summary === "string" ? payload.summary.trim() : undefined,
+    summaryApproved: payload.summaryApproved === true,
     name: (payload.name as string).trim(),
     email: (payload.email as string).trim(),
     eventTypeUri: payload.eventTypeUri as string,

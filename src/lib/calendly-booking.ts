@@ -1,7 +1,8 @@
+import { validSummary } from "./booking-summary";
 // Booking is invoked only by the dedicated, visitor-confirmed API route.
 // Never expose the Calendly access token or call POST /invitees from the model.
 
-import { directBookingEligibility, findEventTypes, safeBookingUrl, validTimeZone } from "./calendly";
+import { summaryQuestion, directBookingEligibility, findEventTypes, safeBookingUrl, validTimeZone } from "./calendly";
 
 const API = "https://api.calendly.com";
 const FALLBACK_URL = "https://calendly.com/metanomic";
@@ -12,6 +13,8 @@ export type BookingRequest = {
   name: string;
   email: string;
   timeZone: string;
+  summary?: string;
+  summaryApproved?: boolean;
   website?: unknown;
   turnstileToken?: unknown;
 };
@@ -47,7 +50,7 @@ export function validBookingRequest(value: unknown): value is BookingRequest {
   if (!data) return false;
   const name = data.name;
   const email = data.email;
-  return typeof name === "string" && name.trim().length >= 2 && name.trim().length <= 100 && !/[\r\n<>]/.test(name) &&
+  return validSummary(data.summary, data.summaryApproved) && typeof name === "string" && name.trim().length >= 2 && name.trim().length <= 100 && !/[\r\n<>]/.test(name) &&
     typeof email === "string" && email.length <= 254 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !/[\r\n<>]/.test(email) &&
     typeof data.eventTypeUri === "string" && EVENT_URI.test(data.eventTypeUri) &&
@@ -103,6 +106,15 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
       return result("unsupported", eligibility.reason || "Use Calendly to book this meeting.", bookingUrl);
     }
 
+    const question = summaryQuestion(event.custom_questions);
+    const summary = input.summary?.trim();
+    if (summary && (!input.summaryApproved || !question)) {
+      return result("unsupported", "This meeting has no supported conversation-summary question. Book without a summary or contact our team.", bookingUrl);
+    }
+    if (question?.required && !summary) {
+      return result("unsupported", "Please review and include a meeting summary before booking this event.", bookingUrl);
+    }
+
     // A displayed slot is not a reservation. Recheck the exact start time
     // before submitting; Calendly remains authoritative for concurrency.
     const selectedTime = new Date(input.startTime);
@@ -150,6 +162,7 @@ export async function createCalendlyBooking(input: BookingRequest): Promise<Book
           email: input.email.trim(),
           timezone: input.timeZone,
         },
+        ...(summary && question ? { questions_and_answers: [{ question: question.name, answer: summary, position: question.position }] } : {}),
         ...(eligibility.location ? { location: eligibility.location } : {}),
       }),
       cache: "no-store",

@@ -1,3 +1,16 @@
+type SummaryQuestion = { name: string; position: number; required: boolean };
+export function summaryQuestion(questions: unknown): SummaryQuestion | null {
+  if (!Array.isArray(questions)) return null;
+  for (const value of questions) {
+    if (!value || typeof value !== "object" || value.enabled === false) continue;
+    if (!["text", "string"].includes(value.type) || typeof value.name !== "string") continue;
+    if (!/conversation summary|what would you like to discuss|please share anything that will help prepare for our meeting/i.test(value.name)) continue;
+    if (!Number.isInteger(value.position) || value.position < 0) continue;
+    return { name: value.name, position: value.position, required: value.required === true };
+  }
+  return null;
+}
+
 // Calendly availability and visitor-confirmed scheduling. Credentials never leave the server.
 // Only the separately confirmed booking endpoint can create invitees.
 
@@ -164,7 +177,7 @@ export function directBookingEligibility(event: EventType): {
 
   if (Array.isArray(event.custom_questions) && event.custom_questions.some(value => {
     const question = isRecord(value) ? value : {};
-    return question.required === true && question.enabled !== false;
+    return question.required === true && question.enabled !== false && question.name !== summaryQuestion(event.custom_questions)?.name;
   })) {
     return { supported: false, reason: "Additional required questions must be answered on Calendly." };
   }

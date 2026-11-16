@@ -1,5 +1,7 @@
 "use client";
 
+import { useTheiaConversation } from "@/components/TheiaConversation";
+import { SUMMARY_LIMIT } from "@/lib/booking-summary";
 import Script from "next/script";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { AvailableSlot } from "@/lib/calendly";
@@ -34,6 +36,27 @@ type Props = {
 const inputStyle = "mt-1.5 block min-h-11 w-full rounded-lg border border-[#5c7971] bg-[#0a1c24] px-3 py-2 text-base text-[#f2f8f1] placeholder:text-[#aabfb4] focus:border-[#c9ec8a] focus:outline-2 focus:outline-offset-2 focus:outline-[#c9ec8a] disabled:opacity-60";
 
 export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, onCancel }: Props) {
+  const conversation = useTheiaConversation();
+  const [summary, setSummary] = useState("");
+  const [summaryApproved, setSummaryApproved] = useState(false);
+  const [summaryBusy, setSummaryBusy] = useState(false);
+  const [summaryNotice, setSummaryNotice] = useState("");
+  const summaryFlight = useRef(false);
+  async function prepareSummary() {
+    if (summaryFlight.current) return;
+    summaryFlight.current = true;
+    setSummaryBusy(true); setSummaryNotice(""); setSummaryApproved(false);
+    const messages = conversation.items.filter(item => item.id !== "intro").slice(-40).map(({role, content}) => ({role, content}));
+    let size = messages.reduce((sum,item)=>sum+item.content.length,0);
+    while(size > 20000 && messages.length) size -= messages.shift()!.content.length;
+    try {
+      const response = await fetch("/api/theia-booking-summary", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({messages,eventTypeUri}), signal:AbortSignal.timeout(35000)});
+      const data = await response.json();
+      if (response.ok && typeof data.summary === "string") setSummary(data.summary);
+      else setSummaryNotice(data.error || "Could not prepare a summary. You can write one below or book without one.");
+    } catch { setSummaryNotice("Could not prepare a summary. You can write one below or book without one."); }
+    finally { summaryFlight.current = false; setSummaryBusy(false); }
+  }
   const captchaNodeRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
   const inFlight = useRef(false);
@@ -74,7 +97,7 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
 
   async function confirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (inFlight.current || status !== "ready") return;
+    if (inFlight.current || summaryFlight.current || status !== "ready") return;
     if (!token) {
       setError("Complete the security check before confirming the appointment.");
       return;
@@ -101,6 +124,7 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
           name: fields.get("name"),
           email: fields.get("email"),
           confirmed: true,
+          ...(summaryApproved && summary.trim() ? { summary: summary.trim(), summaryApproved: true } : {}),
           turnstileToken: token,
           website: fields.get("website"),
         }),
@@ -183,6 +207,21 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
             autoComplete="email" placeholder="you@company.com" className={inputStyle} disabled={status === "sending"} />
         </div>
       </div>
+      <div className="mt-4">
+        <label htmlFor="theia-booking-summary" className="block text-sm font-medium text-[#eaf5e7]">Conversation summary (optional)</label>
+        <p id="theia-summary-help" className="mt-1 text-xs leading-5 text-[#bdd1c4]">Generate a brief from this chat, then review and edit it. Remove anything sensitive. Only the approved text is shared with Metanomic through Calendly.</p>
+        <button type="button" onClick={()=>void prepareSummary()} disabled={summaryBusy || status === "sending"}
+          className="mt-2 min-h-11 rounded border border-[#799485] px-3 text-sm focus-visible:outline-2 focus-visible:outline-[#c9ec8a] disabled:opacity-60">{summaryBusy ? "Preparing summary…" : "Generate conversation summary"}</button>
+        <textarea id="theia-booking-summary" aria-describedby="theia-summary-help" rows={6} maxLength={SUMMARY_LIMIT} value={summary}
+          onChange={event=>{setSummary(event.target.value);setSummaryApproved(false);}} disabled={summaryBusy || status === "sending"} className={inputStyle}
+          placeholder="Generate a summary or write what you would like to discuss." />
+        <p role="status" className="mt-1 text-xs text-[#bdd1c4]">{summaryBusy ? "Preparing a draft for your review." : summaryNotice}</p>
+        <label className="mt-3 flex items-start gap-3 text-sm leading-6 text-[#e1efe3]">
+          <input type="checkbox" checked={summaryApproved} onChange={event=>setSummaryApproved(event.target.checked)} disabled={!summary.trim() || summaryBusy || status === "sending"} className="mt-1.5 h-4 w-4 shrink-0 accent-[#c9ec8a]" />
+          <span>I reviewed this summary and want it included with my Calendly appointment.</span>
+        </label>
+        {!summaryApproved && <p className="mt-1 text-xs text-[#bdd1c4]">The summary will not be sent unless you select this checkbox.</p>}
+      </div>
       <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
         <label htmlFor="theia-booking-website">Leave this blank</label>
         <input id="theia-booking-website" name="website" tabIndex={-1} autoComplete="off" />
@@ -195,7 +234,7 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
             onError={() => setCaptchaError(true)} />
           <div ref={captchaNodeRef} />
           {captchaError && <p role="alert" className="mt-2 text-sm text-[#f1cfaa]">
-            The security check couldn't load. Please use Calendly instead.
+            The security check couldn&apos;t load. Please use Calendly instead.
           </p>}
         </div>
       ) : (
@@ -208,12 +247,12 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
         <span>I authorize Metanomic to schedule this appointment using my details. Calendly will process the booking and send the invitation.</span>
       </label>
       <p className="mt-3 text-xs leading-5 text-[#bdd1c4]">
-        Your contact information goes directly to Calendly for scheduling, not into Theia's AI conversation.
+        Your contact information goes directly to Calendly for scheduling, not into Theia&apos;s AI conversation.
       </p>
 
       {error && <p role="alert" className="mt-3 text-sm text-[#ffd2ad]">{error}</p>}
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={status === "sending" || !SITE_KEY}
+        <button type="submit" disabled={status === "sending" || summaryBusy || !SITE_KEY}
           className="inline-flex min-h-11 items-center rounded-lg bg-[#c9ec8a] px-4 font-semibold text-[#112026] hover:bg-[#dcf7af] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] disabled:cursor-wait disabled:opacity-60">
           {status === "sending" ? "Confirming with Calendly…" : "Confirm booking"}
         </button>
