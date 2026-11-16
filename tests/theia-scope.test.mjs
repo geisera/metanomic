@@ -1,5 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import {contextPrompts, servicePrompt, dockChips} from "../src/lib/theia-dock.ts";
 import { classifyScope, hasPertinentPublishedEvidence, hasProfessionalFollowUp, hasBusinessDiscussionIntent, outOfScopeReply } from "../src/lib/theia-scope.ts";
 
 const bellwether = {
@@ -153,5 +154,19 @@ describe("Conversation continuity and selective consultation", () => {
     assert.equal(hasBusinessDiscussionIntent("Our team needs an AI workflow pilot"), true);
     assert.equal(hasBusinessDiscussionIntent("What would implementation cost?"), true);
     assert.equal(hasBusinessDiscussionIntent("My company wants to deploy agents"), true);
+  });
+});
+
+// Use the real homepage prompt data so future copy changes cannot silently break scope.
+describe("Homepage service entry points", () => {
+  for (const [title, prompt] of Object.entries(contextPrompts)) {
+    it(`${title} stays in the core live-response path`, () => {
+      assert.equal(classifyScope(prompt.replace(/…$/, ".")), "core");
+      assert.equal(classifyScope(servicePrompt(title)), "core");
+      assert.ok(servicePrompt(title).includes(title));
+    });
+  }
+  it("recognizes the plain-language starter challenges", () => {
+    for (const chip of dockChips("")) assert.equal(classifyScope(chip.prompt), "core");
   });
 });

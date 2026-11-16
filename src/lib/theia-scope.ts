@@ -30,6 +30,8 @@ export function hasProfessionalFollowUp(question: string, conversation: ScopeCon
 export function hasBusinessDiscussionIntent(question: string): boolean {
   return /\b(?:our (?:team|company|organization|business|process|workflow|department)|my (?:team|company|business|organization)|we (?:need|want|struggle|are looking|could use)|implement(?:ation|ing)?|deploy(?:ment|ing)?|pilot|business challenge|consultation|project requirements|pricing|cost to (?:build|implement|deploy)|hire|work with metanomic)\b/i.test(question);
 }
+// Plain-language business bottlenecks are valid entry points even without AI jargon.
+const WORKFLOW_PROBLEM = /\b(?:re.key(?:ing)? data|data entry|intake forms?|support tickets?|case (?:queue|triage)|recurring reports?|finding and citing sources)\b/i;
 const SMALLTALK = /^(?:hi|hello|hey|good (?:morning|afternoon|evening)|thanks|thank you|cheers|how are you|who are you|what can you do|tell me about yourself|nice to meet you|goodbye|bye)[.!? ]*$/i;
 
 // These are specific intent patterns, not a wholesale subject blacklist.
@@ -91,7 +93,7 @@ export function classifyScope(
   if (SMALLTALK.test(prompt)) return "smalltalk";
   // The business/technical objective takes precedence over a broad noun
   // such as "baseball", "novel", or "election".
-  if (CORE.test(prompt) || (TECHNICAL_TERMS.test(prompt) && !CLEARLY_GENERAL_USAGE.test(prompt))) return "core";
+  if (WORKFLOW_PROBLEM.test(prompt) || CORE.test(prompt) || (TECHNICAL_TERMS.test(prompt) && !CLEARLY_GENERAL_USAGE.test(prompt))) return "core";
   if (hasPertinentPublishedEvidence(prompt, publishedEvidence)) return "knowledge";
   if (OUT_OF_SCOPE.some(pattern => pattern.test(prompt))) return "out_of_scope";
   // Avoid keyword-only rejections of multi-turn or ambiguous queries.

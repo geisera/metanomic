@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./services.module.css";
-import { contextPrompts } from "@/lib/theia-dock";
+import { servicePrompt } from "@/lib/theia-dock";
 import TheiaLink from "@/components/TheiaLink";
 import TheiaNav from "@/components/TheiaNav";
 import TheiaShowcase from "@/components/TheiaShowcase";
@@ -70,7 +70,7 @@ export default function Home() {
           <p className="muted mt-6 max-w-[65ch] text-lg leading-relaxed md:text-xl">We design, integrate, and run custom agents that use your knowledge and your tools to finish defined tasks, inside the permissions you set.</p>
         </div>
         <div className={styles.grid}>
-          {services.map((service) => <TheiaLink source="card" prompt={contextPrompts[service.title].replace(/…$/, ".")} id={`service-${service.number}`} data-theia-context={service.title} className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: Ask Theia about this`}>
+          {services.map((service) => <TheiaLink source="card" prompt={servicePrompt(service.title)} id={`service-${service.number}`} data-theia-context={service.title} className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: Ask Theia about this`}>
             <svg className={styles.icon} width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={service.icon} /></svg>
             <p className="eyebrow mt-5">{service.number} / {service.audience}</p>
             <h3 className="mt-5 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>

@@ -10,6 +10,9 @@ export const contextPrompts: Record<string, string> = {
   "Operations agents": "Recurring reports stall waiting on missing info…",
   "Knowledge & research agents": "Analysts spend days finding and citing sources…",
 };
+export function servicePrompt(title: string): string {
+  return `I'm interested in ${title}. ${contextPrompts[title]?.replace(/…$/, ".") || ""} How could a custom AI agent help?`;
+}
 export function dockChips(context: string) {
   const chips = [
     { label: "Intake backlog", prompt: "Our intake forms take three days to process." },
