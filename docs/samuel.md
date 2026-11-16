@@ -4,11 +4,17 @@ Private workspace: https://metanomic.ai/samuel
 
 ## Current user workflow
 
-Samuel opens directly to a title keyword search. There is no collection setup or mandatory agency/NAICS filter. The default is the past 364 days, all agencies, all NAICS codes and all notice types. Optional filters are collapsed; reset restores the broad defaults while retaining the keyword. SAM.gov requires a posting-date range no longer than one year.
+One keyword box searches titles AND available descriptions in the official public SAM.gov active-notice CSV extract. There is no collection setup, mandatory agency/NAICS filter, paid provider or API-key requirement for search. Case-insensitive substring matching requires every entered word somewhere in the combined title and description. The existing optional filters and 364-day default date window remain. Results sort newest first, with stable notice-ID tie-breaking, 20 per page (up to 50 pages).
 
-Searches request 20 notices per page from the official public API. Briefs fetch the selected notice and its description. A company profile is needed only for a fit brief. The existing global daily request ceiling remains: one reservation per search page and two per live brief. No background updates run.
+Source: https://s3.amazonaws.com/falextracts/Contract%20Opportunities/datagov/ContractOpportunitiesFullCSV.csv
 
-The persisted index and protected collection endpoints are retained for future use, but are not part of the user-facing search workflow. The following section documents that retained backend, not required user steps.
+The server streams and validates the entire CSV into a projected NDJSON disk cache before serving results. Search does not download just title matches. Cache refresh is demand-driven after six hours, single-flight per instance, with atomic replacement. Failed refreshes retain the last valid cache and display a stale warning. Empty, malformed or oversized extracts are rejected; no silent title-only fallback. The source date, notice count and available-description count are displayed. No archives or attachments are searched; source descriptions can be incomplete or shortened. Published active status does not guarantee an open response period.
+
+This is an ephemeral per-server cache, not a durable shared database index. A cold instance downloads the approximately 213 MB extract; subsequent searches reuse the projected file. The download has a 240-second timeout and 400 MB source cap; projected output is limited to 240 MB, allowing old and replacement files within the server's temporary disk budget. The route allows 300 seconds. The first search can be slower; warm searches scan locally. No scheduled job or new dependency is added.
+
+Live AI briefs still retrieve the selected notice and description through the public API with the existing global request budget; only briefs require a company profile. Search no longer spends that API budget. Legacy protected collection/index endpoints remain available internally but are not part of the user workflow.
+
+Verification on the November 16, 2026 extract: 70,669 records, 59,147 with descriptions. Salesforce in the default date window matched 4 notices: 1 title match and 3 description-only matches. Local preparation took approximately 14 seconds excluding download; warm search approximately 1 second. This does not establish parity with SAM.gov website search or production latency.
 
 ## Retained index backend
 

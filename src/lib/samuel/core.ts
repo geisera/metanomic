@@ -1,6 +1,6 @@
 export type Filters = { keyword: string; agency: string; naics: string; noticeType: string; setAside: string; postedFrom: string; postedTo: string; page: number };
 export type Opportunity = { id: string; title: string; agency: string; solicitation: string; type: string; posted: string; deadline: string; naics: string; setAside: string; active: string; url: string };
-export type SearchResult = { opportunities: Opportunity[]; total: number; page: number; fetchedAt: string };
+export type SearchResult = { opportunities: Opportunity[]; total: number; page: number; fetchedAt: string; coverage?: {sourceDate:string;indexed:number;descriptions:number;stale:boolean} };
 export const PAGE_SIZE = 20;
 export const NOTICE_TYPES = [['','All notice types'],['o','Solicitation'],['k','Combined synopsis / solicitation'],['r','Sources sought'],['p','Presolicitation'],['a','Award notice'],['s','Special notice']] as const;
 export const SET_ASIDES = [['','Any set-aside'],['SBA','Total small business'],['SBP','Partial small business'],['8A','8(a)'],['HZC','HUBZone'],['SDVOSBC','Service-disabled veteran-owned'],['WOSB','Women-owned small business'],['EDWOSB','Economically disadvantaged WOSB']] as const;

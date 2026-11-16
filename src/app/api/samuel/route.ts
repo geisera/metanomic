@@ -1,11 +1,12 @@
 import { getKnowledgeAdmin, parseBody, sameOrigin } from '@/lib/knowledge-server';
 import { parseFilters,validNoticeId } from '@/lib/samuel/core';
+import { searchExtract } from '@/lib/samuel/extract-server';
 import { dailyLimit } from '@/lib/samuel/index-core';
-import { SamuelError,searchOpportunities,createBrief } from '@/lib/samuel/server';
+import { SamuelError,createBrief } from '@/lib/samuel/server';
 import { ensureScope,coverage,listScopes,searchIndex,updateIndex,indexedBrief,db } from '@/lib/samuel/index-server';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
-export const maxDuration=60;
+export const maxDuration=300;
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const requests=new Map<string,{count:number;until:number}>();
 function allow(id:string){const now=Date.now();for(const [k,v] of requests)if(v.until<now)requests.delete(k);const row=requests.get(id)||{count:0,until:now+3600000};row.count++;requests.set(id,row);return row.count<=30;}
@@ -26,9 +27,7 @@ export async function POST(request:Request){
   if(body.action==='index-search')return json(await searchIndex(auth.session,body));
   if(body.action==='search'){
    let filters;try{filters=parseFilters(body.filters);}catch(e){return json({error:e instanceof Error?e.message:'Invalid filters.'},400);}
-   if(!process.env.SAM_GOV_API_KEY?.trim())return json({error:'SAM.gov is not configured.'},503);
-   if(!await db(auth.session,'rpc/samuel_reserve_budget',{p_count:1,p_limit:dailyLimit(process.env.SAMUEL_DAILY_REQUEST_LIMIT)}))return json({error:'The daily SAM.gov request budget has been reached. Try again after the next UTC day.'},429);
-   return json(await searchOpportunities(filters));
+   return json(await searchExtract(filters));
   }
   if(body.action==='update')return json(await updateIndex(auth.session,body));
   if(body.action==='brief'){
