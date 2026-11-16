@@ -1,36 +1,45 @@
 # Samuel
 
-Private opportunity research workspace: https://metanomic.ai/samuel
+Private workspace: https://metanomic.ai/samuel
 
-## Connection
+## Search and collection
 
-1. In Vercel → Metanomic → Settings → Environment Variables, add `SAM_GOV_API_KEY` for Production using an appropriately authorized SAM.gov API key. Keep it server-only; never prefix it with `NEXT_PUBLIC_`.
-2. Redeploy the project after adding or rotating the variable. Never put the key in source control, chat, browser storage, or client configuration.
-3. Sign in at `/samuel` using the existing Metanomic knowledge administrator credentials. All Samuel API calls verify that session and administrator membership server-side.
-4. Search a title keyword (for example, Salesforce), choose a date range, and open a source notice to verify the results. Add a company profile and request a fit brief.
+1. Sign in with an existing Metanomic knowledge administrator account.
+2. Create a collection using an agency and/or NAICS code, optional notice type and set-aside, and a fixed posted-date window (maximum one year). The editable initial suggestion is NAICS 541512 over the previous 90 days. This is not a claim about the company's registered codes.
+3. Click **Update opportunities**. Each click reserves 1–5 API requests and performs one small batch. Metadata is collected without a title filter, in pages of 20. Queued descriptions are processed before the next metadata page. Repeat manually to continue from the saved cursor.
+4. Search the stored titles and available descriptions. All keyword words must match using Postgres `simple` text search. No SAM.gov or AI requests run during searches. Optional related terms use a small explicit mapping (for example Salesforce → CRM, Service Cloud); related results are labeled and placed after exact keyword matches.
+5. Check coverage counts: metadata collected versus upstream total; descriptions ready, pending, unavailable or truncated; last update; reserved API budget. Zero matches means zero matches in this collection, not no opportunities on SAM.gov.
+6. Request a preliminary AI brief against your company profile. The brief uses the stored snapshot, not a new SAM request. Open the original notice to verify current requirements and dates.
 
-AI briefs reuse the project's existing AI Gateway credentials and model. No new provider account, dependencies, database schema or scheduled work is introduced.
+Collections and indexed notices live in the existing Metanomic Supabase database, owned by the signed-in administrator. Company profiles and shortlists remain browser-local and do not sync. Existing shortlists remain usable; a brief requires the notice to exist in the selected collection.
 
-## Scope and limitations
+## Request controls
 
-- Official SAM.gov public opportunities search, 20 notices per page, with agency, NAICS, notice type, set-aside and posted-date filters. Keyword is a title search, not semantic full-text search. Maximum 50 pages per search.
-- API offset is a page index according to GSA documentation. Verify pagination and description access against the live account once the key is configured.
-- The key-configured indicator checks configuration presence, not credential validity. The first live request verifies acceptance by SAM.gov.
-- Briefing re-fetches the notice server-side and retrieves its description. User-supplied record bodies and URLs are never used as authoritative evidence or fetched.
-- Description input is limited to 24,000 characters and explicitly labeled when truncated or unavailable. Attachments are not downloaded or reviewed.
-- AI output is preliminary, not an eligibility determination or win prediction. Complete source requirements must be reviewed by a person.
-- Profile and up to 100 shortlisted notices are stored in localStorage under an account-specific versioned key. They remain on that browser after sign-out; this is not encrypted storage and should not hold sensitive information. No cross-device synchronization. Export produces JSON. Shortlists are snapshots; refresh source notices before acting.
-- Each search performs one SAM call; each brief performs up to two SAM calls and one AI call, without automatic retries. A secondary per-instance 30-request/hour/user throttle is not a distributed quota guarantee. SAM.gov also enforces its account quota.
-- No monitoring, email digests, Salesforce synchronization, outreach or bid submissions in this first version.
+- No schedules, automatic collection loops, or retries are introduced.
+- `SAM_GOV_API_KEY` is server-only. Never use `NEXT_PUBLIC_` for this key.
+- `SAMUEL_DAILY_REQUEST_LIMIT` optionally sets an integer 1–1000; default is **10 reservations per UTC day**, shared across Samuel administrators and server instances. This is an application ceiling, not a claim about the account's SAM.gov allowance. Choose a value no greater than the account's actual allowance, allowing for any other key usage.
+- A batch reserves its entire chosen allowance atomically before upstream calls. Failed and unused reservations count against the cap, deliberately favoring conservative consumption after crashes. There is no refund race.
+- A 90-second database lease prevents concurrent updates of the same collection. Production requests have a 60-second runtime limit. The lease expires after interrupted requests so collection can resume; completed batches release it.
+- Each metadata page costs one request, each description costs one request. No LLM is used for collection or search. Briefs use one existing AI Gateway call with a per-instance 30/hour/user throttle.
+- Every collection is capped at 50 metadata pages (1,000 notices). Narrow the scope if exceeded. Supabase storage and platform usage still apply.
+
+## Coverage limitations
+
+- Fixed date windows do not automatically roll forward. Create a new collection to extend the window.
+- **Refresh from first page** starts another metadata pass and retries descriptions as their records are revisited. Unchanged completed pages are otherwise cached; later manual batches resume without downloading them again.
+- Metadata ordering and totals can change upstream during collection; this is not a transactional snapshot of SAM.gov. Refresh to reconcile changes. Records absent from a later response are retained as explicitly dated snapshots, not silently treated as current.
+- Description failures are recorded as unavailable; they do not block metadata collection forever. The next refresh can retry them.
+- Indexed descriptions are limited to 100,000 characters, explicitly marked if shortened; AI input is limited to 24,000. Attachments are not indexed or reviewed. Stored active status does not guarantee an open response period.
+- No promise of identical results to SAM.gov's full website search. Search covers the selected scope and retrieved text only.
+
+## Database
+
+Schema snapshot: `supabase/samuel-index.sql`. Applied through the database connector. The local migration CLI was unavailable when packaging this change; this file is an explicit schema snapshot, not a generated migration-history entry.
+
+Tables: `samuel_scopes`, `samuel_notices`, `samuel_request_budget`. All have RLS. Notice access follows the owner's scope and existing `knowledge_admins` membership. RPCs are security-invoker and not executable by anonymous users. No new service-role key or bypass is used. Search uses a generated tsvector with GIN index.
 
 ## Verification
 
-`npx eslint src/app/samuel src/app/api/samuel src/lib/samuel`
+Run changed-file ESLint, TypeScript, `node --experimental-strip-types --test tests/*.test.mjs`, and `npm run build`.
 
-`npm run typecheck`
-
-`node --experimental-strip-types --test tests/*.test.mjs`
-
-`npm run build`
-
-Tests use fixtures and mocked upstream responses, not a live SAM.gov key. Complete live key acceptance, result accuracy, pagination, description retrieval and AI briefing checks after configuration.
+Database transaction tests verify description-only matching, exact/related separation, status filtering, lock exclusion, budget rejection, and non-admin isolation. Test records and budget changes are rolled back. Unit tests verify resumable batches, request caps, safe source retrieval, no external calls for index searches, and cached briefing. Live authenticated collection and visual workspace QA still require an administrator session.
