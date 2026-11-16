@@ -12,7 +12,7 @@ Keyword matching uses Postgres full-text search (`simple` configuration, no stem
 
 ### Extract store
 
-Searches read a shared Postgres store (`samuel_extract_notices`) through `samuel_extract_search`. A search never downloads the source file, so there is no cold-start download and every server instance returns the same version. Schema: `supabase/migrations/20261116_samuel_extract_store.sql`.
+Searches read a shared Postgres store (`samuel_extract_notices`) through `samuel_extract_search`. A search never downloads the source file, so there is no cold-start download and every server instance returns the same version. Schema: `supabase/migrations/20261116_samuel_extract_store.sql` and `20261116_samuel_extract_search_definer.sql`. The search function runs as its owner and checks administrator membership itself, because Postgres will not use the full-text index for a caller subject to row-level security.
 
 A scheduled job, `GET /api/samuel/ingest`, keeps the store current:
 
