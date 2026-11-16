@@ -15,12 +15,19 @@ test('SAM notices expose only safe fields and construct a canonical source link'
 });
 test('Description markup and embedded scripts are not rendered as HTML',()=>{assert.equal(plainText('<script>evil()</script><p>Required &amp; useful</p>'),'Required & useful');});
 
-test('Default title search requires no collection, agency or NAICS and covers a year',async()=>{
+test('Default title search requires no collection, agency or NAICS and stays inside the one-year boundary',async()=>{
  const {defaultSearchFilters}=await import('../src/lib/samuel/core.ts');
  const f=defaultSearchFilters(new Date('2026-11-16T12:00:00Z'));
  f.keyword='Salesforce';
  const p=searchParams(parseFilters(f));
- assert.equal(f.postedFrom,'2025-11-16');assert.equal(p.get('title'),'Salesforce');
+ assert.equal(f.postedFrom,'2025-11-17');assert.equal(p.get('title'),'Salesforce');
  for(const name of ['organizationName','ncode','ptype','typeOfSetAside'])assert.equal(p.has(name),false);
  assert.equal(p.get('limit'),'20');
+});
+
+test('SAM posting-date boundary accepts 364 days and rejects 365, including leap years',()=>{
+ assert.doesNotThrow(()=>parseFilters({postedFrom:'2025-11-17',postedTo:'2026-11-16'}));
+ assert.throws(()=>parseFilters({postedFrom:'2025-11-16',postedTo:'2026-11-16'}),/364 days/);
+ assert.doesNotThrow(()=>parseFilters({postedFrom:'2024-03-02',postedTo:'2025-03-01'}));
+ assert.throws(()=>parseFilters({postedFrom:'2024-03-01',postedTo:'2025-03-01'}),/364 days/);
 });
