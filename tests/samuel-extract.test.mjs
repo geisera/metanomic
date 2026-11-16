@@ -52,7 +52,7 @@ test('Search reads the shared store, never the source file, and reports its cove
 
 // In-memory stand-in for the Supabase REST endpoints the ingest job calls, mirroring the SQL functions' rules.
 function fakeStore(){
- const s={versions:[],notices:new Map(),source:{body:'',etag:'"v1"',modified:'Mon, 16 Nov 2026 04:30:18 GMT',fail:false},gets:0,heads:0,upserts:0,failUpsert:false};
+ const s={versions:[],notices:new Map(),source:{body:'',etag:'"v1"',modified:'Mon, 16 Nov 2026 04:30:18 GMT',fail:false},gets:0,heads:0,upserts:0,failUpsert:false,maxBatch:Infinity,rejected:0};
  const reply=(v,status=200)=>new Response(v===undefined?'':JSON.stringify(v),{status});
  s.fetch=async(url,o={})=>{
   if(url.startsWith('https://s3.amazonaws.com/falextracts/')){
@@ -69,7 +69,7 @@ function fakeStore(){
   if(path==='samuel_extract_versions'){s.versions.push({id:s.versions.length+1,is_current:false,...body});return reply();}
   if(path==='rpc/samuel_extract_begin'){if(s.versions.some(v=>v.status==='running'))return reply(null);s.versions.push({id:s.versions.length+1,status:'running',is_current:false,source_etag:body.p_etag,source_last_modified:body.p_last_modified});return reply(s.versions.length);}
   if(path==='rpc/samuel_extract_hashes')return reply(Object.fromEntries([...s.notices].map(([id,n])=>[id,n.content_hash])));
-  if(path==='samuel_extract_notices?on_conflict=id'){if(s.failUpsert)return reply({message:'fixture-secret'},500);assert.match(o.headers.Prefer,/merge-duplicates/);s.upserts+=body.length;for(const n of body)s.notices.set(n.id,n);return reply();}
+  if(path==='samuel_extract_notices?on_conflict=id'){if(s.failUpsert||body.length>s.maxBatch){s.rejected++;return reply({message:'fixture-secret'},500);}assert.match(o.headers.Prefer,/merge-duplicates/);s.upserts+=body.length;for(const n of body)s.notices.set(n.id,n);return reply();}
   if(path==='rpc/samuel_extract_finish'){
    const kept=new Map([...s.notices].filter(([id])=>!body.p_delete.includes(id)));
    if(kept.size!==body.p_count)return reply({message:'count mismatch'},400);
@@ -113,6 +113,10 @@ test('Bad, empty, shrunken or unreachable sources fail without replacing the pub
  const accepted=await ingest({force:true});assert.equal(accepted.status,'complete');assert.equal(accepted.deleted,3);assert.equal(s.notices.size,7);
  s.source.etag='"v3"';s.source.body=csv(Array.from({length:8},(_,i)=>[i,'Changed '+i,'x']));s.failUpsert=true;
  await assert.rejects(ingest(),e=>/HTTP 500/.test(e.message)&&!e.message.includes('fixture-secret'));assert.equal(current(s).id,accepted.version);
+}));
+test('Batches the database times out on are split and retried until every notice is stored',()=>withStore(async(s,ingest)=>{
+ s.source.body=csv(Array.from({length:250},(_,i)=>[i,'CRM '+i,'x']));s.maxBatch=30;
+ const r=await ingest();assert.equal(r.status,'complete');assert.equal(r.upserted,250);assert.equal(s.notices.size,250);assert.ok(s.rejected>0);
 }));
 test('A run that exhausts its time budget is recorded as partial and the next run completes it',()=>withStore(async(s,ingest)=>{
  s.source.body=csv(Array.from({length:10},(_,i)=>[i,'CRM '+i,'x']));
