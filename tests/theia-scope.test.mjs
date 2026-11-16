@@ -11,6 +11,12 @@ describe("Theia Balanced scope policy", () => {
   const cases = [
     ["How can AI improve Salesforce workflows?", "core"],
     ["What is RAG?", "core"],
+    ["What is an MCP?", "core"],
+    ["What is MCP?", "core"],
+    ["mcp", "core"],
+    ["Explain Model Context Protocol.", "core"],
+    ["How does an MCP server work?", "core"],
+    ["What is an MCPlatform?", "review"],
     ["What are tokens?", "core"],
     ["What are tokens in AI?", "core"],
     ["What is a context window?", "core"],
