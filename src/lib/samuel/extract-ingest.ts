@@ -13,7 +13,7 @@ import {csvRows,extractRow,httpDate,shrinkRejected,sourceUnchanged,storedNotice,
 //    extract and publish the new version in a single database transaction.
 // A failed or interrupted run leaves the previously published version in place.
 export const EXTRACT_URL='https://s3.amazonaws.com/falextracts/Contract%20Opportunities/datagov/ContractOpportunitiesFullCSV.csv';
-const MAX_SOURCE_BYTES=400000000,MAX_PROJECTED_BYTES=240000000,BATCH_ROWS=400,BATCH_BYTES=3000000,PARALLEL=4;
+const MAX_SOURCE_BYTES=400000000,MAX_PROJECTED_BYTES=240000000,BATCH_ROWS=100,BATCH_BYTES=1000000,PARALLEL=3;
 export type IngestResult={status:'unchanged'|'busy'|'complete'|'partial';version?:number;notices?:number;descriptions?:number;upserted?:number;deleted?:number;sourceDate?:string|null;durationMs:number};
 type Current={id:number;source_etag:string|null;source_last_modified:string|null;notice_count:number|null};
 
@@ -81,10 +81,20 @@ export async function ingestExtract(options:{force?:boolean;deadline?:number}={}
   const known:Record<string,string>=await store('rpc/samuel_extract_hashes',{});
   // Upsert changed notices in bounded batches with limited parallelism.
   let batch:unknown[]=[],batchBytes=0,expired=false,failure:unknown=null;const active=new Set<Promise<void>>();
+  // The API role's statement timeout is short (8s on Supabase), and indexing long descriptions is slow.
+  // A batch the database rejects or times out on is split and retried, down to a single notice.
+  const write=async(rows:unknown[]):Promise<void>=>{
+   try{await store('samuel_extract_notices?on_conflict=id',rows,'POST','resolution=merge-duplicates,return=minimal',20000);upserted+=rows.length;}
+   catch(e){
+    const retryable=e instanceof Error&&(/HTTP 5\d\d/.test(e.message)||e.name==='TimeoutError'||e.name==='AbortError');
+    if(!retryable||rows.length<2||Date.now()>deadline+30000)throw e;
+    const half=Math.ceil(rows.length/2);await write(rows.slice(0,half));await write(rows.slice(half));
+   }
+  };
   const flush=async()=>{
    if(!batch.length)return;
    const sending=batch;batch=[];batchBytes=0;
-   const task:Promise<void>=store('samuel_extract_notices?on_conflict=id',sending,'POST','resolution=merge-duplicates,return=minimal',90000).then(()=>{upserted+=sending.length;},e=>{failure??=e;}).finally(()=>{active.delete(task);});
+   const task:Promise<void>=write(sending).catch(e=>{failure??=e;}).finally(()=>{active.delete(task);});
    active.add(task);
    if(active.size>=PARALLEL)await Promise.race(active);
    if(failure)throw failure;
