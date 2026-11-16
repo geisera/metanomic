@@ -11,7 +11,26 @@ export async function samFetch(path:string,params:URLSearchParams):Promise<Recor
  let r:Response;
  try { r=await fetch(API+path+'?'+params,{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(18000)}); }
  catch {throw new SamuelError('SAM.gov could not be reached. Please try again.');}
- if(!r.ok)throw new SamuelError(r.status===429?'SAM.gov’s request allowance has been reached. Try again later.':r.status===401||r.status===403?'SAM.gov rejected the configured API key. Check its access and expiration.':'SAM.gov is temporarily unavailable.',r.status===429?429:502);
+ if(!r.ok){
+  // Inspect only to classify known errors. Never echo upstream text, URLs or credentials.
+  const raw=await r.text();
+  const noData=/no (?:data|records?|results?)(?: |$)|no opportunities found/i.test(raw);
+  if(r.status===404&&path==='/opportunities/v2/search'&&noData)return {totalRecords:0,opportunitiesData:[]};
+  const category=r.status===429||/OVER_RATE_LIMIT|rate limit exceeded|quota exceeded/i.test(raw)?'quota'
+   :r.status===401||r.status===403||/API_KEY_INVALID|API_KEY_MISSING|invalid api[_ ]key|no api[_ ]key/i.test(raw)?'authentication'
+   :r.status===400&&/date|postedFrom|postedTo/i.test(raw)?'date_range'
+   :r.status===400?'invalid_filters':r.status===404?'not_found':r.status>=500?'upstream_failure':'unexpected_status';
+  console.warn('Samuel SAM.gov request failed',JSON.stringify({status:r.status,category,operation:path.includes('noticedesc')?'description':'search'}));
+  const message=category==='quota'?'SAM.gov’s API request allowance has been reached. Try again after its quota resets.'
+   :category==='authentication'?'SAM.gov rejected access with the configured API key. Check its validity and permissions.'
+   :category==='date_range'?'SAM.gov rejected the posting-date range. Choose a shorter range under Optional filters.'
+   :category==='invalid_filters'?'SAM.gov rejected these search filters. Reset the optional filters and try again.'
+   :category==='not_found'?'SAM.gov returned an unrecognized not-found response.'
+   :category==='upstream_failure'?'SAM.gov returned a server error. Try again later, or try a shorter posting-date range.'
+   :'SAM.gov returned an unexpected response.';
+  throw new SamuelError(message+' (SAM.gov HTTP '+r.status+'; '+category+')',category==='quota'?429:category==='date_range'||category==='invalid_filters'?400:502);
+ }
+
  // Never expose upstream error bodies or credential-bearing URLs.
  try {const v:unknown=await r.json();if(!v||typeof v!=='object'||Array.isArray(v))throw 0;return v as Record<string,unknown>;}catch{throw new SamuelError('SAM.gov returned an unreadable response.');}
 }
