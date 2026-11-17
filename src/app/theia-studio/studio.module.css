@@ -25,3 +25,5 @@
 .appearanceGroup .buttonPreview[data-style=side-tab]{height:240px;padding:12px 0}.buttonPreview[data-style=side-tab]>span{writing-mode:vertical-rl;white-space:nowrap;max-height:210px;overflow:hidden;text-overflow:ellipsis;padding:16px 10px;border-radius:10px 0 0 10px;min-width:44px}.buttonPreview[data-style=side-tab][data-side=left]>span{border-radius:0 10px 10px 0}
 
 .buttonPreview[data-style=side-tab][data-orientation=horizontal]>span{writing-mode:horizontal-tb;max-width:100%;min-height:44px}
+
+.buttonPreview[data-style=side-tab][data-alignment=custom]{position:relative}

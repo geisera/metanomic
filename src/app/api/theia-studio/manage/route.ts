@@ -63,15 +63,17 @@ export async function POST(req: Request) {
         }
         if (b.action === 'save-appearance') {
             const label=text(b.button_label,60,1);
+            const tabOffset=b.tab_offset??agent.tab_offset??50;
+            if(typeof tabOffset!=='number'||!Number.isInteger(tabOffset)||tabOffset<0||tabOffset>100)throw new StudioError('Choose a position between 0 and 100%.');
             const tabOrientation=b.tab_orientation??agent.tab_orientation??'vertical';
             if(!['vertical','horizontal'].includes(String(tabOrientation)))throw new StudioError('Choose a valid side tab orientation.');
             const launcherStyle=b.launcher_style??agent.launcher_style??'pill',tabSide=b.tab_side??agent.tab_side??'right',tabAlignment=b.tab_alignment??agent.tab_alignment??'middle';
-            if(!['pill','side-tab'].includes(String(launcherStyle))||!['left','right'].includes(String(tabSide))||!['top','middle','bottom'].includes(String(tabAlignment)))throw new StudioError('Choose a valid button style and placement.');
+            if(!['pill','side-tab'].includes(String(launcherStyle))||!['left','right'].includes(String(tabSide))||!['top','middle','bottom','custom'].includes(String(tabAlignment)))throw new StudioError('Choose a valid button style and placement.');
             const launcher=b.launcher_color??agent.launcher_color??b.button_color;
             const sendLabel=text(b.send_label??agent.send_label??'Send message',60,1),sendColor=b.send_color??agent.send_color??b.button_color,sendText=b.send_text_color??agent.send_text_color??b.button_text_color,userColor=b.user_message_color??agent.user_message_color??b.button_color;
             const colors=[b.button_color,b.button_text_color,b.button_outline_color,launcher,sendColor,sendText,userColor];
             if(!colors.every(value=>typeof value==='string'&&/^#[0-9a-fA-F]{6}$/.test(value))||!['left','right','top-left','top-right'].includes(String(b.button_position)))throw new StudioError('Choose valid colors and a position.');
-            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{tab_orientation:tabOrientation,launcher_style:launcherStyle,tab_side:tabSide,tab_alignment:tabAlignment,send_label:sendLabel,send_color:sendColor,send_text_color:sendText,user_message_color:userColor,button_label:label,button_color:b.button_color,launcher_color:launcher,button_text_color:b.button_text_color,button_outline_color:b.button_outline_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
+            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{tab_offset:tabOffset,tab_orientation:tabOrientation,launcher_style:launcherStyle,tab_side:tabSide,tab_alignment:tabAlignment,send_label:sendLabel,send_color:sendColor,send_text_color:sendText,user_message_color:userColor,button_label:label,button_color:b.button_color,launcher_color:launcher,button_text_color:b.button_text_color,button_outline_color:b.button_outline_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
             return json({agent:rows[0]});
         }
         if (b.action === 'save-embed') {
