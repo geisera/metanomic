@@ -1,5 +1,5 @@
 export type Agent = {
-    configured_at?: string | null; first_published_at?: string | null; usage_alert?: boolean; button_label?: string; button_color?: string; button_position?: string;
+    configured_at?: string | null; first_published_at?: string | null; usage_alert?: boolean; button_label?: string; button_color?: string; button_text_color?: string | null; button_outline_color?: string | null; button_position?: string;
     id: string;
     owner_id: string;
     name: string;

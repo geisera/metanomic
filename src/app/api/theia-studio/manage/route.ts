@@ -55,6 +55,19 @@ export async function POST(req: Request) {
             const rows = await rest<Agent[]>('studio_agents?id=eq.' + agent.id, { session: s, method: 'PATCH', body: input });
             return json({ agent: rows[0] });
         }
+        if (b.action === 'save-origins') {
+            const sites=origins(b.origins);
+            if(agent.published&&!sites.length)throw new StudioError('Add an approved website before publishing.',400,'origin_not_approved');
+            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{origins:sites,updated_at:new Date().toISOString()}});
+            return json({agent:rows[0]});
+        }
+        if (b.action === 'save-appearance') {
+            const label=text(b.button_label,60,1);
+            const colors=[b.button_color,b.button_text_color,b.button_outline_color];
+            if(!colors.every(value=>typeof value==='string'&&/^#[0-9a-fA-F]{6}$/.test(value))||!['left','right','top-left','top-right'].includes(String(b.button_position)))throw new StudioError('Choose valid colors and a position.');
+            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{button_label:label,button_color:b.button_color,button_text_color:b.button_text_color,button_outline_color:b.button_outline_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
+            return json({agent:rows[0]});
+        }
         if (b.action === 'save-embed') {
             const sites = origins(b.origins), label = text(b.button_label,60,1);
             if (typeof b.button_color !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(b.button_color) || !['left','right'].includes(String(b.button_position))) throw new StudioError('Choose a valid color and position.');
