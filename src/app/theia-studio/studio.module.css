@@ -23,3 +23,5 @@
 .previewLayout .appearance{background:transparent}
 .appearanceGroup{display:grid;gap:14px;padding:16px;border:1px solid #273843;border-radius:8px;margin:0}.appearanceGroup legend{padding:0 6px;font-weight:600}.appearanceGroup>.help{margin:0}.appearanceGroup .buttonPreview{min-height:120px;margin:0;background:transparent}.appearanceGroup .colorControls{grid-template-columns:1fr}
 .appearanceGroup .buttonPreview[data-style=side-tab]{height:240px;padding:12px 0}.buttonPreview[data-style=side-tab]>span{writing-mode:vertical-rl;white-space:nowrap;max-height:210px;overflow:hidden;text-overflow:ellipsis;padding:16px 10px;border-radius:10px 0 0 10px;min-width:44px}.buttonPreview[data-style=side-tab][data-side=left]>span{border-radius:0 10px 10px 0}
+
+.buttonPreview[data-style=side-tab][data-orientation=horizontal]>span{writing-mode:horizontal-tb;max-width:100%;min-height:44px}
