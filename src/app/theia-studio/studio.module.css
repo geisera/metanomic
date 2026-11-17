@@ -29,3 +29,5 @@
 .buttonPreview[data-style=side-tab][data-alignment=custom]{position:relative}
 
 .appearanceGroup .buttonPreview[data-style=pill]{height:240px;position:relative}.buttonPreview[data-style=pill]>span{max-width:100%;max-height:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:44px}.buttonPreview[data-style=pill][data-orientation=vertical]>span{writing-mode:vertical-rl}
+
+.previewFrame .sendButton[data-display=text]{width:auto;height:auto;min-height:44px;max-width:100%;padding:10px 16px;overflow-wrap:anywhere;white-space:normal}
