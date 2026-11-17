@@ -100,7 +100,7 @@ export function guidedAnswer(prompt: string) {
       activities: [],
     };
   }
-  if (isStackQuestion(prompt)) return guidedStackAnswer();
+  if (isStackQuestion(prompt)) return guidedStackAnswer(prompt);
   const category = mapOpportunity(resolveFocus(prompt));
   return {
     answer: [
@@ -122,28 +122,19 @@ export function guidedAnswer(prompt: string) {
 // with package.json and the agent route. No keys or private configuration included.
 export function describeStack() {
   return {
-    identity: "Theia by Metanomic — public, bounded AI workflow advisor.",
-    interface: ["Next.js 16 App Router", "React 19", "TypeScript", "Tailwind CSS 4"],
-    hosting: "Vercel (frontend and server-side API route).",
-    model: "OpenAI GPT-5 mini (openai/gpt-5-mini) accessed through Vercel AI Gateway.",
-    orchestration: "A bounded server-side tool-calling loop using the Gateway chat-completions API; this demo does not use LangGraph or a separate agent framework.",
-    tools: [
-      "map_opportunity: looks up curated AI pilot patterns, safeguards, and measures.",
-      "estimate_capacity: calculates illustrative hours saved from explicit assumptions.",
-      "describe_stack: returns this approved technical inventory.",
-      "check_calendly_availability: read-only Calendly appointment search with verified time slots and booking links (requires server-side token).",
-      "search_knowledge: semantic plus keyword retrieval of approved, currently published knowledge excerpts from Supabase PostgreSQL/pgvector; returns source titles and revisions.",
-    ],
+    identity: "Theia, Metanomic's AI workflow advisor.",
+    positioning: "Metanomic works across the frontier-model and agent-framework landscape. The interesting part is how the pieces work together: capable models, connected knowledge, purposeful tools, and human control. The client's workflow determines the combination.",
+    disclosure: "This is approved category-level positioning, not a technical inventory. Default ambiguous technology questions to Metanomic's client work, not this marketing website or demo. Do not enumerate vendors, model names, versions, SDKs, databases, hosting providers, internal tool identifiers, or inferred implementation details. Do not claim every individual product has been deployed or independently verified. Be lightly coy about the recipe, never evasive about material limitations.",
+    capabilities: ["Designing focused agent workflows", "Connecting approved knowledge and business tools", "Evaluating results and supervising consequential actions"],
     dataAndSafety: [
-      "Messages are validated and length-limited on the server; model calls use server-side credentials.",
+      "In live mode, messages are sent through an external AI gateway to a model provider for processing. Do not submit sensitive information.",
       "The application does not store a durable chat history. Chat context is held in the current browser session and sent with each request.",
-      "In live mode, messages are processed by Vercel AI Gateway and a model provider. Do not submit sensitive information.",
-      "The knowledge retrieval tool reads only explicitly published, current-revision source passages in Metanomic's Supabase database. It cannot access unpublished drafts, archival material, or visitors' databases.",
-      "This demo does not connect to visitor systems or browse the web. The model has no write-capable tools. Only a separate human-confirmed booking form can create a Calendly appointment through a validated API route.",
-      "Rate limiting and duplicate submission checks use per-instance in-memory counters, not distributed enforcement. Direct booking additionally requires Cloudflare Turnstile validation.",
-      "If live model inference fails, the interface explicitly labels deterministic guided responses.",
+      "Knowledge retrieval reads only approved, currently published passages; it cannot access unpublished drafts or visitors' databases.",
+      "This demo cannot access visitors' systems or browse the web. The model cannot perform write actions. Booking requires a separate visitor-confirmed form.",
+      "Abuse controls use per-instance counters rather than distributed enforcement, with an additional bot-verification check for bookings.",
+      "When live inference is unavailable, deterministic guided responses are explicitly labeled.",
     ],
-    limitations: "This is an illustrative demo, not a certified production integration or an independently audited security implementation.",
+    limitations: "This demo is not a certified production integration or an independently audited security implementation.",
   };
 }
 
@@ -154,18 +145,13 @@ export function isStackQuestion(prompt: string) {
       && /\b(stack|technolog\w*|architect\w*|built|model|tools?|safeguards?|privacy|security|data|messages|work|powers?)\b/.test(question));
 }
 
-export function guidedStackAnswer() {
+export function guidedStackAnswer(prompt = "") {
   const stack = describeStack();
+  const asksAboutDemo = /\b(privacy|security|safeguards|messages|data handling|limitations)\b|\b(this|the) (demo|website)\b/i.test(prompt);
   return {
-    answer: [
-      "I'm Theia. Here's the actual stack behind this demo:",
-      "INTERFACE\n" + stack.interface.join(" · "),
-      "MODEL & HOSTING\n" + stack.model + "\n" + stack.hosting,
-      "ORCHESTRATION\n" + stack.orchestration,
-      "SERVER-SIDE TOOLS\n" + stack.tools.map(tool => "• " + tool).join("\n"),
-      "DATA & LIMITATIONS\n" + stack.dataAndSafety.map(note => "• " + note).join("\n"),
-      stack.limitations,
-    ].join("\n\n"),
-    activities: [{ tool: "describe_stack", label: "Read the demo's technical inventory", detail: "Verified application components and limitations" }],
+    answer: asksAboutDemo
+      ? "A little of the recipe stays behind the curtain, but the boundaries should be clear.\n\n" + stack.dataAndSafety.join("\n\n") + "\n\n" + stack.limitations
+      : "A little of the recipe stays behind the curtain. Metanomic works across the frontier-model and agent-framework landscape, combining capable models, connected knowledge, and carefully controlled actions around your workflow. The business problem determines the ingredients.\n\nWhat would you like an agent to take off your team's plate?",
+    activities: [{ tool: "describe_stack", label: "Reviewed capabilities and safeguards", detail: "Approach and practical boundaries" }],
   };
 }
