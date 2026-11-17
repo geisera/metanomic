@@ -31,17 +31,18 @@ export default function Home() {
   return <main>
     <div className="sticky top-0 z-40">
       <div className="border-b border-[var(--site-20303b)] bg-[var(--site-091019)]/95 backdrop-blur-sm">
-        <header className="container flex min-h-[86px] items-center justify-between gap-4">
+        <header className="container flex min-h-[86px] flex-wrap items-center justify-between gap-4 py-3">
         <Logo />
-        <nav aria-label="Primary navigation" className="hidden items-center gap-8 lg:flex">
+        <nav aria-label="Primary navigation" className="hidden items-center gap-5 xl:flex">
           <a className="navlink" href="#services">What we do</a>
           <a className="navlink" href="#approach">Our approach</a>
           <Link className="navlink" href="/enterprise-ai-stack">AI stack</Link>
           <a className="navlink" href="#about">About</a>
         </nav>
-        <div className="flex shrink-0 items-center gap-5">
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
           <div className="hidden sm:block"><Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>→</span></Link></div>
           <TheiaNav />
+          <Link href="/assistant-studio" className="button button-primary !min-h-[44px] !px-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--lime)]" aria-label="Assistant Studio — build your own website assistant">Assistant Studio <span aria-hidden>→</span></Link>
         </div>
       </header>
       </div>
