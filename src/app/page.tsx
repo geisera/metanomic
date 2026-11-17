@@ -22,15 +22,15 @@ const steps = [
 
 function Logo() {
   return <Link href="/" aria-label="Metanomic home" className="flex items-center gap-3">
-    <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[#7b986d] bg-[#c9ec8a] text-[#122322] font-black text-lg">M</span>
-    <span className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[#c9ec8a]">.</span></span>
+    <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[var(--site-7b986d)] bg-[#c9ec8a] text-[#122322] font-black text-lg">M</span>
+    <span className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></span>
   </Link>;
 }
 
 export default function Home() {
   return <main>
     <div className="sticky top-0 z-40">
-      <div className="border-b border-[#20303b] bg-[#091019]/95 backdrop-blur-sm">
+      <div className="border-b border-[var(--site-20303b)] bg-[var(--site-091019)]/95 backdrop-blur-sm">
         <header className="container flex min-h-[86px] items-center justify-between gap-4">
         <Logo />
         <nav aria-label="Primary navigation" className="hidden items-center gap-8 lg:flex">
@@ -51,13 +51,13 @@ export default function Home() {
       <div className="container relative flex min-h-[min(83vh,820px)] items-center py-28 md:py-36">
         <div>
           <span className="pill">Human purpose. Intelligent execution.</span>
-          <h1 className="mt-8 max-w-[790px] text-[clamp(3.4rem,7.5vw,6.9rem)] leading-[1.02] font-semibold tracking-[-.075em]">AI that magnifies<br/><span className="text-[#c9ec8a]">human impact.</span></h1>
+          <h1 className="mt-8 max-w-[790px] text-[clamp(3.4rem,7.5vw,6.9rem)] leading-[1.02] font-semibold tracking-[-.075em]">AI that magnifies<br/><span className="text-[var(--site-c9ec8a)]">human impact.</span></h1>
           <p className="muted mt-8 max-w-[550px] text-[17px] leading-[1.85]">We build AI tools that give people greater reach and more room to do their best work. From custom agents to connected workflows, our mission is to turn human expertise, ambition, and ideas into meaningful results at a greater scale.</p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/contact" className="button button-primary">Talk with our team <span aria-hidden>→</span></Link>
             <TheiaLink source="hero" className="button button-outline">Ask Theia, our AI advisor →</TheiaLink>
           </div>
-          <a href="#services" className="mt-5 inline-flex rounded py-2 text-sm text-[#d5e5dc]">Explore our services ↓</a>
+          <a href="#services" className="mt-5 inline-flex rounded py-2 text-sm text-[var(--site-d5e5dc)]">Explore our services ↓</a>
         </div>
       </div>
     </section>
@@ -76,7 +76,7 @@ export default function Home() {
             <h3 className="mt-5 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>
             <p className={styles.outcome}>{service.outcome}</p>
             <p className={styles.body}>{service.description}</p>
-            <span className="mt-auto pt-6 text-sm font-semibold text-[#c9ec8a]">Ask Theia about this →</span>
+            <span className="mt-auto pt-6 text-sm font-semibold text-[var(--site-c9ec8a)]">Ask Theia about this →</span>
           </TheiaLink>)}
         </div>
         <p className="mt-8 text-center text-base leading-relaxed">Every agent ships with defined permissions, human approval on consequential actions, and measured results.</p>
@@ -87,7 +87,7 @@ export default function Home() {
         </ol>
         <div className={styles.ctas}>
           <Link href="/contact" className="button button-primary">Talk with our team →</Link>
-          <a href="#meet-theia" className="navlink rounded text-[#c9ec8a]">See it live: meet Theia ↓</a>
+          <a href="#meet-theia" className="navlink rounded text-[var(--site-c9ec8a)]">See it live: meet Theia ↓</a>
         </div>
       </div>
     </section>
@@ -98,8 +98,8 @@ export default function Home() {
         <h2 className="mt-4 max-w-[640px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">People lead. Intelligence amplifies.</h2>
         <p className="muted mt-6 max-w-[650px] leading-8">Every engagement starts with the people whose work matters. We pair human judgment with thoughtfully designed AI to expand capability while keeping people in control.</p>
         <div className="mt-14 grid gap-8 md:grid-cols-4">
-          {steps.map((step) => <div className="border-t border-[#426050] pt-5" key={step.index}>
-            <span className="text-xs font-bold text-[#c9ec8a]">{step.index}</span>
+          {steps.map((step) => <div className="border-t border-[var(--site-426050)] pt-5" key={step.index}>
+            <span className="text-xs font-bold text-[var(--site-c9ec8a)]">{step.index}</span>
             <h3 className="mt-7 text-xl font-semibold">{step.title}</h3>
             <p className="muted mt-3 text-sm leading-7">{step.description}</p>
           </div>)}
@@ -111,7 +111,7 @@ export default function Home() {
 
     <section aria-label="Explore the technology">
       <div className="container">
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-lg border border-[#31454b] bg-[#0e1d27]/85 p-6 backdrop-blur-sm md:p-8">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-lg border border-[var(--site-31454b)] bg-[var(--site-0e1d27)]/85 p-6 backdrop-blur-sm md:p-8">
           <div>
             <p className="eyebrow">Explore the technology</p>
             <h3 className="mt-2 text-xl font-semibold tracking-[-.035em]">What goes into an enterprise AI system?</h3>
@@ -131,10 +131,10 @@ export default function Home() {
       </div>
     </section>
 
-    <section className="border-y border-[#405242] bg-[#c9ec8a]/90 py-20 text-[#14231e] backdrop-blur-sm">
+    <section className="border-y border-[var(--site-405242)] bg-[#c9ec8a]/90 py-20 text-[#14231e] backdrop-blur-sm">
       <div className="container flex flex-wrap items-center justify-between gap-8">
         <div><p className="text-xs font-bold uppercase tracking-[.2em]">Build what comes next</p><h2 className="mt-3 max-w-[660px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">Let&apos;s make a bigger impact.</h2></div>
-        <div className="flex flex-wrap items-center gap-5"><Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Talk with our team →</Link><TheiaLink source="final-cta" className="rounded py-3 font-semibold">Or start with Theia →</TheiaLink></div>
+        <div className="flex flex-wrap items-center gap-5"><Link href="/contact" className="button !bg-[var(--site-14231e)] !text-[var(--site-eff7e8)]">Talk with our team →</Link><TheiaLink source="final-cta" className="rounded py-3 font-semibold">Or start with Theia →</TheiaLink></div>
       </div>
     </section>
     <footer className="container flex flex-wrap items-center justify-between gap-5 py-10"><Logo/><p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p><nav aria-label="Footer navigation" className="flex flex-wrap gap-6"><TheiaLink source="footer" className="navlink rounded">Try Theia →</TheiaLink><Link className="navlink" href="/contact">Contact our team →</Link></nav></footer>

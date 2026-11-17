@@ -33,7 +33,7 @@ type Props = {
   onCancel: () => void;
 };
 
-const inputStyle = "mt-1.5 block min-h-11 w-full rounded-lg border border-[#5c7971] bg-[#0a1c24] px-3 py-2 text-base text-[#f2f8f1] placeholder:text-[#aabfb4] focus:border-[#c9ec8a] focus:outline-2 focus:outline-offset-2 focus:outline-[#c9ec8a] disabled:opacity-60";
+const inputStyle = "mt-1.5 block min-h-11 w-full rounded-lg border border-[var(--site-5c7971)] bg-[var(--site-0a1c24)] px-3 py-2 text-base text-[var(--site-f2f8f1)] placeholder:text-[var(--site-aabfb4)] focus:border-[#c9ec8a] focus:outline-2 focus:outline-offset-2 focus:outline-[#c9ec8a] disabled:opacity-60";
 
 export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, onCancel }: Props) {
   const conversation = useTheiaConversation();
@@ -157,18 +157,18 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
 
   if (status === "confirmed") {
     return (
-      <div role="status" className="mt-4 rounded-xl border border-[#739d70] bg-[#163d30] p-4">
-        <p className="text-base font-semibold text-[#e5f7d4]">Appointment confirmed</p>
-        <p className="mt-2 text-sm text-[#e0f0e4]">{eventType} — {slot.label}</p>
-        <p className="mt-1 text-sm text-[#cbdcd0]">{result?.message}</p>
+      <div role="status" className="mt-4 rounded-xl border border-[var(--site-739d70)] bg-[var(--site-163d30)] p-4">
+        <p className="text-base font-semibold text-[var(--site-e5f7d4)]">Appointment confirmed</p>
+        <p className="mt-2 text-sm text-[var(--site-e0f0e4)]">{eventType} — {slot.label}</p>
+        <p className="mt-1 text-sm text-[var(--site-cbdcd0)]">{result?.message}</p>
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
           {result?.rescheduleUrl && (
             <a href={result.rescheduleUrl} target="_blank" rel="noopener noreferrer"
-              className="font-semibold text-[#c9ec8a] underline underline-offset-4">Reschedule ↗</a>
+              className="font-semibold text-[var(--site-c9ec8a)] underline underline-offset-4">Reschedule ↗</a>
           )}
           {result?.cancelUrl && (
             <a href={result.cancelUrl} target="_blank" rel="noopener noreferrer"
-              className="font-semibold text-[#c9ec8a] underline underline-offset-4">Cancel appointment ↗</a>
+              className="font-semibold text-[var(--site-c9ec8a)] underline underline-offset-4">Cancel appointment ↗</a>
           )}
         </div>
       </div>
@@ -177,11 +177,11 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
 
   if (status === "uncertain") {
     return (
-      <div role="alert" className="mt-4 rounded-xl border border-[#b18a54] bg-[#31291e] p-4">
-        <p className="font-semibold text-[#ffe7af]">Booking status needs verification</p>
-        <p className="mt-2 text-sm text-[#f1dfbb]">{result?.message}</p>
+      <div role="alert" className="mt-4 rounded-xl border border-[var(--site-b18a54)] bg-[var(--site-31291e)] p-4">
+        <p className="font-semibold text-[var(--site-ffe7af)]">Booking status needs verification</p>
+        <p className="mt-2 text-sm text-[var(--site-f1dfbb)]">{result?.message}</p>
         <a href={slot.bookingUrl} target="_blank" rel="noopener noreferrer"
-          className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-[#c9ec8a] underline underline-offset-4">
+          className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--site-c9ec8a)] underline underline-offset-4">
           Open Calendly ↗
         </a>
       </div>
@@ -190,37 +190,37 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
 
   return (
     <form onSubmit={event => void confirm(event)}
-      className="mt-4 rounded-xl border border-[#658a71] bg-[#172f2c] p-4"
+      className="mt-4 rounded-xl border border-[var(--site-658a71)] bg-[var(--site-172f2c)] p-4"
       aria-label="Confirm your Calendly booking">
-      <h3 className="text-base font-semibold text-[#e7f8d8]">Confirm your appointment</h3>
-      <p className="mt-2 text-sm text-[#dae9df]">{eventType} — <strong>{slot.label}</strong></p>
-      <p className="mt-1 text-xs text-[#bcd3c2]">Time zone: {timeZone}. Your slot is not reserved until Calendly confirms it.</p>
+      <h3 className="text-base font-semibold text-[var(--site-e7f8d8)]">Confirm your appointment</h3>
+      <p className="mt-2 text-sm text-[var(--site-dae9df)]">{eventType} — <strong>{slot.label}</strong></p>
+      <p className="mt-1 text-xs text-[var(--site-bcd3c2)]">Time zone: {timeZone}. Your slot is not reserved until Calendly confirms it.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-[#eaf5e7]" htmlFor="theia-booking-name">Full name</label>
+          <label className="block text-sm font-medium text-[var(--site-eaf5e7)]" htmlFor="theia-booking-name">Full name</label>
           <input id="theia-booking-name" name="name" type="text" required minLength={2} maxLength={100}
             autoComplete="name" placeholder="Your full name" className={inputStyle} disabled={status === "sending"} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-[#eaf5e7]" htmlFor="theia-booking-email">Email</label>
+          <label className="block text-sm font-medium text-[var(--site-eaf5e7)]" htmlFor="theia-booking-email">Email</label>
           <input id="theia-booking-email" name="email" type="email" required maxLength={254}
             autoComplete="email" placeholder="you@company.com" className={inputStyle} disabled={status === "sending"} />
         </div>
       </div>
       <div className="mt-4">
-        <label htmlFor="theia-booking-summary" className="block text-sm font-medium text-[#eaf5e7]">Conversation summary (optional)</label>
-        <p id="theia-summary-help" className="mt-1 text-xs leading-5 text-[#bdd1c4]">Generate a brief from this chat, then review and edit it. Remove anything sensitive. Only the approved text is shared with Metanomic through Calendly.</p>
+        <label htmlFor="theia-booking-summary" className="block text-sm font-medium text-[var(--site-eaf5e7)]">Conversation summary (optional)</label>
+        <p id="theia-summary-help" className="mt-1 text-xs leading-5 text-[var(--site-bdd1c4)]">Generate a brief from this chat, then review and edit it. Remove anything sensitive. Only the approved text is shared with Metanomic through Calendly.</p>
         <button type="button" onClick={()=>void prepareSummary()} disabled={summaryBusy || status === "sending"}
-          className="mt-2 min-h-11 rounded border border-[#799485] px-3 text-sm focus-visible:outline-2 focus-visible:outline-[#c9ec8a] disabled:opacity-60">{summaryBusy ? "Preparing summary…" : "Generate conversation summary"}</button>
+          className="mt-2 min-h-11 rounded border border-[var(--site-799485)] px-3 text-sm focus-visible:outline-2 focus-visible:outline-[#c9ec8a] disabled:opacity-60">{summaryBusy ? "Preparing summary…" : "Generate conversation summary"}</button>
         <textarea id="theia-booking-summary" aria-describedby="theia-summary-help" rows={6} maxLength={SUMMARY_LIMIT} value={summary}
           onChange={event=>{setSummary(event.target.value);setSummaryApproved(false);}} disabled={summaryBusy || status === "sending"} className={inputStyle}
           placeholder="Generate a summary or write what you would like to discuss." />
-        <p role="status" className="mt-1 text-xs text-[#bdd1c4]">{summaryBusy ? "Preparing a draft for your review." : summaryNotice}</p>
-        <label className="mt-3 flex items-start gap-3 text-sm leading-6 text-[#e1efe3]">
+        <p role="status" className="mt-1 text-xs text-[var(--site-bdd1c4)]">{summaryBusy ? "Preparing a draft for your review." : summaryNotice}</p>
+        <label className="mt-3 flex items-start gap-3 text-sm leading-6 text-[var(--site-e1efe3)]">
           <input type="checkbox" checked={summaryApproved} onChange={event=>setSummaryApproved(event.target.checked)} disabled={!summary.trim() || summaryBusy || status === "sending"} className="mt-1.5 h-4 w-4 shrink-0 accent-[#c9ec8a]" />
           <span>I reviewed this summary and want it included with my Calendly appointment.</span>
         </label>
-        {!summaryApproved && <p className="mt-1 text-xs text-[#bdd1c4]">The summary will not be sent unless you select this checkbox.</p>}
+        {!summaryApproved && <p className="mt-1 text-xs text-[var(--site-bdd1c4)]">The summary will not be sent unless you select this checkbox.</p>}
       </div>
       <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
         <label htmlFor="theia-booking-website">Leave this blank</label>
@@ -233,35 +233,35 @@ export default function BookingForm({ slot, eventType, eventTypeUri, timeZone, o
             strategy="afterInteractive" onReady={() => setScriptReady(true)}
             onError={() => setCaptchaError(true)} />
           <div ref={captchaNodeRef} />
-          {captchaError && <p role="alert" className="mt-2 text-sm text-[#f1cfaa]">
+          {captchaError && <p role="alert" className="mt-2 text-sm text-[var(--site-f1cfaa)]">
             The security check couldn&apos;t load. Please use Calendly instead.
           </p>}
         </div>
       ) : (
-        <p className="mt-3 text-sm text-[#f1cfaa]">Direct booking is unavailable. Please use Calendly.</p>
+        <p className="mt-3 text-sm text-[var(--site-f1cfaa)]">Direct booking is unavailable. Please use Calendly.</p>
       )}
 
-      <label className="mt-4 flex items-start gap-3 text-sm leading-6 text-[#e1efe3]">
+      <label className="mt-4 flex items-start gap-3 text-sm leading-6 text-[var(--site-e1efe3)]">
         <input type="checkbox" name="confirm" value="yes" required disabled={status === "sending"}
           className="mt-1.5 h-4 w-4 shrink-0 accent-[#c9ec8a]" />
         <span>I authorize Metanomic to schedule this appointment using my details. Calendly will process the booking and send the invitation.</span>
       </label>
-      <p className="mt-3 text-xs leading-5 text-[#bdd1c4]">
+      <p className="mt-3 text-xs leading-5 text-[var(--site-bdd1c4)]">
         Your contact information goes directly to Calendly for scheduling, not into Theia&apos;s AI conversation.
       </p>
 
-      {error && <p role="alert" className="mt-3 text-sm text-[#ffd2ad]">{error}</p>}
+      {error && <p role="alert" className="mt-3 text-sm text-[var(--site-ffd2ad)]">{error}</p>}
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button type="submit" disabled={status === "sending" || summaryBusy || !SITE_KEY}
-          className="inline-flex min-h-11 items-center rounded-lg bg-[#c9ec8a] px-4 font-semibold text-[#112026] hover:bg-[#dcf7af] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] disabled:cursor-wait disabled:opacity-60">
+          className="inline-flex min-h-11 items-center rounded-lg bg-[#c9ec8a] px-4 font-semibold text-[#112026] hover:bg-[var(--site-dcf7af)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] disabled:cursor-wait disabled:opacity-60">
           {status === "sending" ? "Confirming with Calendly…" : "Confirm booking"}
         </button>
         <button type="button" onClick={onCancel} disabled={status === "sending"}
-          className="inline-flex min-h-11 items-center rounded-lg border border-[#799485] px-4 font-semibold text-[#e0ede2] hover:bg-[#25453c] disabled:opacity-60">
+          className="inline-flex min-h-11 items-center rounded-lg border border-[var(--site-799485)] px-4 font-semibold text-[var(--site-e0ede2)] hover:bg-[var(--site-25453c)] disabled:opacity-60">
           Back
         </button>
         <a href={slot.bookingUrl} target="_blank" rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center text-sm font-semibold text-[#c9ec8a] underline underline-offset-4">
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--site-c9ec8a)] underline underline-offset-4">
           Book on Calendly instead ↗
         </a>
       </div>

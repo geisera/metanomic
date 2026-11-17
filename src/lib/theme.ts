@@ -1,0 +1,1 @@
+export const themeInit=`(()=>{let mode='system';try{const saved=localStorage.getItem('metanomic:theme');if(['dark','system','light'].includes(saved))mode=saved;}catch{}document.documentElement.dataset.theme=mode==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):mode;})();`;

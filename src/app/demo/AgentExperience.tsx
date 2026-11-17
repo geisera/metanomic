@@ -25,14 +25,14 @@ function formattedText(content: string) {
     const trimmed = line.trim();
     if (!trimmed) return <div aria-hidden="true" className="h-3" key={key} />;
     if (/^[A-Z][A-Z0-9 &\/-]{3,54}$/.test(trimmed)) {
-      return <p key={key} className="mt-3 text-xs font-bold uppercase tracking-[.12em] text-[#c9ec8a]">{trimmed}</p>;
+      return <p key={key} className="mt-3 text-xs font-bold uppercase tracking-[.12em] text-[var(--site-c9ec8a)]">{trimmed}</p>;
     }
     const segments = line.split(/(\*\*[^*]+\*\*)/g);
     return (
       <p key={key} className="min-h-[1.55em]">
         {segments.map((part, i) =>
           part.startsWith("**") && part.endsWith("**")
-            ? <strong key={i} className="font-semibold text-[#e9f4e3]">{part.slice(2, -2)}</strong>
+            ? <strong key={i} className="font-semibold text-[var(--site-e9f4e3)]">{part.slice(2, -2)}</strong>
             : <span key={i}>{part}</span>
         )}
       </p>
@@ -118,19 +118,19 @@ export default function AgentExperience({ embedded = false, instance = "demo" }:
 
 return (
     <section id={`${instance}-try-agent`} aria-label="Talk with Theia" className={`flex min-h-0 w-full flex-1 flex-col ${embedded ? "" : "sm:mx-auto sm:max-w-[1148px] sm:px-6 sm:pb-4"}`}>
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-y border-[#385250] bg-[#0c1a23] shadow-[0_24px_90px_rgba(0,0,0,.20)] sm:rounded-xl sm:border">
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[#30464f] px-4 py-3 sm:px-6">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-y border-[var(--site-385250)] bg-[var(--site-0c1a23)] shadow-[0_24px_90px_rgba(0,0,0,.20)] sm:rounded-xl sm:border">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--site-30464f)] px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <TheiaAvatar />
             <div className="min-w-0">
-              <p className="text-lg font-semibold leading-tight tracking-[-.02em] text-[#edf5e9]">Theia</p>
+              <p className="text-lg font-semibold leading-tight tracking-[-.02em] text-[var(--site-edf5e9)]">Theia</p>
               {count > 0 && <Heading className="sr-only">Theia — AI workflow advisor</Heading>}
-              <p className="mt-0.5 hidden text-xs text-[#c2d1ca] sm:block">AI workflow advisor</p>
+              <p className="mt-0.5 hidden text-xs text-[var(--site-c2d1ca)] sm:block">AI workflow advisor</p>
             </div>
           </div>
           <div className="flex items-center gap-3 sm:gap-5">
             {isKnowledgeAdmin && (
-              <label className="inline-flex min-h-11 items-center gap-2 text-xs text-[#cfdfd4]">
+              <label className="inline-flex min-h-11 items-center gap-2 text-xs text-[var(--site-cfdfd4)]">
                 <input type="checkbox" checked={showDiagnostics}
                   onChange={event => setShowDiagnostics(event.target.checked)}
                   className="h-4 w-4 accent-[#c9ec8a]"
@@ -139,7 +139,7 @@ return (
                 <span className="sm:hidden">Debug</span>
               </label>
             )}
-            <span role="status" aria-label={statusLabel} className="inline-flex min-h-11 items-center gap-2 text-xs text-[#d1e1d6]">
+            <span role="status" aria-label={statusLabel} className="inline-flex min-h-11 items-center gap-2 text-xs text-[var(--site-d1e1d6)]">
               <span aria-hidden="true" className={lastMode === "guided" ? "h-2 w-2 shrink-0 rounded-full bg-amber-300" : "h-2 w-2 shrink-0 rounded-full bg-[#c9ec8a]"} />
               <span className="hidden sm:inline">{statusLabel}</span>
             </span>
@@ -150,7 +150,7 @@ return (
                 aria-label="Clear chat history"
                 title="Clear this conversation and its saved session history"
                 disabled={busy}
-                className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#52676c] px-3 text-sm text-[#d2e0d9] hover:border-[#9cbc92] hover:bg-[#20333c] disabled:cursor-not-allowed disabled:opacity-55"
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-[var(--site-52676c)] px-3 text-sm text-[var(--site-d2e0d9)] hover:border-[var(--site-9cbc92)] hover:bg-[var(--site-20333c)] disabled:cursor-not-allowed disabled:opacity-55"
               >
                 Clear chat
               </button>
@@ -168,11 +168,11 @@ return (
         >
           {count === 0 && (
             <div className="mx-auto flex min-h-full w-full max-w-[680px] flex-col items-center justify-center px-1 pb-16 pt-4 text-center sm:pb-20">
-              <div aria-hidden="true" className="mb-3 flex h-16 w-16 items-center justify-center rounded-[19px] border border-[#67836b]/55 bg-[#182f32] text-[34px] font-light text-[#d8efc4]">
+              <div aria-hidden="true" className="mb-3 flex h-16 w-16 items-center justify-center rounded-[19px] border border-[var(--site-67836b)]/55 bg-[var(--site-182f32)] text-[34px] font-light text-[var(--site-d8efc4)]">
                 T
               </div>
-              <Heading className="text-[clamp(1.75rem,4vw,2.625rem)] font-semibold tracking-[-.02em] text-[#edf5e9]">I&apos;m Theia.</Heading>
-              <p className="mt-2.5 max-w-[52ch] text-base leading-6 text-[#d0e0d8]">
+              <Heading className="text-[clamp(1.75rem,4vw,2.625rem)] font-semibold tracking-[-.02em] text-[var(--site-edf5e9)]">I&apos;m Theia.</Heading>
+              <p className="mt-2.5 max-w-[52ch] text-base leading-6 text-[var(--site-d0e0d8)]">
                 Tell me what you&apos;re working on and I&apos;ll map out how AI can help.
                 Or ask how I&apos;m built—model, tools, architecture, safeguards.
               </p>
@@ -183,7 +183,7 @@ return (
                     key={suggestion.label}
                     disabled={busy}
                     onClick={() => void submit(suggestion.prompt)}
-                    className="min-h-11 rounded-full border border-[#3c5757] bg-[#152b33] px-4 py-2.5 text-sm text-[#e0ece6] transition-colors hover:border-[#c9ec8a]/40 hover:bg-[#213c42] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] disabled:cursor-not-allowed disabled:opacity-55"
+                    className="min-h-11 rounded-full border border-[var(--site-3c5757)] bg-[var(--site-152b33)] px-4 py-2.5 text-sm text-[var(--site-e0ece6)] transition-colors hover:border-[#c9ec8a]/40 hover:bg-[var(--site-213c42)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] disabled:cursor-not-allowed disabled:opacity-55"
                   >
                     {suggestion.label}
                   </button>
@@ -197,9 +197,9 @@ return (
               {items.filter(item => item.id !== "intro").map(item => (
                 <div key={item.id} className={item.role === "user" ? "flex justify-end" : "flex justify-start"}>
                   <div className={item.role === "user"
-                    ? "max-w-[94%] rounded-2xl rounded-tr-sm border border-[#49664e] bg-[#253f37] px-4 py-3 text-sm leading-7 text-[#f0f6ef] sm:max-w-[85%]"
-                    : "max-w-[97%] text-sm leading-7 text-[#dce8e3] sm:max-w-[90%]"}>
-                    {item.role === "assistant" && <p className="mb-2 text-xs font-semibold uppercase tracking-[.1em] text-[#c9ec8a]">Theia</p>}
+                    ? "max-w-[94%] rounded-2xl rounded-tr-sm border border-[var(--site-49664e)] bg-[var(--site-253f37)] px-4 py-3 text-sm leading-7 text-[var(--site-f0f6ef)] sm:max-w-[85%]"
+                    : "max-w-[97%] text-sm leading-7 text-[var(--site-dce8e3)] sm:max-w-[90%]"}>
+                    {item.role === "assistant" && <p className="mb-2 text-xs font-semibold uppercase tracking-[.1em] text-[var(--site-c9ec8a)]">Theia</p>}
                     <div className="space-y-0.5">{formattedText(item.content)}</div>
                     {item.role === "assistant" && (
                       <div className="mt-4">
@@ -209,7 +209,7 @@ return (
                             type="button"
                             onClick={() => void submit("I'd like you to book an appointment with Metanomic for me. Please check the available appointment times.")}
                             disabled={!ready || busy}
-                            className="disabled:cursor-not-allowed disabled:opacity-50 mt-2 inline-flex min-h-11 items-center rounded-md border border-[#506c53] px-3 py-1.5 text-xs font-semibold text-[#c9ec8a] transition-colors hover:border-[#c9ec8a] hover:bg-[#1d3531] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+                            className="disabled:cursor-not-allowed disabled:opacity-50 mt-2 inline-flex min-h-11 items-center rounded-md border border-[var(--site-506c53)] px-3 py-1.5 text-xs font-semibold text-[var(--site-c9ec8a)] transition-colors hover:border-[#c9ec8a] hover:bg-[var(--site-1d3531)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
                           >
                             Book an appointment <span aria-hidden="true" className="ml-2">→</span>
                           </button>
@@ -218,16 +218,16 @@ return (
                     )}
                     {item.role === "assistant" && item.booking && <BookingOptions initial={item.booking} />}
                     {item.role === "assistant" && item.sources && item.sources.length > 0 && (
-                      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#bed0c0]"
+                      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--site-bed0c0)]"
                         aria-label="Knowledge sources">
-                        <span className="font-semibold text-[#d2e7c6]">Sources:</span>
+                        <span className="font-semibold text-[var(--site-d2e7c6)]">Sources:</span>
                         {item.sources.filter((source, index, all) =>
                           all.findIndex(candidate => candidate.documentId === source.documentId) === index
                         ).map(source => (
                           source.sourceUrl.startsWith("https://")
                             ? <a key={source.documentId} href={source.sourceUrl} target="_blank"
                                 rel="noopener noreferrer"
-                                className="underline decoration-[#799583] underline-offset-2 hover:text-[#e1f5d6]">
+                                className="underline decoration-[#799583] underline-offset-2 hover:text-[var(--site-e1f5d6)]">
                                 [{item.sources?.filter(candidate => candidate.documentId === source.documentId).map(candidate => candidate.number).join(", ")}] {source.title}
                               </a>
                             : <span key={source.documentId} title={"Revision " + source.revision}>
@@ -237,30 +237,30 @@ return (
                       </div>
                     )}
                     {isKnowledgeAdmin && showDiagnostics && item.activities && item.activities.length > 0 && (
-                      <details className="mt-4 rounded-lg border border-[#385044] bg-[#112620] p-3">
-                        <summary className="cursor-pointer text-xs font-semibold text-[#c9ec8a]">
+                      <details className="mt-4 rounded-lg border border-[var(--site-385044)] bg-[var(--site-112620)] p-3">
+                        <summary className="cursor-pointer text-xs font-semibold text-[var(--site-c9ec8a)]">
                           Administrator diagnostics ({item.activities.length} tool calls)
                         </summary>
                         {item.activities.map((activity, i) => (
-                          <p key={i} className="mt-2 text-xs leading-5 text-[#d1e1d7]">
+                          <p key={i} className="mt-2 text-xs leading-5 text-[var(--site-d1e1d7)]">
                             <span className="font-semibold">{activity.label}</span>
-                            <span className="mt-0.5 block text-[#bdd1c4]">{activity.detail}</span>
+                            <span className="mt-0.5 block text-[var(--site-bdd1c4)]">{activity.detail}</span>
                           </p>
                         ))}
                         {item.sources?.map((source, i) => (
-                          <p key={"source-" + i} className="mt-2 text-xs leading-5 text-[#bdd1c4]">
+                          <p key={"source-" + i} className="mt-2 text-xs leading-5 text-[var(--site-bdd1c4)]">
                             <span className="font-semibold">[{source.number}] {source.title}, revision {source.revision}</span>
                             <span className="mt-1 block whitespace-pre-wrap">{source.excerpt}</span>
                           </p>
                         ))}
                       </details>
                     )}
-                    {item.notice && <p className="mt-4 border-l-2 border-amber-300/60 pl-3 text-xs leading-6 text-[#eadbac]">{item.notice}</p>}
+                    {item.notice && <p className="mt-4 border-l-2 border-amber-300/60 pl-3 text-xs leading-6 text-[var(--site-eadbac)]">{item.notice}</p>}
                   </div>
                 </div>
               ))}
               {busy && (
-                <div className="flex items-center gap-3 text-sm text-[#cdded0]" role="status" aria-label="Theia is preparing a reply" aria-live="off">
+                <div className="flex items-center gap-3 text-sm text-[var(--site-cdded0)]" role="status" aria-label="Theia is preparing a reply" aria-live="off">
                   <span className="flex gap-1" aria-hidden="true">
                     <span className="h-1.5 w-1.5 motion-safe:animate-pulse rounded-full bg-[#c9ec8a]" />
                     <span className="h-1.5 w-1.5 motion-safe:animate-pulse rounded-full bg-[#c9ec8a] [animation-delay:150ms]" />
@@ -269,16 +269,16 @@ return (
                   <span className="min-w-0 motion-safe:transition-opacity">{thinkingMessages[thinkingIndex]}</span>
                 </div>
               )}
-              {error && <div role="alert" className="rounded-lg border border-red-300/25 bg-red-950/30 px-4 py-3 text-xs leading-6 text-[#f3d2d2]">{error}</div>}
+              {error && <div role="alert" className="rounded-lg border border-red-300/25 bg-red-950/30 px-4 py-3 text-xs leading-6 text-[var(--site-f3d2d2)]">{error}</div>}
             </div>
           )}
         </div>
 
-        <form onSubmit={onSubmit} className="shrink-0 border-t border-[#30464f] bg-[#0d1e27] px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:p-4">
+        <form onSubmit={onSubmit} className="shrink-0 border-t border-[var(--site-30464f)] bg-[var(--site-0d1e27)] px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:p-4">
           <div className="mx-auto w-full max-w-[780px]">
             <label htmlFor={`${instance}-question`} className="sr-only">Ask Theia a question</label>
             <span id={`${instance}-composer-hint`} className="sr-only">Press Enter to send. Press Shift plus Enter to insert a new line.</span>
-            <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#50666b] bg-[#0b1720] p-0.5 transition-[border-color,box-shadow] focus-within:border-[#c9ec8a] focus-within:shadow-[0_0_0_2px_rgba(201,236,138,.15)] motion-reduce:transition-none">
+            <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[var(--site-50666b)] bg-[var(--site-0b1720)] p-0.5 transition-[border-color,box-shadow] focus-within:border-[#c9ec8a] focus-within:shadow-[0_0_0_2px_rgba(201,236,138,.15)] motion-reduce:transition-none">
               <textarea
                 id={`${instance}-question`}
                 ref={draftRef}
@@ -290,7 +290,7 @@ return (
                 rows={1}
                 maxLength={900}
                 disabled={busy}
-                className="min-h-[44px] max-h-[164px] min-w-0 flex-1 resize-none overflow-y-hidden bg-transparent px-3 py-2 text-base leading-6 text-[#f0f7ef] outline-none placeholder:text-[#b9cdc7] disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-[44px] max-h-[164px] min-w-0 flex-1 resize-none overflow-y-hidden bg-transparent px-3 py-2 text-base leading-6 text-[var(--site-f0f7ef)] outline-none placeholder:text-[var(--site-b9cdc7)] disabled:cursor-not-allowed disabled:opacity-60"
               />
               <button
                 type="submit"
@@ -298,19 +298,19 @@ return (
                 aria-label="Send message"
                 className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] ${
                   canSend
-                    ? "border border-[#c9ec8a] bg-[#c9ec8a] text-[#101a1b] hover:bg-[#dcf7af]"
-                    : "cursor-not-allowed border border-[#52656a] bg-transparent text-[#c2d1d5]"
+                    ? "border border-[#c9ec8a] bg-[#c9ec8a] text-[#101a1b] hover:bg-[var(--site-dcf7af)]"
+                    : "cursor-not-allowed border border-[var(--site-52656a)] bg-transparent text-[var(--site-c2d1d5)]"
                 }`}
               >
                 {busy ? "Sending…" : "Send"}
                 <span aria-hidden="true" className={busy ? "motion-safe:animate-pulse" : ""}>{busy ? "·" : "↑"}</span>
               </button>
             </div>
-            <div className="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-1 text-xs leading-5 text-[#c4d3ce]">
+            <div className="mt-2 flex flex-wrap items-start justify-between gap-x-4 gap-y-1 text-xs leading-5 text-[var(--site-c4d3ce)]">
               <p>Don&apos;t share sensitive information. Messages are processed by a third-party AI model.</p>
               <Link
                 href="/contact"
-                className="inline-flex min-h-6 items-center rounded-sm font-semibold text-[#c9ec8a] underline underline-offset-2 hover:text-[#e5f8c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
+                className="inline-flex min-h-6 items-center rounded-sm font-semibold text-[var(--site-c9ec8a)] underline underline-offset-2 hover:text-[var(--site-e5f8c8)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"
               >
                 Schedule a call <span aria-hidden="true" className="ml-1">→</span>
               </Link>

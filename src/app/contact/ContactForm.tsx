@@ -25,8 +25,8 @@ type TurnstileWindow = Window & { turnstile?: TurnstileAPI };
 
 type SubmissionState = "idle" | "sending" | "success" | "error";
 
-const inputClass = "mt-2 block min-h-12 w-full rounded-lg border border-[#52676d] bg-[#0b1922] px-4 py-3 text-base text-[#f0f6ef] placeholder:text-[#aabeb9] focus:border-[#c9ec8a] focus:outline-2 focus:outline-offset-2 focus:outline-[#c9ec8a] disabled:opacity-60";
-const labelClass = "block text-sm font-medium text-[#e3ede7]";
+const inputClass = "mt-2 block min-h-12 w-full rounded-lg border border-[var(--site-52676d)] bg-[var(--site-0b1922)] px-4 py-3 text-base text-[var(--site-f0f6ef)] placeholder:text-[var(--site-aabeb9)] focus:border-[#c9ec8a] focus:outline-2 focus:outline-offset-2 focus:outline-[#c9ec8a] disabled:opacity-60";
+const labelClass = "block text-sm font-medium text-[var(--site-e3ede7)]";
 
 export default function ContactForm() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -120,34 +120,34 @@ export default function ContactForm() {
       ref={formRef}
       onSubmit={event => void submit(event)}
       aria-label="Contact Metanomic"
-      className="rounded-xl border border-[#34504f] bg-[#102029]/95 p-5 shadow-[0_14px_45px_rgba(0,0,0,.15)] sm:p-8"
+      className="rounded-xl border border-[var(--site-34504f)] bg-[var(--site-102029)]/95 p-5 shadow-[0_14px_45px_rgba(0,0,0,.15)] sm:p-8"
     >
-      <h2 className="text-2xl font-semibold tracking-[-.04em] text-[#eff6ef]">Send us a message</h2>
-      <p className="mt-2 text-sm leading-6 text-[#c3d5cd]">
+      <h2 className="text-2xl font-semibold tracking-[-.04em] text-[var(--site-eff6ef)]">Send us a message</h2>
+      <p className="mt-2 text-sm leading-6 text-[var(--site-c3d5cd)]">
         Tell us a little about what you're looking to accomplish.
       </p>
 
       <div className="mt-7 grid gap-5 sm:grid-cols-2">
         <div>
-          <label htmlFor="contact-name" className={labelClass}>Name <span aria-hidden="true" className="text-[#c9ec8a]">*</span></label>
+          <label htmlFor="contact-name" className={labelClass}>Name <span aria-hidden="true" className="text-[var(--site-c9ec8a)]">*</span></label>
           <input id="contact-name" name="name" type="text" autoComplete="name" required minLength={2} maxLength={100}
             placeholder="Your name" className={inputClass} disabled={status === "sending"} />
         </div>
         <div>
-          <label htmlFor="contact-email" className={labelClass}>Email <span aria-hidden="true" className="text-[#c9ec8a]">*</span></label>
+          <label htmlFor="contact-email" className={labelClass}>Email <span aria-hidden="true" className="text-[var(--site-c9ec8a)]">*</span></label>
           <input id="contact-email" name="email" type="email" autoComplete="email" required maxLength={254}
             placeholder="you@company.com" className={inputClass} disabled={status === "sending"} />
         </div>
       </div>
 
       <div className="mt-5">
-        <label htmlFor="contact-company" className={labelClass}>Company <span className="font-normal text-[#b6c9c0]">(optional)</span></label>
+        <label htmlFor="contact-company" className={labelClass}>Company <span className="font-normal text-[var(--site-b6c9c0)]">(optional)</span></label>
         <input id="contact-company" name="company" type="text" autoComplete="organization" maxLength={120}
           placeholder="Your organization" className={inputClass} disabled={status === "sending"} />
       </div>
 
       <div className="mt-5">
-        <label htmlFor="contact-message" className={labelClass}>What can we help you with? <span aria-hidden="true" className="text-[#c9ec8a]">*</span></label>
+        <label htmlFor="contact-message" className={labelClass}>What can we help you with? <span aria-hidden="true" className="text-[var(--site-c9ec8a)]">*</span></label>
         <textarea id="contact-message" name="message" required minLength={20} maxLength={3000} rows={5}
           placeholder="Describe your challenge, idea, or goals…"
           className={inputClass + " min-h-[150px] resize-y"}
@@ -169,14 +169,14 @@ export default function ContactForm() {
           />
           <div ref={widgetContainerRef} className="min-h-0 max-w-full" />
           {challengeError && (
-            <p role="status" className="mt-2 text-sm text-[#f2d2af]">
+            <p role="status" className="mt-2 text-sm text-[var(--site-f2d2af)]">
               The security check could not load. Please refresh this page and try again.
             </p>
           )}
         </div>
       )}
 
-      <p className="mt-5 text-xs leading-6 text-[#c1d1ca]">
+      <p className="mt-5 text-xs leading-6 text-[var(--site-c1d1ca)]">
         We'll use your details to respond. Don't include sensitive information. Email delivery is handled by a third-party provider.
       </p>
 
@@ -194,8 +194,8 @@ export default function ContactForm() {
           role={status === "error" ? "alert" : "status"}
           aria-live="polite"
           className={status === "error"
-            ? "mt-5 rounded-lg border border-[#986e55] bg-[#36251c] px-4 py-3 text-sm text-[#f6d7c1]"
-            : "mt-5 rounded-lg border border-[#628365] bg-[#18382b] px-4 py-3 text-sm text-[#d9f1d4]"}
+            ? "mt-5 rounded-lg border border-[var(--site-986e55)] bg-[var(--site-36251c)] px-4 py-3 text-sm text-[var(--site-f6d7c1)]"
+            : "mt-5 rounded-lg border border-[var(--site-628365)] bg-[var(--site-18382b)] px-4 py-3 text-sm text-[var(--site-d9f1d4)]"}
         >
           {feedback}
         </p>

@@ -19,10 +19,10 @@ export default function DemoPage() {
     <main className="theia-demo flex h-dvh min-h-0 flex-col overflow-x-hidden">
       <header className="container flex h-[58px] shrink-0 items-center justify-between gap-4 sm:h-[64px]">
         <Link href="/" aria-label="Metanomic home" className="flex min-h-11 items-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md border border-[#7b986d] bg-[#c9ec8a] text-sm font-black text-[#122322]">M</span>
-          <span className="text-[16px] font-semibold tracking-[-.035em]">metanomic<span className="text-[#c9ec8a]">.</span></span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-md border border-[var(--site-7b986d)] bg-[#c9ec8a] text-sm font-black text-[#122322]">M</span>
+          <span className="text-[16px] font-semibold tracking-[-.035em]">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></span>
         </Link>
-        <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm text-[#d1e0dc] hover:text-[#c9ec8a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"><span aria-hidden="true">←</span> Back to site</Link>
+        <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm text-[var(--site-d1e0dc)] hover:text-[var(--site-c9ec8a)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"><span aria-hidden="true">←</span> Back to site</Link>
       </header>
       <AgentExperience />
     </main>

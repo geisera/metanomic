@@ -27,10 +27,10 @@ function SampleExchange() {
   }, [length, reduced, paused]);
   const shown = reduced ? question.length + answer.length : length;
   return <div aria-hidden="true" className="theia-sample" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-    <div className="flex items-center gap-3 border-b border-[#30464f] p-5"><TheiaAvatar status /><span className="font-semibold">Theia</span><span className="ml-auto text-xs text-[#d1e1d6]">Ready</span></div>
+    <div className="flex items-center gap-3 border-b border-[var(--site-30464f)] p-5"><TheiaAvatar status /><span className="font-semibold">Theia</span><span className="ml-auto text-xs text-[var(--site-d1e1d6)]">Ready</span></div>
     <div className="space-y-5 p-5">
-      <div className="relative ml-auto w-fit max-w-[94%] rounded-2xl rounded-tr-sm border border-[#49664e] bg-[#253f37] px-4 py-3 text-sm leading-7 text-[#f0f6ef]"><span className="invisible" aria-hidden="true">{question}</span><span className="absolute inset-0 px-4 py-3">{question.slice(0, shown)}</span></div>
-      <div className="relative whitespace-pre-line text-sm leading-7 text-[#dce8e3]"><span className="invisible" aria-hidden="true">{answer}</span><span className="absolute inset-0">{answer.slice(0, Math.max(0, shown - question.length))}</span></div>
+      <div className="relative ml-auto w-fit max-w-[94%] rounded-2xl rounded-tr-sm border border-[var(--site-49664e)] bg-[var(--site-253f37)] px-4 py-3 text-sm leading-7 text-[var(--site-f0f6ef)]"><span className="invisible" aria-hidden="true">{question}</span><span className="absolute inset-0 px-4 py-3">{question.slice(0, shown)}</span></div>
+      <div className="relative whitespace-pre-line text-sm leading-7 text-[var(--site-dce8e3)]"><span className="invisible" aria-hidden="true">{answer}</span><span className="absolute inset-0">{answer.slice(0, Math.max(0, shown - question.length))}</span></div>
     </div>
   </div>;
 }
@@ -44,13 +44,13 @@ export default function TheiaShowcase() {
       <div className="min-w-0">
         <p className="eyebrow">TRY IT NOW · LIVE DEMO</p>
         <h2 className="mt-4 text-3xl font-semibold tracking-[-.05em] md:text-4xl">Meet Theia. Tell her the problem, and she&apos;ll map the pilot.</h2>
-        <p className="mt-4 leading-8 text-[#d5e5dc]">Theia is the kind of agent we build for clients. Describe a workflow that slows your team down, and she&apos;ll outline a focused pilot covering the tools, the safeguards, and how you&apos;d measure it.</p>
+        <p className="mt-4 leading-8 text-[var(--site-d5e5dc)]">Theia is the kind of agent we build for clients. Describe a workflow that slows your team down, and she&apos;ll outline a focused pilot covering the tools, the safeguards, and how you&apos;d measure it.</p>
         <form action="/demo" onSubmit={submit} className="mt-6" data-theia-source="section-input">
           <label htmlFor="theia-workflow" className="sr-only">Ask Theia a question</label>
           <input id="theia-workflow" value={prompt} onChange={event => setPrompt(event.target.value)} maxLength={900} placeholder="Describe what you're working on…" className="theia-workflow-input" />
           <button type="submit" data-theia-source="section-input" className="button button-primary mt-3 w-full text-center">Ask Theia about your workflow →</button>
           <div className="theia-home-chips mt-4">{suggestions.map((s, index) => <TheiaLink key={s.label} source="section-chip" prompt={s.label} className="theia-chip">{["Explore a use case", "Your tools", "Your stack", "Data handling"][index]}</TheiaLink>)}</div>
-          <p className="mt-4 text-xs leading-6 text-[#b9cbc4]">Free live demo. Don&apos;t share sensitive information.</p>
+          <p className="mt-4 text-xs leading-6 text-[var(--site-b9cbc4)]">Free live demo. Don&apos;t share sensitive information.</p>
         </form>
       </div>
       {chat.count > 0 && !dock?.drawerOpen ? <div className="theia-inline-chat"><InlineChat embedded instance="inline" /></div> : <SampleExchange />}

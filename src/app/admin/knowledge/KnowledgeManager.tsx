@@ -23,10 +23,10 @@ const categories: { key: Category; label: string }[] = [
   { key: "other", label: "Other" },
 ];
 
-const field = "w-full rounded-lg border border-[#4a6469] bg-[#0c1b25] px-3 py-2.5 text-base text-[#edf7ed] placeholder:text-[#9db3b0] outline-none focus:border-[#c9ec8a] focus:ring-2 focus:ring-[#c9ec8a]/20 disabled:opacity-60";
-const label = "mb-1.5 block text-sm font-semibold text-[#d7e9de]";
-const secondary = "inline-flex min-h-11 items-center justify-center rounded-lg border border-[#526d69] px-4 text-sm font-semibold text-[#dfefdf] transition-colors hover:bg-[#25403e] disabled:opacity-50";
-const primary = "inline-flex min-h-11 items-center justify-center rounded-lg bg-[#c9ec8a] px-5 text-sm font-bold text-[#12231d] transition-colors hover:bg-[#dff9b7] disabled:cursor-wait disabled:opacity-50";
+const field = "w-full rounded-lg border border-[var(--site-4a6469)] bg-[var(--site-0c1b25)] px-3 py-2.5 text-base text-[var(--site-edf7ed)] placeholder:text-[var(--site-9db3b0)] outline-none focus:border-[#c9ec8a] focus:ring-2 focus:ring-[#c9ec8a]/20 disabled:opacity-60";
+const label = "mb-1.5 block text-sm font-semibold text-[var(--site-d7e9de)]";
+const secondary = "inline-flex min-h-11 items-center justify-center rounded-lg border border-[var(--site-526d69)] px-4 text-sm font-semibold text-[var(--site-dfefdf)] transition-colors hover:bg-[var(--site-25403e)] disabled:opacity-50";
+const primary = "inline-flex min-h-11 items-center justify-center rounded-lg bg-[#c9ec8a] px-5 text-sm font-bold text-[#12231d] transition-colors hover:bg-[var(--site-dff9b7)] disabled:cursor-wait disabled:opacity-50";
 
 function shortDate(iso?: string): string {
   if (!iso) return "";
@@ -285,31 +285,31 @@ export default function KnowledgeManager() {
   }
 
   return (
-    <div className="mx-auto min-h-[calc(100vh-80px)] max-w-[1440px] px-4 py-8 text-[#edf6ec] sm:px-6 lg:px-8">
+    <div className="mx-auto min-h-[calc(100vh-80px)] max-w-[1440px] px-4 py-8 text-[var(--site-edf6ec)] sm:px-6 lg:px-8">
       <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <a href="/" className="text-sm font-semibold text-[#c9ec8a] hover:underline">Metanomic</a>
-          <p className="mt-2 text-xs font-bold uppercase tracking-[.2em] text-[#b5d8bc]">Administration</p>
+          <a href="/" className="text-sm font-semibold text-[var(--site-c9ec8a)] hover:underline">Metanomic</a>
+          <p className="mt-2 text-xs font-bold uppercase tracking-[.2em] text-[var(--site-b5d8bc)]">Administration</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">Theia Knowledge Base</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#c8dcd3]">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--site-c8dcd3)]">
             Manage approved company knowledge, technical references, and frequently asked questions.
             Published content is indexed for live retrieval. Drafts and archived documents are excluded.
           </p>
         </div>
         {view === "ready" && (
-          <div className="flex flex-wrap items-center gap-3 text-sm text-[#c8dcd3]">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--site-c8dcd3)]">
             {email && <span className="max-w-52 truncate" title={email}>{email}</span>}
             <button className={secondary} type="button" onClick={() => void logout()}>Sign out</button>
           </div>
         )}
       </div>
 
-      {view === "loading" && <p role="status" className="py-20 text-center text-[#c8dcd3]">Checking administrator access…</p>}
+      {view === "loading" && <p role="status" className="py-20 text-center text-[var(--site-c8dcd3)]">Checking administrator access…</p>}
       {(view === "setup" || view === "error") && (
-        <div role="alert" className="max-w-2xl rounded-xl border border-[#6e6258] bg-[#1f282d] p-6">
+        <div role="alert" className="max-w-2xl rounded-xl border border-[var(--site-6e6258)] bg-[var(--site-1f282d)] p-6">
           <h2 className="text-xl font-semibold">{view === "setup" ? "Knowledge service not connected" : "Connection error"}</h2>
-          <p className="mt-3 text-sm leading-6 text-[#d8ddd2]">{error}</p>
-          <p className="mt-3 text-sm text-[#c5d6ce]">
+          <p className="mt-3 text-sm leading-6 text-[var(--site-d8ddd2)]">{error}</p>
+          <p className="mt-3 text-sm text-[var(--site-c5d6ce)]">
             This interface requires a dedicated Supabase project, the knowledge foundation migration,
             an authorized admin user, and server-side Vercel environment variables.
           </p>
@@ -318,9 +318,9 @@ export default function KnowledgeManager() {
       )}
 
       {view === "login" && (
-        <form onSubmit={event => void login(event)} className="max-w-md rounded-xl border border-[#405b56] bg-[#101f2a] p-6 shadow-xl">
+        <form onSubmit={event => void login(event)} className="max-w-md rounded-xl border border-[var(--site-405b56)] bg-[var(--site-101f2a)] p-6 shadow-xl">
           <h2 className="text-xl font-semibold">Administrator sign in</h2>
-          <p className="mt-2 text-sm text-[#c6d7d1]">Use an existing Supabase Auth account granted knowledge-administrator access.</p>
+          <p className="mt-2 text-sm text-[var(--site-c6d7d1)]">Use an existing Supabase Auth account granted knowledge-administrator access.</p>
           <div className="mt-5">
             <label htmlFor="knowledge-email" className={label}>Email address</label>
             <input id="knowledge-email" type="email" required autoComplete="username" className={field}
@@ -331,11 +331,11 @@ export default function KnowledgeManager() {
             <input id="knowledge-password" type="password" required autoComplete="current-password" className={field}
               value={loginPassword} onChange={event => setLoginPassword(event.target.value)} />
           </div>
-          {error && <p role="alert" className="mt-4 text-sm text-[#ffd3b6]">{error}</p>}
+          {error && <p role="alert" className="mt-4 text-sm text-[var(--site-ffd3b6)]">{error}</p>}
           <button type="submit" disabled={loginBusy} className={primary + " mt-5 w-full"}>
             {loginBusy ? "Signing in…" : "Sign in"}
           </button>
-          <p className="mt-4 text-xs leading-5 text-[#bacdc5]">
+          <p className="mt-4 text-xs leading-5 text-[var(--site-bacdc5)]">
             Registration is disabled here. Ask the project administrator to provision access in Supabase.
           </p>
         </form>
@@ -343,33 +343,33 @@ export default function KnowledgeManager() {
 
       {view === "ready" && (
         <div className="grid min-h-[600px] gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <aside className="rounded-xl border border-[#3b5854] bg-[#0f202a] p-4">
+          <aside className="rounded-xl border border-[var(--site-3b5854)] bg-[var(--site-0f202a)] p-4">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-base font-semibold">Documents <span className="text-[#aecaad]">({documents.length})</span></h2>
+              <h2 className="text-base font-semibold">Documents <span className="text-[var(--site-aecaad)]">({documents.length})</span></h2>
               <button type="button" className={primary + " px-3"} onClick={() => select(null)}>New</button>
             </div>
             <label htmlFor="knowledge-search" className="sr-only">Filter knowledge documents</label>
             <input id="knowledge-search" type="search" placeholder="Filter documents…" className={field + " mt-4"}
               value={query} onChange={event => setQuery(event.target.value)} />
             <div className="mt-4 max-h-[75vh] space-y-2 overflow-y-auto pr-1" aria-label="Knowledge documents">
-              {filtered.length === 0 && <p className="py-4 text-sm text-[#b6c9c0]">No matching documents.</p>}
+              {filtered.length === 0 && <p className="py-4 text-sm text-[var(--site-b6c9c0)]">No matching documents.</p>}
               {filtered.map(document => (
                 <button type="button" key={document.id} onClick={() => select(document)}
                   aria-current={selectedId === document.id ? "true" : undefined}
                   className={"w-full rounded-lg border p-3 text-left transition-colors " +
-                    (selectedId === document.id ? "border-[#b3d98d] bg-[#243d34]" : "border-[#354e50] bg-[#122933] hover:bg-[#1c3538]")}>
+                    (selectedId === document.id ? "border-[var(--site-b3d98d)] bg-[var(--site-243d34)]" : "border-[var(--site-354e50)] bg-[var(--site-122933)] hover:bg-[var(--site-1c3538)]")}>
                   <span className="block truncate text-sm font-semibold">{document.title}</span>
-                  <span className="mt-1 flex items-center justify-between gap-2 text-xs capitalize text-[#c1d3c7]">
+                  <span className="mt-1 flex items-center justify-between gap-2 text-xs capitalize text-[var(--site-c1d3c7)]">
                     <span>{document.category}</span>
-                    <span className={document.status === "published" ? "text-[#d5efa9]" : document.status === "archived" ? "text-[#bdc5c7]" : "text-[#e6c897]"}>{document.status}</span>
+                    <span className={document.status === "published" ? "text-[var(--site-d5efa9)]" : document.status === "archived" ? "text-[var(--site-bdc5c7)]" : "text-[var(--site-e6c897)]"}>{document.status}</span>
                   </span>
-                  <span className="mt-1 block text-xs text-[#b9cbc4]">{shortDate(document.updated_at)}</span>
+                  <span className="mt-1 block text-xs text-[var(--site-b9cbc4)]">{shortDate(document.updated_at)}</span>
                 </button>
               ))}
             </div>
-            <form className="mt-6 border-t border-[#385552] pt-5" onSubmit={event => void testKnowledge(event)}>
+            <form className="mt-6 border-t border-[var(--site-385552)] pt-5" onSubmit={event => void testKnowledge(event)}>
               <h3 className="text-base font-semibold">Test Knowledge</h3>
-              <p className="mt-2 text-xs leading-5 text-[#bdcec3]">Search published, indexed documents. Drafts and archived material cannot appear.</p>
+              <p className="mt-2 text-xs leading-5 text-[var(--site-bdcec3)]">Search published, indexed documents. Drafts and archived material cannot appear.</p>
               <label htmlFor="knowledge-test-query" className={label + " mt-3"}>Ask a question</label>
               <textarea id="knowledge-test-query" className={field} maxLength={400} rows={3}
                 placeholder="What is the capital of Bellwether Hollow?"
@@ -377,24 +377,24 @@ export default function KnowledgeManager() {
               <button className={secondary + " mt-3 w-full"} type="submit" disabled={testBusy || testQuery.trim().length < 2}>
                 {testBusy ? "Searching…" : "Search indexed knowledge"}
               </button>
-              {testMessage && <p role="status" className="mt-3 text-xs leading-5 text-[#d6e5d6]">{testMessage}</p>}
+              {testMessage && <p role="status" className="mt-3 text-xs leading-5 text-[var(--site-d6e5d6)]">{testMessage}</p>}
               <div className="mt-3 space-y-3">
                 {testResults.map((item, index) => (
-                  <article key={index} className="rounded-lg border border-[#405e56] bg-[#142c32] p-3 text-xs">
+                  <article key={index} className="rounded-lg border border-[var(--site-405e56)] bg-[var(--site-142c32)] p-3 text-xs">
                     <p className="font-semibold">[{index+1}] {item.title} (rev. {item.revision})</p>
-                    <p className="mt-2 whitespace-pre-wrap leading-5 text-[#c6d9cd]">{item.excerpt}</p>
+                    <p className="mt-2 whitespace-pre-wrap leading-5 text-[var(--site-c6d9cd)]">{item.excerpt}</p>
                   </article>
                 ))}
               </div>
             </form>
           </aside>
 
-          <main className="min-w-0 rounded-xl border border-[#3b5854] bg-[#0f202a] p-4 sm:p-6">
+          <main className="min-w-0 rounded-xl border border-[var(--site-3b5854)] bg-[var(--site-0f202a)] p-4 sm:p-6">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[.15em] text-[#b4d0b6]">{selected ? "Edit document" : "New document"}</p>
+                <p className="text-xs font-bold uppercase tracking-[.15em] text-[var(--site-b4d0b6)]">{selected ? "Edit document" : "New document"}</p>
                 <h2 className="mt-1 text-xl font-semibold">{selected ? selected.title : "Untitled draft"}</h2>
-                {selected && <p className="mt-1 text-xs text-[#bacfc1]">Revision {selected.revision} · Updated {shortDate(selected.updated_at)}</p>}
+                {selected && <p className="mt-1 text-xs text-[var(--site-bacfc1)]">Revision {selected.revision} · Updated {shortDate(selected.updated_at)}</p>}
               </div>
               <div className="flex flex-wrap gap-2">
                 {selected && <button type="button" className={secondary} onClick={() => void loadHistory()}>Revision history</button>}
@@ -405,8 +405,8 @@ export default function KnowledgeManager() {
               </div>
             </div>
 
-            {message && <p role="status" className="mb-4 rounded-lg border border-[#658b65] bg-[#1b382e] p-3 text-sm text-[#d8efca]">{message}</p>}
-            {error && <p role="alert" className="mb-4 rounded-lg border border-[#8f665a] bg-[#392826] p-3 text-sm text-[#ffddc7]">{error}</p>}
+            {message && <p role="status" className="mb-4 rounded-lg border border-[var(--site-658b65)] bg-[var(--site-1b382e)] p-3 text-sm text-[var(--site-d8efca)]">{message}</p>}
+            {error && <p role="alert" className="mb-4 rounded-lg border border-[var(--site-8f665a)] bg-[var(--site-392826)] p-3 text-sm text-[var(--site-ffddc7)]">{error}</p>}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
@@ -445,17 +445,17 @@ export default function KnowledgeManager() {
                   rows={14}
                   placeholder={"# Approved information\n\nWrite source material here.\n\nOnly publish facts you are comfortable sharing with visitors."}
                   value={draft.content} onChange={event => change("content", event.target.value)} />
-                <p className="mt-2 text-xs text-[#b9cbc4]">
+                <p className="mt-2 text-xs text-[var(--site-b9cbc4)]">
                   {draft.content.length.toLocaleString()} characters. HTML is treated as plain text.
                   PDF ingestion and vector indexing are not enabled in this milestone.
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#385552] pt-5">
-              <div className="text-sm text-[#c0d2c6]">
-                Current state: <span className="font-semibold capitalize text-[#f2ecd3]">{selected?.status ?? "unsaved"}</span>
-                {dirty && <span className="ml-2 text-[#f3cf96]">· Unsaved changes</span>}
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--site-385552)] pt-5">
+              <div className="text-sm text-[var(--site-c0d2c6)]">
+                Current state: <span className="font-semibold capitalize text-[var(--site-f2ecd3)]">{selected?.status ?? "unsaved"}</span>
+                {dirty && <span className="ml-2 text-[var(--site-f3cf96)]">· Unsaved changes</span>}
               </div>
               <div className="flex flex-wrap gap-3">
                 {selected && selected.status !== "archived" && (
@@ -469,18 +469,18 @@ export default function KnowledgeManager() {
             </div>
 
             {showHistory && selected && (
-              <section className="mt-7 border-t border-[#385552] pt-5" aria-label="Knowledge revision history">
+              <section className="mt-7 border-t border-[var(--site-385552)] pt-5" aria-label="Knowledge revision history">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="text-lg font-semibold">Revision history</h3>
                   <button type="button" className={secondary} onClick={() => setShowHistory(false)}>Close</button>
                 </div>
-                <p className="mt-2 text-xs text-[#bbd0c1]">Restore places an old version in the editor as a draft. You must save it to create a new revision.</p>
+                <p className="mt-2 text-xs text-[var(--site-bbd0c1)]">Restore places an old version in the editor as a draft. You must save it to create a new revision.</p>
                 <div className="mt-4 max-h-[340px] space-y-2 overflow-auto">
                   {revisions.map(revision => (
-                    <div key={revision.revision} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#385552] p-3">
+                    <div key={revision.revision} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--site-385552)] p-3">
                       <div>
                         <p className="font-semibold">Revision {revision.revision} · <span className="font-normal capitalize">{revision.status}</span></p>
-                        <p className="text-xs text-[#c4d6cc]">{shortDate(revision.changed_at)}</p>
+                        <p className="text-xs text-[var(--site-c4d6cc)]">{shortDate(revision.changed_at)}</p>
                       </div>
                       <button type="button" className={secondary} onClick={() => restoreRevision(revision)}>Load revision</button>
                     </div>

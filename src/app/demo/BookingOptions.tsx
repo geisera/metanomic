@@ -3,8 +3,8 @@ import { useId, useRef, useState, type FormEvent } from "react";
 import type { AvailabilityResult, AvailableSlot } from "@/lib/calendly";
 import BookingForm from "./BookingForm";
 
-const control = "min-h-11 rounded-lg border border-[#77946f] px-3 py-2 text-sm text-[#e6f7d4] hover:bg-[#29473b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] disabled:opacity-50";
-const dateStyle = "min-h-11 min-w-0 w-full rounded-lg border border-[#5c7971] bg-[#0a1c24] px-3 py-2 text-base text-[#f2f8f1]";
+const control = "min-h-11 rounded-lg border border-[var(--site-77946f)] px-3 py-2 text-sm text-[var(--site-e6f7d4)] hover:bg-[var(--site-29473b)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a] disabled:opacity-50";
+const dateStyle = "min-h-11 min-w-0 w-full rounded-lg border border-[var(--site-5c7971)] bg-[var(--site-0a1c24)] px-3 py-2 text-base text-[var(--site-f2f8f1)]";
 export default function BookingOptions({initial}:{initial:AvailabilityResult}) {
   const id=useId();
   const [result,setResult]=useState(initial);
@@ -37,29 +37,29 @@ export default function BookingOptions({initial}:{initial:AvailabilityResult}) {
   }
   function search(event:FormEvent){event.preventDefault();void load(false);}
   const browsable=["available","no_slots"].includes(result.status);
-  return <div className="mt-5 rounded-xl border border-[#506c53] bg-[#132a27] p-4" aria-label="Appointment availability" aria-busy={busy}>
+  return <div className="mt-5 rounded-xl border border-[var(--site-506c53)] bg-[var(--site-132a27)] p-4" aria-label="Appointment availability" aria-busy={busy}>
     {browsable ? <>
-      <p className="font-semibold text-[#e6f7d4]">Available {result.eventType || ""} appointments</p>
-      <p className="mt-1 text-xs text-[#c6dacb]">{result.timeZone||"America/New_York"} · Times may change before booking.</p>
+      <p className="font-semibold text-[var(--site-e6f7d4)]">Available {result.eventType || ""} appointments</p>
+      <p className="mt-1 text-xs text-[var(--site-c6dacb)]">{result.timeZone||"America/New_York"} · Times may change before booking.</p>
       <form onSubmit={search} className="mt-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label htmlFor={`${id}-start`} className="text-xs">From<input id={`${id}-start`} type="date" required value={start} onChange={e=>setStart(e.target.value)} className={dateStyle}/></label>
           <label htmlFor={`${id}-end`} className="text-xs">Through<input id={`${id}-end`} type="date" required min={start} value={end} onChange={e=>setEnd(e.target.value)} className={dateStyle}/></label>
         </div>
         <button type="submit" disabled={busy} className={`${control} mt-3`}>Find times</button>
-        <p className="mt-1 text-xs text-[#c6dacb]">Choose up to 28 days within the next six months.</p>
+        <p className="mt-1 text-xs text-[var(--site-c6dacb)]">Choose up to 28 days within the next six months.</p>
       </form>
       {result.query && <p className="mt-3 text-xs">Showing {result.query.startDate} through {result.query.endDate}{result.query.timeOfDay !== "any" ? ` · ${result.query.timeOfDay}` : ""}</p>}
       {result.status === "no_slots" && <p className="mt-3">No available times in this range. Try another date.</p>}
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">{result.slots?.map(slot=><div key={slot.startTime} className="rounded-lg border border-[#77946f] bg-[#1e3a33] p-3">
-        <p className="font-semibold text-[#e7f8dc]">{slot.label}</p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">{result.slots?.map(slot=><div key={slot.startTime} className="rounded-lg border border-[var(--site-77946f)] bg-[var(--site-1e3a33)] p-3">
+        <p className="font-semibold text-[var(--site-e7f8dc)]">{slot.label}</p>
         {result.eventTypeUri && result.directBookingSupported !== false ? <button ref={slot.startTime===firstAdded?added:undefined} type="button" disabled={busy} onClick={()=>setSelected(slot)} aria-expanded={selected?.startTime===slot.startTime} aria-label={`Book ${slot.label} directly in Theia`} className={`${control} mt-2`}>Book here</button> : <a href={slot.bookingUrl} target="_blank" rel="noopener noreferrer" className={`${control} mt-2 inline-flex`}>Calendly ↗</a>}
       </div>)}</div>
       {result.hasMore && <button type="button" disabled={busy} onClick={()=>void load(true)} className={`${control} mt-3`}>{busy ? "Loading times…" : "Show more times"}</button>}
       {!result.hasMore && Boolean(result.slots?.length) && <p className="mt-3 text-xs">All available times in this range are shown. Choose another date range for more options.</p>}
       {selected && result.eventTypeUri && <BookingForm key={selected.startTime} slot={selected} eventType={result.eventType||"Consultation"} eventTypeUri={result.eventTypeUri} timeZone={result.timeZone||"America/New_York"} onCancel={()=>setSelected(null)}/>}
       {result.directBookingSupported===false && <p className="mt-3 text-xs">{result.directBookingReason||"This meeting requires Calendly's booking page."}</p>}
-    </> : result.status === "choose_event" ? <><p>Choose a meeting type</p><div className="mt-3 flex flex-wrap gap-2">{result.eventTypes?.map(event=><button key={event.name} type="button" disabled={busy} className={control} onClick={()=>void load(false,event.name)}>{event.name}</button>)}</div></> : <><p>{result.message}</p><a href={result.bookingUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex text-[#c9ec8a] underline">Open Calendly ↗</a></>}
+    </> : result.status === "choose_event" ? <><p>Choose a meeting type</p><div className="mt-3 flex flex-wrap gap-2">{result.eventTypes?.map(event=><button key={event.name} type="button" disabled={busy} className={control} onClick={()=>void load(false,event.name)}>{event.name}</button>)}</div></> : <><p>{result.message}</p><a href={result.bookingUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex text-[var(--site-c9ec8a)] underline">Open Calendly ↗</a></>}
     <p role="status" className="mt-2 text-xs">{busy?"Checking availability…":notice}</p>
     {error && <p role="alert" className="mt-2 text-sm">{error}</p>}
   </div>;

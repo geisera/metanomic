@@ -274,15 +274,15 @@ const flow = [
   { text: "Langfuse logs the full trace.", layers: ["08"] },
 ];
 function Tags({ tools }: { tools: readonly string[] }) {
-  return <div className="mt-2 flex flex-wrap gap-2">{tools.map(tool => <span key={tool} className="rounded border border-[#354750] bg-[#0b1720]/80 px-2.5 py-1.5 text-xs text-[#d3e0da]">{tool}</span>)}</div>;
+  return <div className="mt-2 flex flex-wrap gap-2">{tools.map(tool => <span key={tool} className="rounded border border-[var(--site-354750)] bg-[var(--site-0b1720)]/80 px-2.5 py-1.5 text-xs text-[var(--site-d3e0da)]">{tool}</span>)}</div>;
 }
 export default function EnterpriseAIStackPage() {
   return <main className={styles.page}>
     <div className={styles.header}>
       <header className="container flex h-[86px] items-center justify-between gap-3">
         <Link href="/" aria-label="Metanomic home" className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[#7b986d] bg-[#c9ec8a] text-lg font-black text-[#122322]">M</span>
-          <span className="hidden text-[18px] font-semibold tracking-[-.035em] sm:inline">metanomic<span className="text-[#c9ec8a]">.</span></span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[var(--site-7b986d)] bg-[#c9ec8a] text-lg font-black text-[#122322]">M</span>
+          <span className="hidden text-[18px] font-semibold tracking-[-.035em] sm:inline">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></span>
         </Link>
         <nav aria-label="Page navigation" className="flex items-center gap-4 sm:gap-7">
           <Link href="/" className="navlink">Home</Link><Link href="/#services" className="navlink">Services</Link>
@@ -290,15 +290,15 @@ export default function EnterpriseAIStackPage() {
         </nav>
       </header>
     </div>
-    <section className="relative border-b border-[#263843] py-20 md:py-28">
+    <section className="relative border-b border-[var(--site-263843)] py-20 md:py-28">
       <div className="container">
         <div className="max-w-[1000px]">
           <p className="eyebrow">Field guide · 6 min read · Updated November 2026</p>
-          <h1 className="mt-6 text-[clamp(3rem,6.8vw,5.8rem)] font-semibold leading-[1.05] tracking-[-.07em]">The 10 layers between an AI pilot and <span className="text-[#c9ec8a]">a production system.</span></h1>
+          <h1 className="mt-6 text-[clamp(3rem,6.8vw,5.8rem)] font-semibold leading-[1.05] tracking-[-.07em]">The 10 layers between an AI pilot and <span className="text-[var(--site-c9ec8a)]">a production system.</span></h1>
           <p className="muted mt-8 max-w-[760px] text-[17px] leading-[1.9] md:text-lg">Most AI pilots stall because a model is only one of ten layers. Here is each layer, the tools that fill it (OpenAI Agents SDK, Google ADK, n8n, MCP and more), and how to choose.</p>
           <div className="mt-9 flex flex-wrap gap-3"><Link href="/contact" className="button button-primary">Get a stack recommendation →</Link><a href="#layers" className="button button-outline">Explore the 10 layers ↓</a></div>
         </div>
-        <div className="mt-14 grid gap-px overflow-hidden rounded-lg border border-[#30444a] bg-[#30444a] sm:grid-cols-3">{[["10","Layers explained"],["40+","Tools mapped"],["1","Decision framework"]].map(([value,label])=><div key={label} className="bg-[#111e27]/95 p-6"><p className="text-3xl font-semibold tracking-[-.06em] text-[#c9ec8a]">{value}</p><p className="muted mt-1 text-sm">{label}</p></div>)}</div>
+        <div className="mt-14 grid gap-px overflow-hidden rounded-lg border border-[var(--site-30444a)] bg-[var(--site-30444a)] sm:grid-cols-3">{[["10","Layers explained"],["40+","Tools mapped"],["1","Decision framework"]].map(([value,label])=><div key={label} className="bg-[var(--site-111e27)]/95 p-6"><p className="text-3xl font-semibold tracking-[-.06em] text-[var(--site-c9ec8a)]">{value}</p><p className="muted mt-1 text-sm">{label}</p></div>)}</div>
       </div>
     </section>
     {SHOW_PROOF && <section aria-label="Guide author and proof" className="rule py-6"><div className="container"><p>By TODO: approved author · Updated November 2026</p><div className="mt-3 flex flex-wrap gap-6"><p>TODO: approved client logos</p><p>TODO: verified outcome metrics</p></div></div></section>}
@@ -309,10 +309,10 @@ export default function EnterpriseAIStackPage() {
         <div className="mt-9 grid gap-4 md:grid-cols-2">{layers.map(layer=><article id={layer.id} key={layer.id} className={`card min-w-0 ${styles.layer}`}>
           <p className="eyebrow">{layer.number}</p><h3 className="mt-6 text-[26px] font-semibold tracking-[-.045em]">{layer.name}</h3>
           <p className="muted mt-4 text-sm leading-7">{layer.description}</p>
-          <p className="mt-6 text-sm leading-7 text-[#a8bfb4]"><strong className="text-[#d7e8d7]">Choose this when:</strong> {layer.choose}</p>
-          <p className="mt-7 border-t border-[#31434d] pt-5 text-[11px] font-semibold uppercase tracking-[.15em] text-[#c9ec8a]">{layer.id === "integration" ? "Representative standards & tools" : "Representative tools"}</p>
+          <p className="mt-6 text-sm leading-7 text-[var(--site-a8bfb4)]"><strong className="text-[var(--site-d7e8d7)]">Choose this when:</strong> {layer.choose}</p>
+          <p className="mt-7 border-t border-[var(--site-31434d)] pt-5 text-[11px] font-semibold uppercase tracking-[.15em] text-[var(--site-c9ec8a)]">{layer.id === "integration" ? "Representative standards & tools" : "Representative tools"}</p>
           {layer.groups.map(group=><div key={group.label} className="mt-4"><p className="muted text-xs">{group.label}</p><Tags tools={group.tools}/></div>)}
-          <details className="mt-6 border-t border-[#31434d] pt-4"><summary className="cursor-pointer rounded py-2 text-sm font-semibold text-[#d7e8d7]">How we implement this</summary><p className="muted mt-3 text-sm leading-7">TODO: Add approved Metanomic implementation guidance for {layer.name}.</p></details>
+          <details className="mt-6 border-t border-[var(--site-31434d)] pt-4"><summary className="cursor-pointer rounded py-2 text-sm font-semibold text-[var(--site-d7e8d7)]">How we implement this</summary><p className="muted mt-3 text-sm leading-7">TODO: Add approved Metanomic implementation guidance for {layer.name}.</p></details>
         </article>)}</div>
         <p className="muted mt-6 text-xs leading-6">Tools shown are representative examples, not a ranking or a required set.</p>
         <div className={styles.band}><p className="text-xl font-semibold">Not sure which layers you need?</p><Link href="/contact" className="button button-primary">Get a stack recommendation →</Link></div>
@@ -325,14 +325,14 @@ export default function EnterpriseAIStackPage() {
     </div></section>
     <section id="architecture" className="rule py-20 md:py-28"><div className="container">
       <p className="eyebrow">Putting the pieces together</p><h2 className="mt-4 max-w-[850px] text-4xl font-semibold tracking-[-.055em] md:text-5xl">How the layers work together on one request.</h2><p className="muted mt-6 leading-8">One example, traced through the stack.</p>
-      <ol className={styles.flow}>{flow.map(step=><li key={step.text} className="min-w-0 rounded-xl border border-[#31434d] bg-[#0e1d27]/90 p-6"><p className="mb-4 flex min-h-6 flex-wrap gap-3 text-xs font-semibold text-[#c9ec8a]">{step.layers.map(number=><a key={number} href={`#${layers.find(layer=>layer.number===number)!.id}`} className="underline underline-offset-4">Layer {number}</a>)}</p><p className="text-sm leading-7">{step.text}</p></li>)}</ol>
+      <ol className={styles.flow}>{flow.map(step=><li key={step.text} className="min-w-0 rounded-xl border border-[var(--site-31434d)] bg-[var(--site-0e1d27)]/90 p-6"><p className="mb-4 flex min-h-6 flex-wrap gap-3 text-xs font-semibold text-[var(--site-c9ec8a)]">{step.layers.map(number=><a key={number} href={`#${layers.find(layer=>layer.number===number)!.id}`} className="underline underline-offset-4">Layer {number}</a>)}</p><p className="text-sm leading-7">{step.text}</p></li>)}</ol>
     </div></section>
-    <section className={`border-y border-[#405242] bg-[#c9ec8a]/90 py-16 text-[#14231e] backdrop-blur-sm md:py-20 ${styles.closing}`}><div className="container">
+    <section className={`border-y border-[var(--site-405242)] bg-[#c9ec8a]/90 py-16 text-[#14231e] backdrop-blur-sm md:py-20 ${styles.closing}`}><div className="container">
       <p className="text-xs font-bold uppercase tracking-[.2em]">Next step</p><h2 className="mt-3 max-w-[850px] text-4xl font-semibold tracking-[-.06em] md:text-5xl">Find out which layers you need, and which you can skip.</h2>
       <p className="mt-4 max-w-[680px] text-sm leading-7 text-[#244038]">In 30 minutes we map your current systems to the ten layers and show the shortest route to production. No slides, no obligation.</p>
-      <div className="mt-8 flex flex-wrap items-center gap-6"><Link href="/contact" className="button !bg-[#14231e] !text-[#eff7e8]">Book a stack review →</Link><a href="#stack-pdf-todo" className="rounded font-semibold underline underline-offset-4">Download the stack as a one-page PDF</a></div>
+      <div className="mt-8 flex flex-wrap items-center gap-6"><Link href="/contact" className="button !bg-[var(--site-14231e)] !text-[var(--site-eff7e8)]">Book a stack review →</Link><a href="#stack-pdf-todo" className="rounded font-semibold underline underline-offset-4">Download the stack as a one-page PDF</a></div>
       <p id="stack-pdf-todo" className="mt-5 text-sm">TODO: Add the approved one-page PDF asset and email-capture/download delivery flow.</p>
     </div></section>
-    <footer className="container flex flex-wrap items-center justify-between gap-5 py-10"><Link href="/" className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[#c9ec8a]">.</span></Link><p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p><nav aria-label="Footer navigation" className="flex gap-6"><Link className="navlink" href="/">Home</Link><Link className="navlink" href="/#services">Services</Link><Link className="navlink" href="/contact">Contact</Link></nav></footer>
+    <footer className="container flex flex-wrap items-center justify-between gap-5 py-10"><Link href="/" className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></Link><p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p><nav aria-label="Footer navigation" className="flex gap-6"><Link className="navlink" href="/">Home</Link><Link className="navlink" href="/#services">Services</Link><Link className="navlink" href="/contact">Contact</Link></nav></footer>
   </main>;
 }
