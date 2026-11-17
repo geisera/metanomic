@@ -1,6 +1,7 @@
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { session, rest, ownedAgent, apiKey, gate, failure } from '@/lib/studio/server';
-import { agentInput, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
+import { agentInput, origins, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
+import { ASSISTANT_TEMPLATES } from '@/lib/studio/templates';
 import { encrypt } from '@/lib/studio/crypto';
 export const runtime = 'nodejs';
 const json = (v: unknown) => Response.json(v, { headers: { 'Cache-Control': 'no-store' } });
@@ -10,8 +11,8 @@ export async function GET(req: Request) { try {
         await ownedAgent(s, id);
         return json({ documents: await rest<Document[]>('studio_documents?agent_id=eq.' + id + '&order=updated_at.desc', { session: s }) });
     }
-    const [agents, keys, usage] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest('studio_usage?day=eq.' + new Date().toISOString().slice(0, 10), { session: s })]);
-    return json({ agents, keys, usage });
+    const [agents, keys, usage, documents] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest('studio_usage?day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}), rest('studio_documents?select=id,agent_id,published', {session:s})]);
+    return json({ agents, keys, usage, documents });
 }
 catch (e) {
     return failure(e);
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
             await gate('key:' + s.user.id, 5, 3600);
             const r = await fetch('https://api.openai.com/v1/models', { headers: { Authorization: 'Bearer ' + value }, signal: AbortSignal.timeout(12000), cache: 'no-store', redirect: 'error' });
             if (!r.ok)
-                throw new StudioError('OpenAI could not validate this key. Check its validity and model-list permissions.', 400);
+                throw new StudioError('OpenAI could not validate this key. Replace it with a valid key that allows model listing.', 400, 'invalid_key');
             await rest('studio_keys?on_conflict=owner_id', { session: s, body: { owner_id: s.user.id, ciphertext: encrypt(value, s.user.id), last_four: value.slice(-4), validated_at: new Date().toISOString() }, prefer: 'resolution=merge-duplicates,return=minimal' });
             return json({ ok: true });
         }
@@ -42,16 +43,35 @@ export async function POST(req: Request) {
             return json({ ok: true });
         }
         if (b.action === 'create-agent') {
-            const rows = await rest<Agent[]>('studio_agents', { session: s, body: { owner_id: s.user.id, name: text(b.name, 80, 1) } });
+            const template=ASSISTANT_TEMPLATES.find(t=>t.id===(b.template||'blank'));
+            if(!template)throw new StudioError('Choose a starter template.');
+            const rows = await rest<Agent[]>('studio_agents', { session: s, body: { owner_id: s.user.id, name: text(b.name, 80, 1),greeting:template.greeting,instructions:template.instructions } });
             return json({ agent: rows[0] });
         }
         const agent = await ownedAgent(s, b.agent_id);
         if (b.action === 'save-agent') {
-            const input = agentInput(b);
-            if (input.published)
-                await apiKey(s.user.id, s);
+            const valid=agentInput({...b,published:false,origins:agent.origins});
+            const input={name:valid.name,greeting:valid.greeting,instructions:valid.instructions,model:valid.model,daily_limit:valid.daily_limit,max_output:valid.max_output,updated_at:valid.updated_at,configured_at:agent.configured_at||new Date().toISOString()};
             const rows = await rest<Agent[]>('studio_agents?id=eq.' + agent.id, { session: s, method: 'PATCH', body: input });
             return json({ agent: rows[0] });
+        }
+        if (b.action === 'save-embed') {
+            const sites = origins(b.origins), label = text(b.button_label,60,1);
+            if (typeof b.button_color !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(b.button_color) || !['left','right'].includes(String(b.button_position))) throw new StudioError('Choose a valid color and position.');
+            if (agent.published && !sites.length) throw new StudioError('Add an approved website before publishing.',400,'origin_not_approved');
+            const rows = await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{origins:sites,button_label:label,button_color:b.button_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
+            return json({agent:rows[0]});
+        }
+        if (b.action === 'publish') {
+            const live=b.published===true;
+            if(live){await apiKey(s.user.id,s);if(!origins(agent.origins).length)throw new StudioError('Save at least one approved website before publishing.',400,'origin_not_approved');}
+            const first=live&&!agent.published&&!agent.first_published_at;
+            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{published:live,first_published_at:live?(agent.first_published_at||new Date().toISOString()):agent.first_published_at,updated_at:new Date().toISOString()}});
+            return json({agent:rows[0],first_publish:first});
+        }
+        if (b.action === 'usage-alert') {
+            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{usage_alert:b.enabled===true,updated_at:new Date().toISOString()}});
+            return json({agent:rows[0]});
         }
         if (b.action === 'unpublish') {
             await rest('studio_agents?id=eq.' + agent.id, { session: s, method: 'PATCH', body: { published: false, updated_at: new Date().toISOString() } });

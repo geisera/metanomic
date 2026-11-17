@@ -65,6 +65,6 @@ export async function runtimeAgent(id: string) { if (!uuid(id))
 export async function apiKey(owner: string, s?: Session) { const rows = await rest<{
     ciphertext: string;
 }[]>('studio_keys?owner_id=eq.' + owner + '&select=ciphertext&limit=1', s ? { session: s } : { admin: true }); if (!rows[0])
-    throw new StudioError('The assistant owner needs to connect an OpenAI API key.', 503); return decrypt(rows[0].ciphertext, owner); }
+    throw new StudioError('No API key connected. Connect a key in Account to continue.', 503, 'missing_key'); return decrypt(rows[0].ciphertext, owner); }
 export async function publishedDocs(agent: Agent, s?: Session) { return rest<Document[]>('studio_documents?agent_id=eq.' + agent.id + '&published=eq.true&limit=20', s ? { session: s } : { admin: true }); }
-export function failure(e: unknown) { return Response.json({ error: e instanceof StudioError ? e.message : 'Studio is temporarily unavailable. Please try again.' }, { status: e instanceof StudioError ? e.status : 503, headers: { 'Cache-Control': 'no-store' } }); }
+export function failure(e: unknown) { return Response.json({ error: e instanceof StudioError ? e.message : 'Studio is temporarily unavailable. Please try again.', code: e instanceof StudioError ? e.code : undefined }, { status: e instanceof StudioError ? e.status : 503, headers: { 'Cache-Control': 'no-store' } }); }

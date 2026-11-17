@@ -30,5 +30,5 @@ export function checkWidgetToken(token: unknown, agent: string, ip: string): {
     return { origin: p.origin };
 }
 catch {
-    throw new StudioError('This widget session expired. Reload the widget.', 403);
+    throw new StudioError('This chat session expired. Reload the page.', 403);
 } }

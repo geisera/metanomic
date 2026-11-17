@@ -1,4 +1,5 @@
 export type Agent = {
+    configured_at?: string | null; first_published_at?: string | null; usage_alert?: boolean; button_label?: string; button_color?: string; button_position?: string;
     id: string;
     owner_id: string;
     name: string;
@@ -27,7 +28,7 @@ export type Message = {
 export const MODELS = ['gpt-4.1-mini', 'gpt-4.1', 'gpt-5-mini'];
 export const uuid = (v: unknown): v is string => typeof v === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v);
 export class StudioError extends Error {
-    constructor(message: string, public status = 400) { super(message); }
+    constructor(message: string, public status = 400, public code?: string) { super(message); }
 }
 export function text(v: unknown, max: number, min = 0) { if (typeof v !== 'string' || v.trim().length < min || v.length > max)
     throw new StudioError(`Enter text between ${min} and ${max} characters.`); return v.trim(); }

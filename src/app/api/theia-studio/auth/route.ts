@@ -12,7 +12,8 @@ const password = (v: unknown) => { if (typeof v !== 'string' || v.length < 12 ||
     throw new StudioError('Use a password of 12–128 characters.'); return v; };
 export async function GET() { try {
     const s = await session();
-    return json({ user: { id: s.user.id, email: s.user.email, name: s.user.user_metadata?.display_name || '' } });
+    const admins=await rest<unknown[]>('knowledge_admins?user_id=eq.'+s.user.id+'&select=user_id',{session:s});
+    return json({user:{id:s.user.id,email:s.user.email,name:s.user.user_metadata?.display_name||'',is_admin:admins.length>0}});
 }
 catch (e) {
     return failure(e);
