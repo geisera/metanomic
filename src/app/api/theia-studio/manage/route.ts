@@ -63,9 +63,10 @@ export async function POST(req: Request) {
         }
         if (b.action === 'save-appearance') {
             const label=text(b.button_label,60,1);
-            const colors=[b.button_color,b.button_text_color,b.button_outline_color];
+            const launcher=b.launcher_color??agent.launcher_color??b.button_color;
+            const colors=[b.button_color,b.button_text_color,b.button_outline_color,launcher];
             if(!colors.every(value=>typeof value==='string'&&/^#[0-9a-fA-F]{6}$/.test(value))||!['left','right','top-left','top-right'].includes(String(b.button_position)))throw new StudioError('Choose valid colors and a position.');
-            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{button_label:label,button_color:b.button_color,button_text_color:b.button_text_color,button_outline_color:b.button_outline_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
+            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{button_label:label,button_color:b.button_color,launcher_color:launcher,button_text_color:b.button_text_color,button_outline_color:b.button_outline_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
             return json({agent:rows[0]});
         }
         if (b.action === 'save-embed') {
