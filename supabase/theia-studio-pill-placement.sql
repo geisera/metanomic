@@ -1,0 +1,1 @@
+alter table public.studio_agents add column pill_side text check(pill_side in ('left','right')), add column pill_alignment text check(pill_alignment in ('top','middle','bottom','custom')), add column pill_offset integer check(pill_offset between 0 and 100), add column pill_orientation text check(pill_orientation in ('vertical','horizontal'));

@@ -27,3 +27,5 @@
 .buttonPreview[data-style=side-tab][data-orientation=horizontal]>span{writing-mode:horizontal-tb;max-width:100%;min-height:44px}
 
 .buttonPreview[data-style=side-tab][data-alignment=custom]{position:relative}
+
+.appearanceGroup .buttonPreview[data-style=pill]{height:240px;position:relative}.buttonPreview[data-style=pill]>span{max-width:100%;max-height:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:44px}.buttonPreview[data-style=pill][data-orientation=vertical]>span{writing-mode:vertical-rl}
