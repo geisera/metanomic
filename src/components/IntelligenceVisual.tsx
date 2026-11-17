@@ -59,12 +59,13 @@ function paint(
   pointer: { x: number; y: number },
   still: boolean,
 ) {
+  const light = document.documentElement.dataset.theme === "light";
   context.clearRect(0, 0, width, height);
   const mx = pointer.x;
   const my = pointer.y;
   const attracting = !still && mx >= 0 && my >= 0 && mx <= width && my <= height;
 
-  context.globalCompositeOperation = "lighter";
+  context.globalCompositeOperation = light ? "source-over" : "lighter";
 
   // Subtle atmospheric depth behind the continuously moving stars.
   const ambientGlow = context.createRadialGradient(
@@ -147,7 +148,9 @@ function paint(
     const twinkle = .9 + .1 * Math.sin(elapsed * star.speed * 1.7 + star.phase);
     const finalOpacity = (.21 + Math.min(1, star.size / 1.9) * .43) * twinkle * star.opacity;
     if (finalOpacity < .005) continue;
-    context.fillStyle = star.isRed
+    context.fillStyle = light
+      ? `rgba(${star.isRed ? "53,104,23" : star.tint > .73 ? "30,91,112" : "44,101,72"},${Math.min(1, finalOpacity * 1.5)})`
+      : star.isRed
       ? `rgba(201,236,138,${Math.max(.94, finalOpacity)})`
       : star.tint > .73
         ? `rgba(149,199,208,${finalOpacity})`
