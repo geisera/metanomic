@@ -4,6 +4,7 @@ import { agentInput, origins, StudioError, text, uuid, type Agent, type Document
 import { ASSISTANT_TEMPLATES } from '@/lib/studio/templates';
 import { encrypt } from '@/lib/studio/crypto';
 export const runtime = 'nodejs';
+type Tier={id:string;name:string;assistants:number;websites:number;documents:number};
 const json = (v: unknown) => Response.json(v, { headers: { 'Cache-Control': 'no-store' } });
 export async function GET(req: Request) { try {
     const s = await session(), id = new URL(req.url).searchParams.get('agent');
@@ -12,7 +13,8 @@ export async function GET(req: Request) { try {
         return json({ documents: await rest<Document[]>('studio_documents?agent_id=eq.' + id + '&order=updated_at.desc', { session: s }) });
     }
     const [agents, keys, usage, documents] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest('studio_usage?day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}), rest('studio_documents?select=id,agent_id,published', {session:s})]);
-    return json({ agents, keys, usage, documents });
+    const [tier]=await rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{}});
+    return json({ agents, keys, usage, documents, tier });
 }
 catch (e) {
     return failure(e);
@@ -42,13 +44,17 @@ export async function POST(req: Request) {
             await rest('studio_keys?owner_id=eq.' + s.user.id, { session: s, method: 'DELETE' });
             return json({ ok: true });
         }
+        const [tier]=await rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{}});
         if (b.action === 'create-agent') {
+            const existing=await rest<Agent[]>('studio_agents?select=id',{session:s});
+            if(existing.length>=tier.assistants)throw new StudioError(`${tier.name} allows ${tier.assistants} assistant(s).`,400,'tier_limit');
             const template=ASSISTANT_TEMPLATES.find(t=>t.id===(b.template||'blank'));
             if(!template)throw new StudioError('Choose a starter template.');
             const rows = await rest<Agent[]>('studio_agents', { session: s, body: { owner_id: s.user.id, name: text(b.name, 80, 1),greeting:template.greeting,instructions:template.instructions } });
             return json({ agent: rows[0] });
         }
         const agent = await ownedAgent(s, b.agent_id);
+        function checkSites(sites:string[]){if(sites.length>tier.websites&&!sites.every(site=>agent.origins.includes(site)))throw new StudioError(`${tier.name} allows ${tier.websites} approved websites per assistant.`,400,'tier_limit');}
         if (b.action === 'save-agent') {
             const valid=agentInput({...b,published:false,origins:agent.origins});
             const input={name:valid.name,greeting:valid.greeting,instructions:valid.instructions,model:valid.model,daily_limit:valid.daily_limit,max_output:valid.max_output,updated_at:valid.updated_at,configured_at:agent.configured_at||new Date().toISOString()};
@@ -56,7 +62,7 @@ export async function POST(req: Request) {
             return json({ agent: rows[0] });
         }
         if (b.action === 'save-origins') {
-            const sites=origins(b.origins);
+            const sites=origins(b.origins);checkSites(sites);
             if(agent.published&&!sites.length)throw new StudioError('Add an approved website before publishing.',400,'origin_not_approved');
             const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{origins:sites,updated_at:new Date().toISOString()}});
             return json({agent:rows[0]});
@@ -81,7 +87,7 @@ export async function POST(req: Request) {
             return json({agent:rows[0]});
         }
         if (b.action === 'save-embed') {
-            const sites = origins(b.origins), label = text(b.button_label,60,1);
+            const sites = origins(b.origins);checkSites(sites);const label = text(b.button_label,60,1);
             if (typeof b.button_color !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(b.button_color) || !['left','right'].includes(String(b.button_position))) throw new StudioError('Choose a valid color and position.');
             if (agent.published && !sites.length) throw new StudioError('Add an approved website before publishing.',400,'origin_not_approved');
             const rows = await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{origins:sites,button_label:label,button_color:b.button_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
@@ -107,6 +113,7 @@ export async function POST(req: Request) {
             return json({ ok: true });
         }
         if (b.action === 'save-document') {
+            if(!b.id){const docs=await rest<Document[]>('studio_documents?select=id&agent_id=eq.'+agent.id,{session:s});if(docs.length>=tier.documents)throw new StudioError(`${tier.name} allows ${tier.documents} knowledge document(s) per assistant.`,400,'tier_limit');}
             const input = { agent_id: agent.id, title: text(b.title, 160, 1), content: text(b.content, 50000, 1), published: b.published === true, updated_at: new Date().toISOString() };
             if (b.id !== undefined && !uuid(b.id))
                 throw new StudioError('Invalid document.');
