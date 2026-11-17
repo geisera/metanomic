@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, type FormEvent } from 'react';
 import Link from 'next/link';
 import { call } from '../Studio';
+import FieldHelp from '../FieldHelp';
 import s from '../studio.module.css';
 export default function Confirm() {
     const [link, setLink] = useState<{
@@ -52,5 +53,5 @@ export default function Confirm() {
             setBusy(false);
         }
     }
-    return <main className={s.shell}><div className='container'><section className={'card ' + s.auth}><p className='eyebrow'>Theia Studio</p><h1>Confirm your account request</h1><p className={s.help}>Only continue if you requested this email. Opening this page does not automatically use your link.</p>{link?.token_hash && <button className='button button-primary' onClick={verify} disabled={busy}>Confirm</button>}{recovery && <form className={s.form} onSubmit={reset}><div className={s.field}><label>New password<input name='password' type='password' autoComplete='new-password' minLength={12} maxLength={128} required aria-describedby="studio-recovery-help-1"/></label><p id="studio-recovery-help-1" className={s.fieldHelp}>Choose a unique password of 12–128 characters. After saving, return to Studio and sign in with this new password.</p></div><button className='button button-primary' disabled={busy}>Set new password</button></form>}{error && <p className={s.alert} role='alert'>{error}</p>}{notice && <p className={s.alert} role='status'>{notice}</p>}<Link className={s.textButton} href='/theia-studio'>Continue to Theia Studio →</Link></section></div></main>;
+    return <main className={s.shell}><div className='container'><section className={'card ' + s.auth}><p className='eyebrow'>Theia Studio</p><h1>Confirm your account request</h1><p className={s.help}>Only continue if you requested this email. Opening this page does not automatically use your link.</p>{link?.token_hash && <button className='button button-primary' onClick={verify} disabled={busy}>Confirm</button>}{recovery && <form className={s.form} onSubmit={reset}><div className={s.field}><label><span className={s.fieldLabel}>New password</span><input name='password' type='password' autoComplete='new-password' minLength={12} maxLength={128} required aria-describedby="studio-recovery-help-1"/></label><FieldHelp id="studio-recovery-help-1" label="New password">Choose a unique password of 12–128 characters. After saving, return to Studio and sign in with this new password.</FieldHelp></div><button className='button button-primary' disabled={busy}>Set new password</button></form>}{error && <p className={s.alert} role='alert'>{error}</p>}{notice && <p className={s.alert} role='status'>{notice}</p>}<Link className={s.textButton} href='/theia-studio'>Continue to Theia Studio →</Link></section></div></main>;
 }
