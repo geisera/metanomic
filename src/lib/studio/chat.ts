@@ -37,7 +37,7 @@ export async function answer(agent: Agent, key: string, conversation: Message[],
                         if (event.type === 'response.output_text.delta' || event.type === 'response.refusal.delta') { reply+=event.delta; send({delta:event.delta}); }
                         if (event.type === 'response.completed') {
                             completed = true;
-                            send({done:true,sources:supplied.filter(title=>reply.includes('[Knowledge: '+title+']')),tokens:typeof event.response?.usage?.total_tokens==='number'?event.response.usage.total_tokens:null});
+                            send({done:true,retrievedSources:supplied,sources:supplied.filter(title=>reply.includes('[Knowledge: '+title+']')),tokens:typeof event.response?.usage?.total_tokens==='number'?event.response.usage.total_tokens:null});
                         }
                         if (['response.failed', 'error', 'response.incomplete'].includes(event.type))
                             throw new Error('incomplete');
