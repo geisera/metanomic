@@ -15,4 +15,14 @@ export const widgetCss = `*{box-sizing:border-box}body{margin:0;background:#0910
 export const widgetAppearanceCss = `body,#log,.bubble,.user,textarea,button{background:var(--chat-background);color:var(--chat-text)}header,footer,textarea,button,.bubble{border:1px solid var(--chat-outline)}header{border-width:0 0 1px}footer{border-width:1px 0 0}.user{border-left-width:3px}small,#status,a{color:var(--chat-text)}button:focus-visible,textarea:focus-visible{outline-color:var(--chat-text)}#send{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;align-self:center;background:var(--chat-send-background);color:var(--chat-send-text)}.user,textarea{background:var(--chat-user-background);color:var(--chat-user-text)}`;
 
 // Capture currentScript before awaiting the public configuration request.
-export const embedLoader = `(async()=>{const original=document.currentScript,id=original&&original.dataset.agent;if(!id||!/^[a-f0-9-]{36}$/i.test(id))return;try{const response=await fetch(new URL('/theia-config/'+encodeURIComponent(id),original.src),{credentials:'omit'});if(!response.ok)return;const config=await response.json();const configuredScript={src:original.src,dataset:{...config,agent:id}};${embedClient.replace('document.currentScript','configuredScript')}}catch{}})();`;
+export const embedLoader = `(async()=>{const original=document.currentScript,id=original&&original.dataset.agent;if(!id||!/^[a-f0-9-]{36}$/i.test(id))return;const loadConfig=()=>fetch(new URL('/theia-config/'+encodeURIComponent(id),original.src),{credentials:'omit',cache:'no-store'});try{const response=await loadConfig();if(!response.ok)return;const config=await response.json();const configuredScript={src:original.src,dataset:{...config,agent:id}};${embedClient.replace('document.currentScript','configuredScript').replace('button.onclick=()=>toggle(!open);', `let checking=false;
+button.onclick=async()=>{
+  if(open){toggle(false);return;}
+  if(checking)return;
+  checking=true;
+  try{
+    if((await loadConfig()).ok)toggle(true);
+    else host.remove();
+  }catch{host.remove();}
+  finally{checking=false;}
+};`)}}catch{}})();`;
