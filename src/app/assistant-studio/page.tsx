@@ -149,9 +149,8 @@ export default function Page(){
             <p className={s.fg3+' mb-6 text-sm'}>Bring your own OpenAI key. OpenAI bills you directly for usage.</p>
             <Signup className="mt-auto w-full"/>
           </article>
-          <article className={s.card+' p-6 sm:p-7'}>
+          <article className={s.card+' flex flex-col p-6 sm:p-7'}>
             <h3 className="text-xl font-semibold">Pro</h3>
-            <p className={s.fg2+' mt-3'}>Coming soon</p>
             <p className="mt-5 font-semibold">Everything in Starter, plus:</p>
             <ul className={s.fg2+' mt-3 list-disc space-y-2 pl-5'}>
               <li><strong>Customer insights.</strong> See what visitors ask, how they feel, and which questions went unanswered.</li>
@@ -160,10 +159,22 @@ export default function Page(){
               <li><strong>Custom calls to action.</strong> Suggest links you choose, such as booking, product, or support pages, based on what visitors ask.</li>
               <li>Remove Metanomic branding</li>
             </ul>
+            <div className="mt-auto pt-6">
+              <button type="button" disabled className={s.fg2+' w-full cursor-not-allowed rounded-lg border border-current px-5 py-3 text-center font-semibold'}>Coming soon</button>
+            </div>
           </article>
-          <article className={s.card+' p-6 sm:p-7'}>
+          <article className={s.card+' flex flex-col p-6 sm:p-7'}>
             <h3 className="text-xl font-semibold">Enterprise</h3>
-            <p className={s.fg2+' mt-3'}>Coming soon</p>
+            <p className="mt-5 font-semibold">Everything in Pro, plus:</p>
+            <ul className={s.fg2+' mt-3 list-disc space-y-2 pl-5'}>
+              <li>Unlimited assistants</li>
+              <li>Expanded knowledge and website allowances</li>
+              <li>Shared workspace with role-based access</li>
+              <li>Dedicated onboarding and priority support</li>
+            </ul>
+            <div className="mt-auto pt-6">
+              <button type="button" disabled className={s.fg2+' w-full cursor-not-allowed rounded-lg border border-current px-5 py-3 text-center font-semibold'}>Coming soon</button>
+            </div>
           </article>
         </div>
       </section>
