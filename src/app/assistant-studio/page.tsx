@@ -102,7 +102,7 @@ export default function Page(){
         </ul>
       </section>
       
-      <section aria-labellby="features" classNmae="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+      <section aria-labellby="features" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:mx-0">
