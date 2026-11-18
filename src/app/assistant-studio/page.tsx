@@ -9,6 +9,7 @@ const description='Train a chatbot on your pages, docs, and FAQs. Add it to your
 const canonical='https://metanomic.ai/assistant-studio';
 export const metadata:Metadata={
   title:{absolute:title},description,alternates:{canonical},robots:{index:true,follow:true},
+  referrer:'strict-origin',
   openGraph:{title,description,url:canonical,type:'website'},
   twitter:{card:'summary',title,description},
 };
