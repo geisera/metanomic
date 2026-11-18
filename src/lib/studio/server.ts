@@ -57,6 +57,20 @@ export async function session(): Promise<Session> { const jar = await cookies();
 export const ipOf = (r: Request) => r.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
 export async function gate(bucket: string, limit: number, seconds: number) { if (!await rest<boolean>('rpc/studio_gate', { admin: true, body: { p_bucket: fingerprint(bucket), p_limit: limit, p_seconds: seconds } }))
     throw new StudioError('Too many requests. Please try again later.', 429); }
+export async function reserveAuthAttempt(bucket: string, limit: number, seconds: number) {
+    const hashedBucket = fingerprint(bucket);
+    const result = await rest<{ expires_at: string; retry_after: number }>('rpc/studio_reserve_auth_attempt', {
+        admin: true, body: { p_bucket: hashedBucket, p_limit: limit, p_seconds: seconds }
+    });
+    if (result.retry_after > 0) {
+        const minutes = Math.ceil(result.retry_after / 60);
+        throw new StudioError(`Too many requests. Try again in about ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}.`, 429, 'rate_limited', result.retry_after);
+    }
+    return { bucket: hashedBucket, expiresAt: result.expires_at };
+}
+export async function releaseAuthAttempt({ bucket, expiresAt }: Awaited<ReturnType<typeof reserveAuthAttempt>>) {
+    await rest('rpc/studio_release_auth_attempt', { admin: true, body: { p_bucket: bucket, p_expires_at: expiresAt } });
+}
 export async function ownedAgent(s: Session, id: unknown) { if (!uuid(id))
     throw new StudioError('Choose an assistant.'); const rows = await rest<Agent[]>('studio_agents?id=eq.' + id + '&limit=1', { session: s }); if (!rows[0])
     throw new StudioError('Assistant not found.', 404); return rows[0]; }
@@ -68,4 +82,9 @@ export async function apiKey(owner: string, s?: Session) { const rows = await re
 }[]>('studio_keys?owner_id=eq.' + owner + '&select=ciphertext&limit=1', s ? { session: s } : { admin: true }); if (!rows[0])
     throw new StudioError('No API key connected. Connect a key in Account to continue.', 503, 'missing_key'); return decrypt(rows[0].ciphertext, owner); }
 export async function publishedDocs(agent: Agent, s?: Session) { return rest<Document[]>('studio_documents?agent_id=eq.' + agent.id + '&published=eq.true&limit=20', s ? { session: s } : { admin: true }); }
-export function failure(e: unknown) { return Response.json({ error: e instanceof StudioError ? e.message : 'Studio is temporarily unavailable. Please try again.', code: e instanceof StudioError ? e.code : undefined }, { status: e instanceof StudioError ? e.status : 503, headers: { 'Cache-Control': 'no-store' } }); }
+export function failure(e: unknown) {
+    const error = e instanceof StudioError ? e : new StudioError('Studio is temporarily unavailable. Please try again.', 503);
+    const headers = new Headers({ 'Cache-Control': 'no-store' });
+    if (error.retryAfter !== undefined) headers.set('Retry-After', String(error.retryAfter));
+    return Response.json({ error: error.message, code: error.code }, { status: error.status, headers });
+}
