@@ -1,3 +1,4 @@
+import Pricing from './Pricing';
 import PrimaryNav from '@/components/PrimaryNav';
 import type {Metadata} from 'next';
 import s from './minimal.module.css';
@@ -53,9 +54,7 @@ const features = [
   },
 ];
 
-function Signup({className=''}:{className?:string}){
-  return <a href={SIGNUP} className={s.cta+' '+className}>Create your assistant</a>;
-}
+
 
 function SampleChat(){
   return <figure className="relative mx-auto w-full min-w-0 max-w-[22rem]">
@@ -135,56 +134,14 @@ export default function Page(){
         </ul>
       </section>
 
-      <section id="pricing" aria-labelledby="pricing-heading" className="mx-auto max-w-6xl scroll-mt-24 px-5 pb-16 sm:px-8 sm:pb-24">
-        <h2 id="pricing-heading" className="text-3xl font-semibold tracking-tight sm:text-5xl">Pricing</h2>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
-          <article className={s.card+' '+s.starterPlan+' flex flex-col p-6 sm:p-7'}>
-            <h3 className="text-xl font-semibold">Starter</h3>
-            <p className="mt-3 text-4xl font-semibold tracking-tight">Free</p>
-            <ul className={s.fg2+' mb-6 mt-5 space-y-2'}>
-              <li>1 assistant per account</li>
-              <li>1 knowledge document per assistant</li>
-              <li>2 approved website origins per assistant</li>
-            </ul>
-            <p className={s.fg3+' mb-6 text-sm'}>Bring your own OpenAI key. OpenAI bills you directly for usage.</p>
-            <Signup className="mt-auto w-full"/>
-          </article>
-          <article className={s.card+' flex flex-col p-6 sm:p-7'}>
-            <h3 className="text-xl font-semibold">Pro</h3>
-            <p className="mt-5 font-semibold">Everything in Starter, plus:</p>
-            <ul className={s.fg2+' mt-3 list-disc space-y-2 pl-5'}>
-              <li><strong>Customer insights.</strong> See what visitors ask, how they feel, and which questions went unanswered.</li>
-              <li><strong>Human handoff.</strong> Direct visitors to your support email or contact form when they need more help.</li>
-              <li>More knowledge documents, assistants, and approved websites</li>
-              <li><strong>Custom calls to action.</strong> Suggest links you choose, such as booking, product, or support pages, based on what visitors ask.</li>
-              <li>Remove Metanomic branding</li>
-            </ul>
-            <div className="mt-auto pt-6">
-              <button type="button" disabled className={s.fg2+' w-full cursor-not-allowed rounded-lg border border-current px-5 py-3 text-center font-semibold'}>Coming soon</button>
-            </div>
-          </article>
-          <article className={s.card+' flex flex-col p-6 sm:p-7'}>
-            <h3 className="text-xl font-semibold">Enterprise</h3>
-            <p className="mt-5 font-semibold">Everything in Pro, plus:</p>
-            <ul className={s.fg2+' mt-3 list-disc space-y-2 pl-5'}>
-              <li>Unlimited assistants</li>
-              <li>Expanded knowledge and website allowances</li>
-              <li>Shared workspace with role-based access</li>
-              <li>Dedicated onboarding and priority support</li>
-            </ul>
-            <div className="mt-auto pt-6">
-              <button type="button" disabled className={s.fg2+' w-full cursor-not-allowed rounded-lg border border-current px-5 py-3 text-center font-semibold'}>Coming soon</button>
-            </div>
-          </article>
-        </div>
-      </section>
+      <Pricing/>
 
       <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
           <div className="relative">
             <h2 id="final-cta" className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Your AI assistant can be live in 10 minutes.</h2>
             <p className={s.bandSub+' mt-4 text-lg'}>Free to start. No credit card required.</p>
-            <Signup className="mt-8 w-full sm:w-auto"/>
+            <a href={SIGNUP} className={s.cta+' mt-8 w-full sm:w-auto'}>Create your free assistant</a>
           </div>
         </div>
       </section>
