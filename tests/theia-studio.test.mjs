@@ -57,20 +57,24 @@ test('public launcher configuration excludes private assistant fields',()=>{
 test('launcher animation defaults off and exposes only supported choices',()=>{
  const {launcherConfig}=load('launcher');
  assert.equal(launcherConfig(agent).animation,'off');
+ assert.equal(launcherConfig(agent).repeatAnimation,'false');
+ assert.equal(launcherConfig({...agent,launcher_animation_repeat:true}).repeatAnimation,'true');
  for(const animation of ['glow','pulse'])assert.equal(launcherConfig({...agent,launcher_animation:animation}).animation,animation);
  assert.equal(launcherConfig({...agent,launcher_animation:'unknown'}).animation,'off');
 });
 
 test('launcher animates once, respects reduced motion, and cancels when opened',()=>{
- for(const style of ['pill','side-tab'])for(const reduced of [false,true])for(const openEarly of [false,true]){
+ for(const style of ['pill','side-tab'])for(const repeat of [false,true])for(const reduced of [false,true])for(const openEarly of [false,true]){
   let shadow, pending, plays=0, cancels=0;
   function element(tag){return {tag,style:{setProperty(){}},setAttribute(){},addEventListener(){},attachShadow(){return shadow=element('shadow');},append(...children){this.children=children;},classList:{toggle(){}},focus(){},animate(frames){assert.equal(frames[1].translate,'0 -10px');plays++;return {cancel(){cancels++;}}}};}
-  vm.runInNewContext(embedClient,{URL,document:{currentScript:{src:'https://metanomic.ai/theia-embed.js',dataset:{agent:agent.id,style,animation:'pulse'}},createElement:element,body:{append(){}}},window:{addEventListener(){},matchMedia(){return {matches:reduced};}},setTimeout(callback,delay){assert.equal(delay,3000);pending=callback;return 1;},clearTimeout(){pending=undefined;}});
+  vm.runInNewContext(embedClient,{URL,document:{currentScript:{src:'https://metanomic.ai/theia-embed.js',dataset:{agent:agent.id,style,animation:'pulse',repeatAnimation:String(repeat)}},createElement:element,body:{append(){}}},window:{addEventListener(){},matchMedia(){return {matches:reduced};}},setTimeout(callback,delay){assert.equal(delay,pending?15000:3000);pending=callback;return 1;},clearTimeout(){pending=undefined;}});
   const button=shadow.children.find(el=>el.tag==='button');
   if(openEarly)button.onclick();
   pending?.();
   assert.equal(plays,!openEarly&&!reduced?1:0);
+  if(repeat&&!openEarly){pending?.();assert.equal(plays,reduced?0:2);}
   if(!openEarly)button.onclick();
-  assert.equal(cancels,plays);
+  assert.equal(pending,undefined);
+  assert.equal(cancels,plays?1:0);
  }
 });

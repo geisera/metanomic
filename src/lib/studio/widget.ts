@@ -30,12 +30,15 @@ export const embedClient = String.raw `(()=>{const script=document.currentScript
 const dockedHostStyle=host.style.cssText;
 let open=false,launcherAnimation;
 const animation=script.dataset.animation;
-const animationTimer=(animation==='glow'||animation==='pulse')?setTimeout(()=>{
-  if(!open&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+let animationTimer;
+function playLauncherAnimation(){
+  if(!document.hidden&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     button.style.setProperty('--launcher-glow',color+'80');
     launcherAnimation=button.animate?.(${JSON.stringify(launcherAnimationFrames)}[animation],${JSON.stringify(launcherAnimationOptions)});
   }
-},3000):undefined;
+  if(script.dataset.repeatAnimation==='true')animationTimer=setTimeout(playLauncherAnimation,15000);
+}
+if(animation==='glow'||animation==='pulse')animationTimer=setTimeout(playLauncherAnimation,3000);
 function setFullscreen(fullscreen){
   host.style.cssText=fullscreen?'position:fixed;inset:0;width:100%;height:100%;height:100dvh;z-index:2147483000':dockedHostStyle;
   frame.classList.toggle('fullscreen',fullscreen);
