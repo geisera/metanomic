@@ -1,8 +1,8 @@
 import {copy} from "@/app/assistant-studio/content";
 export {base,copy} from '@/app/assistant-studio/content';
 export const wrap='mx-auto max-w-7xl px-6 lg:px-8';
-export const section='scroll-mt-24 py-16 sm:py-24';
-export const heading='text-balance text-3xl font-semibold tracking-tight sm:text-4xl';
+export const section='scroll-mt-24 py-24 sm:py-32';
+export const heading='text-balance text-4xl font-semibold tracking-tight sm:text-5xl';
 export const primary='inline-flex min-h-11 items-center justify-center rounded-lg bg-lime px-5 py-2.5 font-semibold text-lime-ink hover:brightness-95';
 export const features=[
  ['Fewer support tickets','Deflect repeat questions automatically, around the clock.','M4 5h16v11H8l-4 4V5Z'],

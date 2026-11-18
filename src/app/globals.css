@@ -125,3 +125,18 @@ html[data-theme=dark] [data-studio-landing] button.bg-white[aria-pressed=true] {
 }
 [data-studio-landing]:has(dialog[open]) { isolation:isolate; }
 html:has([data-studio-landing] dialog[open]) { overflow:hidden; }
+
+[data-studio-landing] .studio-disclosure summary::-webkit-details-marker { display:none; }
+[data-studio-landing] .studio-mock-fade {
+  mask-image:linear-gradient(to bottom,#000 91%,transparent);
+  padding:1px 1px 12px;
+}
+@media (prefers-reduced-motion:no-preference) {
+  [data-studio-landing] .studio-disclosure[open] > :not(summary) {
+    animation:studio-reveal .22s ease-out;
+  }
+  @keyframes studio-reveal {
+    from { opacity:0; transform:translateY(-.35rem); }
+    to { opacity:1; transform:translateY(0); }
+  }
+}
