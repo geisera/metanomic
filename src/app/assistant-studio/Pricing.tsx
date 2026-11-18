@@ -24,14 +24,6 @@ const config:{
   SHOW_SOCIAL_PROOF:false,
 };
 
-const faq=[
-  {question:'Why do I need my own OpenAI key?',answer:"You get OpenAI’s rates directly, with no markup and full control of your usage.",href:config.DOCS_URL,label:'OpenAI key setup docs'},
-  {question:'What does it cost to run?',answer:config.USAGE_ESTIMATE??'OpenAI charges based on the model you choose and how much your assistant is used.',href:'https://openai.com/api/pricing/',label:'OpenAI API pricing'},
-  {question:'What counts as a website?',answer:'Each approved website address counts separately. For example, example.com and shop.example.com count as two.'},
-  {question:'Is my content private?',answer:'Each account can access only its own Studio data. Assistant owners decide which knowledge documents to publish for answers. Published knowledge may be quoted or summarized to website visitors: do not publish confidential material.',href:'/assistant-studio/privacy',label:'Privacy and data handling'},
-  {question:'Can I upgrade later?',answer:'Yes. Your assistant, content, and settings carry over when Pro launches.'},
-];
-
 const secondary='inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-current px-4 py-3 text-center font-semibold hover:underline';
 
 function Plan({name,audience,price,starter=false,subtitle,children}:{name:string;audience:string;price:ReactNode;starter?:boolean;subtitle?:string;children:ReactNode}){
@@ -116,10 +108,6 @@ export default function Pricing(){
     return ()=>observer.disconnect();
   },[]);
 
-  const faqData={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map(({question,answer,label,href})=>({
-    '@type':'Question',name:question,acceptedAnswer:{'@type':'Answer',text:answer+(label&&href?' '+label+': '+new URL(href,'https://metanomic.ai').href:'')},
-  }))};
-
   return <section ref={section} id="pricing" aria-labelledby="pricing-heading" className="mx-auto max-w-6xl scroll-mt-24 px-5 pb-16 sm:px-8 sm:pb-24">
     <h2 id="pricing-heading" className="text-3xl font-semibold tracking-tight sm:text-5xl">Start free. Upgrade when you’re ready.</h2>
     <p className={s.fg2+' mt-3 max-w-2xl'}>Launch an AI assistant trained on your content in minutes. No credit card, no contract.</p>
@@ -163,13 +151,5 @@ export default function Pricing(){
     {config.SHOW_SOCIAL_PROOF&&config.SOCIAL_PROOF&&<figure className={s.card+' mt-8 p-5'}>
       <blockquote>{config.SOCIAL_PROOF.quote}</blockquote><figcaption className={s.fg3+' mt-2'}>{config.SOCIAL_PROOF.attribution}</figcaption>
     </figure>}
-    <div className="mt-12 max-w-3xl">
-      <h3 className="text-2xl font-semibold">Pricing questions</h3>
-      <div className="mt-4 grid gap-3">{faq.map(({question,answer,href,label})=><details key={question} className={s.card+' px-5'} onToggle={event=>{if(event.currentTarget.open)track('pricing_faq_open',{question});}}>
-        <summary className="min-h-11 cursor-pointer rounded py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2">{question}</summary>
-        <p className={s.fg2+' pb-4'}>{answer}{href&&<> <a className="font-semibold underline" href={href} onClick={href===config.DOCS_URL?()=>track('byok_docs_click',{}):undefined}>{label} →</a></>}</p>
-      </details>)}</div>
-    </div>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(faqData).replace(/</g,'\\u003c')}}/>
   </section>;
 }
