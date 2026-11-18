@@ -8,7 +8,7 @@ import {StepList,SessionRedirect} from './LandingActions';
 import {call} from './ui';
 import s from './landing.module.css';
 
-export default function AuthForm({signup=false}:{signup?:boolean}){
+export default function AuthForm({signup=false,termsVersion}:{signup?:boolean;termsVersion?:string}){
   const router=useRouter(), a=copy.auth;
   const [recover,setRecover]=useState(false),[show,setShow]=useState(false),[length,setLength]=useState(0);
   const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
@@ -19,7 +19,7 @@ export default function AuthForm({signup=false}:{signup?:boolean}){
     const fields=new FormData(event.currentTarget);
     setBusy(true);setError('');setNotice('');
     try{
-      const result=await call('auth',{action:mode,email:fields.get('email'),password:fields.get('password')});
+      const result=await call('auth',{action:mode,email:fields.get('email'),password:fields.get('password'),...(termsVersion?{termsVersion,acceptedTerms:fields.get('accept-terms')==='on'}:{})});
       if(mode==='login'){track('signin_complete',{});router.replace(base+'/dashboard');}
       else setNotice(result.message);
     }catch(e){setError((e as Error).message);}
@@ -35,6 +35,10 @@ export default function AuthForm({signup=false}:{signup?:boolean}){
         {!recover&&<><div className={s.passwordLabel}><label htmlFor="auth-password">{a.password}</label>{!signup&&<button type="button" disabled={busy} onClick={()=>{setRecover(true);setError('');setNotice('');}}>{a.forgot}</button>}</div>
           <div className={s.passwordRow}><input id="auth-password" type={show?'text':'password'} name="password" autoComplete={signup?'new-password':'current-password'} required minLength={signup?12:1} maxLength={128} onChange={e=>setLength(e.target.value.length)} aria-describedby={signup?'password-length':undefined}/><button type="button" className={s.secondary} aria-pressed={show} onClick={()=>setShow(!show)}>{show?a.hide:a.show}</button></div>
           {signup&&<small id="password-length" role="status">{length} / 128 · {length<12?a.length:length<16?a.longer:a.goodLength}</small>}</>}
+        {signup&&termsVersion&&<><div className={s.termsConsent}>
+          <input id="studio-accept-terms" name="accept-terms" type="checkbox" required/>
+          <label htmlFor="studio-accept-terms">I agree to the <Link href={base+'/terms?version='+encodeURIComponent(termsVersion)} target="_blank" rel="noopener">Assistant Studio Terms of Service</Link></label>
+        </div><small><Link href={base+'/privacy'} target="_blank" rel="noopener">Privacy and data handling</Link></small></>}
         <button className={s.primary} disabled={busy}>{busy?a.busy:signup?a.create:recover?a.reset:copy.signIn}</button>
         <div aria-live="polite">{error&&<p>{error}</p>}{notice&&<p>{notice}</p>}</div>
       </form>

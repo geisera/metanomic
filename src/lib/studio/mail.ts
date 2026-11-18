@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
-import { StudioError } from './core';
+import { StudioError, uuid } from './core';
 import { siteOrigin, authFetch } from './server';
-export async function sendAuthLink(email: string, type: 'signup' | 'recovery' | 'email_change_new' | 'email_change_current', password?: string, newEmail?: string) {
+export async function sendAuthLink(email: string, type: 'signup' | 'recovery' | 'email_change_new' | 'email_change_current', password?: string, newEmail?: string, beforeSend?: (accountId: string) => Promise<void>) {
     if (!process.env.RESEND_API_KEY || !process.env.CONTACT_FROM_EMAIL)
         throw new StudioError('Account email delivery is unavailable.', 503);
     const r = await authFetch('admin/generate_link', { type, email, ...(password ? { password } : {}), ...(newEmail ? { new_email: newEmail } : {}) }, undefined, true);
@@ -14,6 +14,10 @@ export async function sendAuthLink(email: string, type: 'signup' | 'recovery' | 
     const hash = d.hashed_token;
     if (typeof hash !== 'string')
         throw new StudioError('Account verification is unavailable.', 503);
+    if (beforeSend) {
+        if (!uuid(d.id)) throw new StudioError('Account verification is unavailable.', 503);
+        await beforeSend(d.id);
+    }
     const link = siteOrigin() + '/assistant-studio/confirm?' + new URLSearchParams({ token_hash: hash, type: type.startsWith('email_change') ? 'email_change' : type });
     const destination = type === 'email_change_new' ? newEmail! : email;
     const subject = type === 'recovery' ? 'Reset your Assistant Studio password' : type.startsWith('email_change') ? 'Confirm your Assistant Studio email change' : 'Confirm your Assistant Studio account';

@@ -75,3 +75,7 @@
 @media(prefers-reduced-motion: reduce) {
   :global(html):has(.site) { scroll-behavior: auto; }
 }
+
+.termsConsent { display:flex; align-items:flex-start; gap:10px; }
+.authForm .termsConsent input { appearance:auto; flex:none; width:20px; height:20px; min-height:0; margin:2px 0 0; padding:0; accent-color:var(--lime); }
+.termsConsent a,.authForm small a { text-decoration:underline; text-underline-offset:3px; }

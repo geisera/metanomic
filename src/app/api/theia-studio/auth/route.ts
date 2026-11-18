@@ -3,6 +3,7 @@ import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { StudioError, text } from '@/lib/studio/core';
 import { session, setSession, clearSession, authFetch, gate, ipOf, rest, failure } from '@/lib/studio/server';
 import { fingerprint } from '@/lib/studio/crypto';
+import { recordStudioTermsAcceptance, signupTerms } from '@/lib/studio/terms';
 import { sendAuthLink } from '@/lib/studio/mail';
 export const runtime = 'nodejs';
 const json = (v: unknown) => Response.json(v, { headers: { 'Cache-Control': 'no-store' } });
@@ -35,8 +36,13 @@ export async function POST(req: Request) {
         }
         if (b.action === 'signup' || b.action === 'recover') {
             const address = email(b.email);
+            const terms = b.action === 'signup' ? await signupTerms() : null;
+            if (terms && b.termsVersion !== terms.version)
+                throw new StudioError('The terms have changed. Reload this page and review the current version before signing up.', 409);
+            if (terms && b.acceptedTerms !== true)
+                throw new StudioError('Agree to the Assistant Studio Terms of Service to sign up.');
             await gate('mail:' + address, 3, 3600);
-            await sendAuthLink(address, b.action === 'signup' ? 'signup' : 'recovery', b.action === 'signup' ? password(b.password) : undefined);
+            await sendAuthLink(address, b.action === 'signup' ? 'signup' : 'recovery', b.action === 'signup' ? password(b.password) : undefined, undefined, terms ? accountId => recordStudioTermsAcceptance(accountId, terms.version) : undefined);
             return json({ message: 'If the address is eligible, a verification email has been sent. Check your inbox and spam folder. Existing accounts can use password recovery.' });
         }
         if (b.action === 'verify') {
