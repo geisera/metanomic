@@ -125,62 +125,50 @@ export default function Page(){
           </li>)}
         </ul>
       </section>
-      
-     <section
-        aria-labelledby="features"
-        className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24"
-      >
-        <div className="max-w-2xl">
-          <p className={s.eyebrow}>Why Assistant Studio</p>
-          <h2
-            id="features"
-            className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-5xl"
-          >
-            Give customers answers from the content you already have.
-          </h2>
-          <p className={`${s.fg2} mt-6 text-lg leading-8`}>
-            Turn your FAQs, policies, and product docs into a chat assistant for your
-            website. Bring your OpenAI key, paste one line of code, and let Metanomic
-            handle the hosting.
-          </p>
+
+      <section aria-labelledby="features" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+        <div className="bg-[var(--surface-solid)] py-24 sm:py-32">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl lg:mx-0">
+              <h2 id="features" className="text-4xl font-semibold tracking-tight text-pretty text-[var(--fg)] sm:text-5xl">
+                Stay on top of customer support
+              </h2>
+              <p className="mt-6 text-lg/8 text-[var(--fg-2)]">
+                Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in
+                accusamus quisquam.
+              </p>
+            </div>
+            <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+              <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+                {features.map((feature) => (
+                  <div key={feature.name} className="flex flex-col">
+                    <dt className="text-base/7 font-semibold text-[var(--fg)]">
+                      <div className="mb-6 flex size-10 items-center justify-center rounded-lg bg-[var(--accent)]">
+                        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-[var(--accent-ink)]">
+                          <path strokeLinecap="round" strokeLinejoin="round" d={feature.icon} />
+                        </svg>
+                      </div>
+                      {feature.name}
+                    </dt>
+                    <dd className="mt-1 flex flex-auto flex-col text-base/7 text-[var(--fg-2)]">
+                      <p className="flex-auto">{feature.description}</p>
+                      <p className="mt-6">
+                        <a
+                          href={feature.href}
+                          className="text-sm/6 font-semibold text-[var(--chip-fg)] hover:text-[var(--fg)]"
+                        >
+                          Learn more <span aria-hidden="true">→</span>
+                        </a>
+                      </p>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
         </div>
-      
-        <ul role="list" className="mt-12 grid gap-5 lg:grid-cols-3">
-          {features.map((feature) => (
-            <li key={feature.name} className={`${s.card} flex flex-col p-5 sm:p-7`}>
-              <span
-                className={`${s.icon} inline-grid size-11 shrink-0 place-items-center rounded-xl`}
-              >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="size-6"
-                >
-                  <path d={feature.icon} />
-                </svg>
-              </span>
-      
-              <h3 className="mt-5 text-lg font-semibold">{feature.name}</h3>
-              <p className={`${s.fg2} mt-2 leading-7`}>{feature.description}</p>
-      
-              <div className="mt-auto pt-4">
-                <a
-                  href={feature.href}
-                  aria-label={`Learn more: ${feature.name}`}
-                  className={`${s.link} inline-flex min-h-11 items-center gap-2 underline-offset-4 hover:underline`}
-                >
-                  Learn more <span aria-hidden="true">→</span>
-                </a>
-              </div>
-            </li>
-          ))}
-        </ul>
       </section>
+    
       <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
           <div className="relative">
