@@ -48,3 +48,87 @@
 .previewComposer .sendButton[data-display=text] {
   max-width: clamp(72px, 12vw, 150px);
 }
+
+/* Studio settings use a shared navigation rail and divided form rows. */
+.settingsLayout {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+  margin-top: 28px;
+}
+.settingsSidebar { min-width: 0; position: sticky; top: 24px; }
+.settingsNav { display: flex; flex-direction: column; gap: 6px; }
+.settingsNav :is(button,a) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  text-align: left;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.settingsNav svg { flex-shrink: 0; }
+.settingsNav :is(button,a):hover,
+.settingsNav [aria-current=page] {
+  color: var(--lime);
+  background: var(--site-11212d);
+}
+.settingsContent, .settingsForm, .account { min-width: 0; }
+.settingsContent > .form { margin-top: 0; }
+.settingsForm { display: grid; gap: 48px; }
+.settingsSection { min-width: 0; }
+.shell .settingsSection h2 { font-size: 18px; margin: 0; }
+.settingsSection > .help { margin: 6px 0 24px; }
+.settingsSection > .field,
+.account .field {
+  display: grid;
+  grid-template-columns: minmax(160px, 30%) minmax(0, 1fr);
+  column-gap: 24px;
+  row-gap: 8px;
+  padding-block: 24px;
+  border-top: 1px solid var(--site-273843);
+  align-items: start;
+}
+.settingsSection > .field .fieldHeading,
+.account .field .fieldHeading { grid-column: 1; grid-row: 1; min-height: 44px; }
+.settingsSection > .field > :not(.fieldHeading),
+.account .field > :not(.fieldHeading) { grid-column: 2; }
+.settingsSection > .actions { justify-content: flex-end; }
+.settingsSection .modelOptions { border-top: 1px solid var(--site-273843); padding-top: 20px; }
+.settingsSection .modelOptions legend { font-weight: 500; padding-right: 16px; }
+.settingsSection .modelOption { border-color: var(--site-273843); padding: 16px; }
+.settingsSection .two { border-top: 1px solid var(--site-273843); padding-top: 24px; }
+.settingsSection .compactUsage { margin-top: 28px; }
+.settingsForm .saveBar { margin-top: 0; }
+.settingsContent .dangerZone { padding: 24px 0; border-width: 1px 0 0; border-radius: 0; }
+.settingsLayout .account { max-width: none; }
+.settingsLayout .account > section {
+  padding: 0 0 32px;
+  margin: 0 0 40px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--site-273843);
+  border-radius: 0;
+  scroll-margin-top: 24px;
+}
+.settingsLayout .account > section > h2 { font-size: 18px; margin-bottom: 8px; }
+.settingsLayout .account .form { gap: 16px; }
+.settingsLayout .account .form > button { justify-self: end; }
+.settingsLayout .account #account-delete { border-color: var(--site-ed9c9c); }
+@media (max-width: 1000px) {
+  .settingsLayout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .settingsSidebar { position: static; border-bottom: 1px solid var(--site-273843); padding-bottom: 12px; }
+  .settingsNav { flex-direction: row; overflow-x: auto; padding: 4px; }
+  .settingsNav :is(button,a) { flex-shrink: 0; }
+}
+@media (max-width: 640px) {
+  .settingsForm { gap: 32px; }
+  .settingsSection > .field, .account .field { grid-template-columns: minmax(0, 1fr); padding-block: 20px; }
+  .settingsSection > .field > :not(.fieldHeading), .account .field > :not(.fieldHeading) { grid-column: 1; }
+  .settingsSection > .field .fieldHeading, .account .field .fieldHeading { min-height: 0; }
+}
