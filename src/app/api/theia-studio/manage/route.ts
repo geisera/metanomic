@@ -1,6 +1,6 @@
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { session, rest, ownedAgent, apiKey, gate, failure } from '@/lib/studio/server';
-import { agentInput, origins, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
+import { knowledgeSourceUrl, agentInput, origins, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
 import { ASSISTANT_TEMPLATES } from '@/lib/studio/templates';
 import { encrypt } from '@/lib/studio/crypto';
 export const runtime = 'nodejs';
@@ -118,7 +118,10 @@ export async function POST(req: Request) {
         }
         if (b.action === 'save-document') {
             if(!b.id){const docs=await rest<Document[]>('studio_documents?select=id&agent_id=eq.'+agent.id,{session:s});if(docs.length>=tier.documents)throw new StudioError(`${tier.name} allows ${tier.documents} knowledge document(s) per assistant.`,400,'tier_limit');}
-            const input = { agent_id: agent.id, title: text(b.title, 160, 1), content: text(b.content, 50000, 1), published: b.published === true, updated_at: new Date().toISOString() };
+            const sourceUrl = knowledgeSourceUrl(b.source_url);
+            if (b.source_url !== undefined && b.source_url !== null && b.source_url !== '' && !sourceUrl)
+                throw new StudioError('Enter a valid public HTTPS source URL.');
+            const input = { agent_id: agent.id, ...(b.source_url===undefined?{}:{source_url:sourceUrl}), title: text(b.title, 160, 1), content: text(b.content, 50000, 1), published: b.published === true, updated_at: new Date().toISOString() };
             if (b.id !== undefined && !uuid(b.id))
                 throw new StudioError('Invalid document.');
             const rows = await rest<Document[]>('studio_documents' + (b.id ? '?id=eq.' + b.id + '&agent_id=eq.' + agent.id : ''), { session: s, method: b.id ? 'PATCH' : 'POST', body: input });

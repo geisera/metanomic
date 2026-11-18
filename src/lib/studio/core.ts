@@ -18,6 +18,7 @@ export type Document = {
     agent_id: string;
     title: string;
     content: string;
+    source_url?: string | null;
     published: boolean;
     updated_at: string;
 };
@@ -50,12 +51,23 @@ export function messages(value: unknown): Message[] { if (!Array.isArray(value) 
     throw new StudioError('Send between 1 and 16 recent messages.'); let size = 0; const rows = value.map((v, i) => { if (!v || !['user', 'assistant'].includes(v.role) || v.role !== (i % 2 === 0 ? 'user' : 'assistant'))
     throw new StudioError('Invalid conversation order.'); const content = text(v.content, v.role === 'user' ? 4000 : 16000, 1); size += content.length; return { role: v.role, content }; }); if (rows.at(-1)?.role !== 'user' || size > 16000)
     throw new StudioError('Conversation is too long or does not end with a user message.'); return rows; }
-export function knowledgeContext(docs: Document[], question: string) { const terms = [...new Set(question.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) || [])].slice(0, 30); const chunks = docs.filter(d => d.published).flatMap(d => { const out: {
+export function knowledgeContext(docs: Document[], question: string, includeDocumentId = false) { const terms = [...new Set(question.toLowerCase().match(/[\p{L}\p{N}]{3,}/gu) || [])].slice(0, 30); const chunks = docs.filter(d => d.published).flatMap(d => { const out: {
+    id: string;
     title: string;
     text: string;
     score: number;
 }[] = []; for (let i = 0; i < d.content.length; i += 1400) {
     const chunk = d.content.slice(i, i + 1800);
-    out.push({ title: d.title, text: chunk, score: terms.reduce((n, t) => n + (chunk.toLowerCase().includes(t) ? 1 : 0) + (d.title.toLowerCase().includes(t) ? 2 : 0), 0) });
-} return out; }); return chunks.filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 5).map(c => ({ title: c.title, passage: c.text })); }
+    out.push({ id: d.id, title: d.title, text: chunk, score: terms.reduce((n, t) => n + (chunk.toLowerCase().includes(t) ? 1 : 0) + (d.title.toLowerCase().includes(t) ? 2 : 0), 0) });
+} return out; }); return chunks.filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 5).map(c => ({ title: c.title, passage: c.text, ...(includeDocumentId ? { documentId: c.id } : {}) })); }
 export function publicAgent(a: Agent) { return { id: a.id, name: a.name, greeting: a.greeting }; }
+
+export function knowledgeSourceUrl(value: unknown): string | null {
+    if (typeof value !== 'string' || value.length > 2048) return null;
+    try {
+        const url = new URL(value);
+        return url.protocol === 'https:' && !url.username && !url.password ? url.href : null;
+    } catch {
+        return null;
+    }
+}

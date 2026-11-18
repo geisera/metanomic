@@ -25,10 +25,10 @@ const messages=[
 
 const benefits=[
   {title:'No code required',body:'If you can copy and paste, you can install it. No developer, no plugins.',icon:'M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5'},
-  {title:'Knows your business',body:'Answers come only from your pages, docs, and FAQs. Not the open internet.',icon:'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25'},
+  {title:'Knows your business',body:'Answers draw on the knowledge you add from your pages, docs, and FAQs.',icon:'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25'},
   {title:'Live in 10 minutes',body:'Sign up, add your content, paste one line. Your site is answering questions.',icon:'m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z'},
   {title:'Answers 24/7',body:'Customers get answers at night, on weekends, and on holidays.',icon:'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
-  {title:'Shows its sources',body:'Every answer links to the page it came from, so customers can trust it.',icon:'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
+  {title:'Shows its sources',body:'Answers can cite your knowledge documents and link to public source pages you provide.',icon:'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
   {title:'No markup on usage',body:'Bring your OpenAI key and pay OpenAI directly, at cost.',icon:'M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
 ];
 
