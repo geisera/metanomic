@@ -29,6 +29,30 @@ const benefits=[
   {title:'No markup on usage',body:'Bring your OpenAI key and pay OpenAI directly, at cost.',icon:'M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
 ];
 
+const features = [
+  {
+    name: 'Unlimited inboxes',
+    description:
+      'Non quo aperiam repellendus quas est est. Eos aut dolore aut ut sit nesciunt. Ex tempora quia. Sit nobis consequatur dolores incidunt.',
+    href: '#',
+    icon: InboxIcon,
+  },
+  {
+    name: 'Manage team members',
+    description:
+      'Vero eum voluptatem aliquid nostrum voluptatem. Vitae esse natus. Earum nihil deserunt eos quasi cupiditate. A inventore et molestiae natus.',
+    href: '#',
+    icon: UsersIcon,
+  },
+  {
+    name: 'Spam report',
+    description:
+      'Et quod quaerat dolorem quaerat architecto aliquam accusantium. Ex adipisci et doloremque autem quia quam. Quis eos molestiae at iure impedit.',
+    href: '#',
+    icon: TrashIcon,
+  },
+];
+
 function Signup({className=''}:{className?:string}){
   return <a href={SIGNUP} className={s.cta+' '+className}>Create your assistant</a>;
 }
