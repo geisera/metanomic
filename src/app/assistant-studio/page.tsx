@@ -1,6 +1,7 @@
 import PrimaryNav from '@/components/PrimaryNav';
 import type {Metadata} from 'next';
 import s from './minimal.module.css';
+import { InboxIcon, TrashIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 const title='Assistant Studio: AI Website Chatbot Trained on Your Content | Metanomic';
 const description='Train a chatbot on your pages, docs, and FAQs. Add it to your site with one line of code. Free to start.';
