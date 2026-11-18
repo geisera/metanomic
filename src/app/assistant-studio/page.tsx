@@ -118,7 +118,7 @@ export default function Page(){
           </h2>
         </div>
       
-        <ul role="list" className="mt-12 grid grid-cols-1 gap-4 lg:gap-5">
+        <ul role="list" className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           {benefits.map(b => (
             <li key={b.title} className={s.card + ' flex gap-4 p-5 sm:block sm:p-7'}>
               <span className={s.icon + ' inline-grid size-11 shrink-0 place-items-center rounded-xl'}>
@@ -135,49 +135,6 @@ export default function Page(){
         </ul>
       </section>
 
-      <section aria-labelledby="features" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-        <div className="rounded-2xl bg-[var(--surface-solid)] py-24 sm:py-32">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-2xl lg:mx-0">
-              <h2 id="features" className="text-4xl font-semibold tracking-tight text-pretty text-[var(--fg)] sm:text-5xl">
-                Stay on top of customer support
-              </h2>
-              <p className="mt-6 text-lg/8 text-[var(--fg-2)]">
-                Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in
-                accusamus quisquam.
-              </p>
-            </div>
-            <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-              <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-                {features.map((feature) => (
-                  <div key={feature.name} className="flex flex-col">
-                    <dt className="text-base/7 font-semibold text-[var(--fg)]">
-                      <div className="mb-6 flex size-10 items-center justify-center rounded-lg bg-[var(--accent)]">
-                        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-[var(--accent-ink)]">
-                          <path strokeLinecap="round" strokeLinejoin="round" d={feature.icon} />
-                        </svg>
-                      </div>
-                      {feature.name}
-                    </dt>
-                    <dd className="mt-1 flex flex-auto flex-col text-base/7 text-[var(--fg-2)]">
-                      <p className="flex-auto">{feature.description}</p>
-                      <p className="mt-6">
-                        <a
-                          href={feature.href}
-                          className="text-sm/6 font-semibold text-[var(--chip-fg)] hover:text-[var(--fg)]"
-                        >
-                          Learn more <span aria-hidden="true">→</span>
-                        </a>
-                      </p>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          </div>
-        </div>
-      </section>
-    
       <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
           <div className="relative">
