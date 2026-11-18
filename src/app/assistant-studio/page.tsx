@@ -113,16 +113,25 @@ export default function Page(){
       <section aria-labelledby="benefits" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         <div className="max-w-2xl">
           <p className={s.eyebrow}>Why Assistant Studio</p>
-          <h2 id="benefits" className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Give your customers the answers they need, 24/7.</h2>
+          <h2 id="benefits" className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
+            Give your customers the answers they need, 24/7.
+          </h2>
         </div>
-        <ul role="list" className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-          {benefits.map(b=><li key={b.title} className={s.card+' flex gap-4 p-5 sm:block sm:p-7'}>
-            <span className={s.icon+' inline-grid size-11 shrink-0 place-items-center rounded-xl'}>
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-6"><path d={b.icon}/></svg>
-            </span>
-            <div><h3 className="text-lg font-semibold sm:mt-5">{b.title}</h3>
-            <p className={s.fg2+' mt-1 leading-7 sm:mt-2'}>{b.body}</p></div>
-          </li>)}
+      
+        <ul role="list" className="mt-12 grid grid-cols-1 gap-4 lg:gap-5">
+          {benefits.map(b => (
+            <li key={b.title} className={s.card + ' flex gap-4 p-5 sm:block sm:p-7'}>
+              <span className={s.icon + ' inline-grid size-11 shrink-0 place-items-center rounded-xl'}>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-6">
+                  <path d={b.icon} />
+                </svg>
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold sm:mt-5">{b.title}</h3>
+                <p className={s.fg2 + ' mt-1 leading-7 sm:mt-2'}>{b.body}</p>
+              </div>
+            </li>
+          ))}
         </ul>
       </section>
 
