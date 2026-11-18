@@ -2,7 +2,7 @@ import Link from "next/link";
 import styles from "./services.module.css";
 import { servicePrompt } from "@/lib/theia-dock";
 import TheiaLink from "@/components/TheiaLink";
-import TheiaNav from "@/components/TheiaNav";
+import PrimaryNav from "@/components/PrimaryNav";
 import TheiaShowcase from "@/components/TheiaShowcase";
 
 const services = [
@@ -26,27 +26,9 @@ function Logo() {
     <span className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></span>
   </Link>;
 }
-
 export default function Home() {
   return <main>
-    <div className="sticky top-0 z-40">
-      <div className="border-b border-[var(--site-20303b)] bg-[var(--site-091019)]/95 backdrop-blur-sm">
-        <header className="container flex min-h-[86px] flex-wrap items-center justify-between gap-4 py-3">
-        <Logo />
-        <nav aria-label="Primary navigation" className="hidden items-center gap-5 xl:flex">
-          <a className="navlink" href="#services">What we do</a>
-          <a className="navlink" href="#approach">Our approach</a>
-          <Link className="navlink" href="/enterprise-ai-stack">AI stack</Link>
-          <a className="navlink" href="#about">About</a>
-        </nav>
-        <div className="flex shrink-0 flex-wrap items-center gap-3">
-          <div className="hidden sm:block"><Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk <span aria-hidden>→</span></Link></div>
-          <TheiaNav />
-          <Link href="/assistant-studio" className="button button-primary !min-h-[44px] !px-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--lime)]" aria-label="Assistant Studio — build your own website assistant">Assistant Studio <span aria-hidden>→</span></Link>
-        </div>
-      </header>
-      </div>
-    </div>
+    <PrimaryNav />
 
     <section id="home-hero" className="relative overflow-hidden">
       <div className="container relative flex min-h-[min(83vh,820px)] items-center py-28 md:py-36">

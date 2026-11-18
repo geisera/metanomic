@@ -1,3 +1,4 @@
+import PrimaryNav from "@/components/PrimaryNav";
 import type { Metadata } from "next";
 import Link from "next/link";
 import LayerNavigation from "./LayerNavigation";
@@ -278,18 +279,7 @@ function Tags({ tools }: { tools: readonly string[] }) {
 }
 export default function EnterpriseAIStackPage() {
   return <main className={styles.page}>
-    <div className={styles.header}>
-      <header className="container flex h-[86px] items-center justify-between gap-3">
-        <Link href="/" aria-label="Metanomic home" className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[var(--site-7b986d)] bg-[#c9ec8a] text-lg font-black text-[#122322]">M</span>
-          <span className="hidden text-[18px] font-semibold tracking-[-.035em] sm:inline">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></span>
-        </Link>
-        <nav aria-label="Page navigation" className="flex items-center gap-4 sm:gap-7">
-          <Link href="/" className="navlink">Home</Link><Link href="/#services" className="navlink">Services</Link>
-          <Link href="/contact" className="button button-outline !min-h-[40px] !px-4">Let&apos;s talk →</Link>
-        </nav>
-      </header>
-    </div>
+    <PrimaryNav />
     <section className="relative border-b border-[var(--site-263843)] py-20 md:py-28">
       <div className="container">
         <div className="max-w-[1000px]">
