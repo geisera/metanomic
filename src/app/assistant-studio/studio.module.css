@@ -33,3 +33,14 @@
 .previewFrame .sendButton[data-display=text]{width:auto;height:auto;min-height:44px;max-width:100%;padding:10px 16px;overflow-wrap:anywhere;white-space:normal}
 
 .workspacePanel{min-width:0}.assistantControls{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);gap:24px;padding-bottom:24px;margin-bottom:24px;border-bottom:1px solid var(--muted);align-items:start}.assistantChoices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}.assistantTools{display:grid;gap:12px;min-width:0}.assistantTools .help{margin:0}.assistantChoices .agentButton{min-width:0}.assistantChoices .agentButton strong{margin-right:8px}@media(max-width:640px){.assistantControls{grid-template-columns:1fr;gap:16px}.assistantTools{grid-template-columns:1fr}.workspacePanel{min-width:0}}
+
+.previewComposer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.previewComposer .sendButton[data-display=text] {
+  max-width: clamp(72px, 12vw, 150px);
+}
