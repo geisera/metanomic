@@ -104,7 +104,7 @@ export default function Page(){
           <p className={s.fg2+' mt-8 max-w-[550px] text-[17px] leading-[1.85]'}>Upload your pages, docs, and FAQs. Paste one line of code. Your site answers customer questions 24/7, from your own content.</p>
           <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
             <a href={SIGNUP} className="button button-primary w-full sm:w-auto">Create your assistant <span aria-hidden="true">→</span></a>
-            <a href="/assistant-studio/login" className={s.link+' inline-flex min-h-11 items-center px-2'}>Sign in</a>
+            <a href="/assistant-studio/dashboard" className="button button-outline w-full sm:w-auto">Open Studio</a>
           </div>
           <p className={s.fg3+' mt-4 text-sm'}>Free to start · No credit card required · Live in 10 minutes</p>
         </div>
