@@ -99,7 +99,7 @@ export default function Page(){
       <section className="container relative grid min-h-[min(83vh,820px)] items-center gap-14 py-20 md:py-28 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:py-36">
         <div className="min-w-0">
           <span className="pill">Assistant Studio</span>
-          <h1 className="mt-8 max-w-[790px] text-balance text-[clamp(2.75rem,6vw,6rem)] font-semibold leading-[1.02] tracking-[-.075em]">A website chatbot that actually knows <span className={s.heroAccent}>your business.</span></h1>
+          <h1 className="mt-8 max-w-[790px] text-balance text-[clamp(2.75rem,6vw,6rem)] font-semibold leading-[1.02] tracking-[-.075em]">A chatbot that really knows <span className={s.heroAccent}>your business.</span></h1>
           <p className={s.fg2+' mt-8 max-w-[550px] text-[17px] leading-[1.85]'}>Upload your pages, docs, and FAQs. Paste one line of code. Your site answers customer questions 24/7, from your own content.</p>
           <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
             <a href={SIGNUP} className="button button-primary w-full sm:w-auto">Create your assistant <span aria-hidden="true">→</span></a>
