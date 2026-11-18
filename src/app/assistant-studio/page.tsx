@@ -10,6 +10,8 @@ export const metadata:Metadata={
   twitter:{card:'summary',title,description},
 };
 
+const SIGNUP='/assistant-studio/signup';
+
 const messages=[
   {text:'Can I return an unopened order?'},
   {text:'Yes. Unopened items can be returned within 30 days of delivery.',source:'Return policy'},
@@ -17,34 +19,46 @@ const messages=[
   {text:'We do. Canadian orders arrive in 5–8 business days.',source:'Shipping FAQ'},
 ];
 
-function Signup({className=''}:{className?:string}){
-  return <a href="/signup" className={'inline-flex min-h-11 items-center justify-center rounded-lg bg-lime px-6 py-3.5 text-center text-base font-semibold text-lime-ink hover:brightness-95 '+className}>Create your assistant</a>;
+const benefits=[
+  {title:'No code required',body:'If you can copy and paste, you can install it. No developer, no plugins.',icon:'M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5'},
+  {title:'Knows your business',body:'Answers come only from your pages, docs, and FAQs. Not the open internet.',icon:'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25'},
+  {title:'Live in 10 minutes',body:'Sign up, add your content, paste one line. Your site is answering questions.',icon:'m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z'},
+  {title:'Answers 24/7',body:'Customers get answers at night, on weekends, and on holidays.',icon:'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
+  {title:'Shows its sources',body:'Every answer links to the page it came from, so customers can trust it.',icon:'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
+  {title:'No markup on usage',body:'Bring your OpenAI key and pay OpenAI directly, at cost.',icon:'M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
+];
+
+function Signup({small=false,className=''}:{small?:boolean;className?:string}){
+  return <a href={SIGNUP} className={s.cta+(small?' '+s.ctaSmall:'')+' '+className}>Create your assistant</a>;
 }
 
 function SampleChat(){
-  return <figure className="relative mx-auto w-full min-w-0 max-w-sm">
-    <figcaption className="sr-only">Illustration of a store assistant answering questions about returns and shipping, with sources.</figcaption>
-    <div aria-hidden="true" className="pointer-events-none absolute inset-5 rounded-full bg-lime/30 blur-3xl"/>
-    <div aria-hidden="true" className="relative rounded-[2.5rem] bg-night p-3 shadow-2xl lg:-rotate-2">
-      <div className="overflow-hidden rounded-[1.85rem] bg-mint text-ink">
-        <div className="bg-white pt-2">
-          <div className="mx-auto h-1.5 w-14 rounded-full bg-night"/>
-          <div className="flex items-center gap-3 border-b border-line px-4 py-3">
-            <span className="size-2.5 shrink-0 rounded-full bg-lime ring-1 ring-ink/30"/>
+  return <figure className="relative mx-auto w-full min-w-0 max-w-[22rem]">
+    <figcaption className="sr-only">Illustration: a store assistant answers questions about returns and shipping and cites its sources.</figcaption>
+    <div aria-hidden="true" className={s.glow+' pointer-events-none absolute -inset-6 rounded-full blur-3xl'}/>
+    <div aria-hidden="true" className={s.phone+' relative lg:-rotate-2'}>
+      <div className={s.screen}>
+        <div className={s.bar+' pt-2'}>
+          <div className={s.notch+' mx-auto h-1.5 w-14 rounded-full'}/>
+          <div className="flex items-center gap-3 px-4 py-3">
+            <span className={s.online+' size-2.5 shrink-0 rounded-full'}/>
             <p className="font-semibold">Store assistant</p>
-            <p className={s.caption+' ml-auto text-sm'}>Online</p>
+            <p className={s.fg3+' ml-auto text-sm'}>Online</p>
           </div>
         </div>
-        <ol className="grid gap-3 p-4">
-          {messages.map(message=><li key={message.text} className={s.message+' flex flex-col '+(message.source?'items-start':'items-end')}>
-            <p className={'max-w-[94%] rounded-2xl px-3 py-2 text-sm leading-5 '+(message.source?'rounded-bl-sm bg-white text-ink ring-1 ring-line':'rounded-br-sm bg-ink text-mint')}>{message.text}</p>
-            {message.source&&<span className="mt-1.5 rounded-full bg-mint-2 px-2 py-1 text-xs text-slate">📄 {message.source}</span>}
+        <ol className="grid min-h-[19rem] content-start gap-3 p-4">
+          {messages.map(m=><li key={m.text} className={s.message+' flex flex-col '+(m.source?'items-start':'items-end')}>
+            <p className={(m.source?s.bot+' rounded-bl-sm':s.user+' rounded-br-sm')+' max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-5'}>{m.text}</p>
+            {m.source&&<span className={s.source+' mt-1.5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium'}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+              {m.source}
+            </span>}
           </li>)}
         </ol>
-        <div className="border-t border-line bg-white p-3">
-          <div className="flex items-center gap-2 rounded-xl bg-mint-2 p-2">
-            <span className={s.caption+' grow px-2 text-sm'}>Ask a question…</span>
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-lime text-lime-ink"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className="size-5"><path d="m5 12-2-8 18 8-18 8 2-8Zm0 0h16"/></svg></span>
+        <div className={s.inputBar+' p-3'}>
+          <div className={s.input+' flex items-center gap-2 rounded-xl p-1.5 pl-3'}>
+            <span className="grow text-sm">Ask a question…</span>
+            <span className={s.send+' grid size-9 shrink-0 place-items-center rounded-lg'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" className="size-5"><path d="m5 12-2-8 18 8-18 8 2-8Zm0 0h16"/></svg></span>
           </div>
         </div>
       </div>
@@ -53,36 +67,61 @@ function SampleChat(){
 }
 
 export default function Page(){
-  return <div data-studio-landing className={s.page+' min-h-screen font-[family-name:var(--font-geist)] text-ink'}>
-    <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-4 sm:px-8">
-      <span className="font-semibold">Assistant Studio</span>
-      <nav aria-label="Account" className="flex flex-wrap items-center gap-3 sm:gap-5">
-        <a href="/assistant-studio/login" className="inline-flex min-h-11 items-center font-medium text-slate hover:underline">Sign in</a>
-        <Signup className="!px-3 !py-2 !text-sm sm:!px-4"/>
+  return <div data-studio-landing className={s.page+' min-h-screen font-[family-name:var(--font-geist)]'}>
+    <header className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
+      <span className="text-lg font-semibold tracking-tight">Assistant Studio</span>
+      <nav aria-label="Account" className="flex items-center gap-4 sm:gap-6">
+        <a href="/assistant-studio/login" className={s.link+' inline-flex min-h-11 items-center'}>Sign in</a>
+        <span className="hidden sm:inline-flex"><Signup small/></span>
       </nav>
     </header>
+
     <main>
-      <section className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-10 sm:px-8 sm:py-16 lg:min-h-[90vh] lg:grid-cols-2 lg:gap-16">
+      <section className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-20 pt-8 sm:px-8 sm:pt-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12 lg:pb-28 lg:pt-16">
         <div>
-          <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight sm:text-6xl lg:text-7xl">A website chatbot that actually knows your business.</h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate sm:text-xl">Upload your pages, docs, and FAQs. Paste one line of code. Your site answers customer questions 24/7, from your own content.</p>
-          <Signup className="mt-8 w-full sm:w-auto"/>
-          <p className={s.caption+' mt-4 text-sm'}>Free to start · No credit card required · Live in 10 minutes</p>
+          <h1 className="text-balance text-[2.6rem] font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-[4.25rem]">A website chatbot that actually knows your business.</h1>
+          <p className={s.fg2+' mt-6 max-w-xl text-lg leading-relaxed sm:text-xl'}>Upload your pages, docs, and FAQs. Paste one line of code. Your site answers customer questions 24/7, from your own content.</p>
+          <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <Signup className="w-full sm:w-auto"/>
+          </div>
+          <p className={s.fg3+' mt-4 text-sm'}>Free to start · No credit card required · Live in 10 minutes</p>
         </div>
         <SampleChat/>
       </section>
-      <section className="bg-night px-5 py-20 text-center text-mint sm:py-24">
-        <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">Your assistant can be live in 10 minutes.</h2>
-        <p className="mt-5 text-lg text-muted">Free to start. No credit card required.</p>
-        <Signup className="mt-7"/>
+
+      <section aria-labelledby="benefits" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+        <div className="max-w-2xl">
+          <p className={s.eyebrow}>Why Assistant Studio</p>
+          <h2 id="benefits" className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Answers your customers&apos; questions, so you don&apos;t have to.</h2>
+        </div>
+        <ul role="list" className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+          {benefits.map(b=><li key={b.title} className={s.card+' flex gap-4 p-5 sm:block sm:p-7'}>
+            <span className={s.icon+' inline-grid size-11 shrink-0 place-items-center rounded-xl'}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-6"><path d={b.icon}/></svg>
+            </span>
+            <div><h3 className="text-lg font-semibold sm:mt-5">{b.title}</h3>
+            <p className={s.fg2+' mt-1 leading-7 sm:mt-2'}>{b.body}</p></div>
+          </li>)}
+        </ul>
+      </section>
+
+      <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
+        <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
+          <div className="relative">
+            <h2 id="final-cta" className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Your assistant can be live in 10 minutes.</h2>
+            <p className={s.bandSub+' mt-4 text-lg'}>Free to start. No credit card required.</p>
+            <Signup className="mt-8 w-full sm:w-auto"/>
+          </div>
+        </div>
       </section>
     </main>
-    <footer className="border-t border-night-2 bg-night text-muted">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-5 px-5 py-4 sm:px-8">
+
+    <footer className={s.footer}>
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 px-5 py-4 text-sm sm:px-8">
         <p>© 2026 Metanomic</p>
-        <nav aria-label="Legal" className="flex gap-5">
-          <a href="/assistant-studio/privacy" className="inline-flex min-h-11 items-center hover:text-mint">Privacy</a>
-          <a href="/assistant-studio/terms" className="inline-flex min-h-11 items-center hover:text-mint">Terms</a>
+        <nav aria-label="Legal" className="flex gap-6">
+          <a href="/assistant-studio/privacy" className="inline-flex min-h-11 items-center">Privacy</a>
+          <a href="/assistant-studio/terms" className="inline-flex min-h-11 items-center">Terms</a>
         </nav>
       </div>
     </footer>
