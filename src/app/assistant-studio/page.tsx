@@ -92,7 +92,7 @@ export default function Page(){
       <section aria-labelledby="benefits" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         <div className="max-w-2xl">
           <p className={s.eyebrow}>Why Assistant Studio</p>
-          <h2 id="benefits" className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Answers your customers&apos; questions, so you don&apos;t have to.</h2>
+          <h2 id="benefits" className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Give your customers the answers the anwers they need, 24/7.</h2>
         </div>
         <ul role="list" className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           {benefits.map(b=><li key={b.title} className={s.card+' flex gap-4 p-5 sm:block sm:p-7'}>
