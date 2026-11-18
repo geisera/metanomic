@@ -135,6 +135,29 @@ export default function Page(){
         </ul>
       </section>
 
+      <section id="pricing" aria-labelledby="pricing-heading" className="mx-auto max-w-6xl scroll-mt-24 px-5 pb-16 sm:px-8 sm:pb-24">
+        <h2 id="pricing-heading" className="text-3xl font-semibold tracking-tight sm:text-5xl">Pricing</h2>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <article className={s.card+' '+s.starterPlan+' flex flex-col p-6 sm:p-7'}>
+            <h3 className="text-xl font-semibold">Starter</h3>
+            <p className="mt-3 text-4xl font-semibold tracking-tight">Free</p>
+            <ul className={s.fg2+' mb-6 mt-5 space-y-2'}>
+              <li>1 assistant per account</li>
+              <li>1 knowledge document per assistant</li>
+              <li>2 approved website origins per assistant</li>
+            </ul>
+            <p className={s.fg3+' mb-6 text-sm'}>Bring your own OpenAI key. OpenAI bills you directly for usage.</p>
+            <Signup className="mt-auto w-full"/>
+          </article>
+          {['Pro','Enterprise'].map(plan=>(
+            <article key={plan} className={s.card+' p-6 sm:p-7'}>
+              <h3 className="text-xl font-semibold">{plan}</h3>
+              <p className={s.fg2+' mt-3'}>Coming soon</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
           <div className="relative">

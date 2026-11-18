@@ -116,3 +116,5 @@
 }
 
 .heroAccent { color:var(--site-c9ec8a); }
+
+.starterPlan { border-color:var(--chip-fg); }
