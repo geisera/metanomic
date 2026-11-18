@@ -1,3 +1,4 @@
+import PrimaryNav from '@/components/PrimaryNav';
 import type {Metadata} from 'next';
 import s from './minimal.module.css';
 
@@ -28,8 +29,8 @@ const benefits=[
   {title:'No markup on usage',body:'Bring your OpenAI key and pay OpenAI directly, at cost.',icon:'M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
 ];
 
-function Signup({small=false,className=''}:{small?:boolean;className?:string}){
-  return <a href={SIGNUP} className={s.cta+(small?' '+s.ctaSmall:'')+' '+className}>Create your assistant</a>;
+function Signup({className=''}:{className?:string}){
+  return <a href={SIGNUP} className={s.cta+' '+className}>Create your assistant</a>;
 }
 
 function SampleChat(){
@@ -68,13 +69,7 @@ function SampleChat(){
 
 export default function Page(){
   return <div data-studio-landing className={s.page+' min-h-screen font-[family-name:var(--font-geist)]'}>
-    <header className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
-      <span className="text-lg font-semibold tracking-tight">Assistant Studio</span>
-      <nav aria-label="Account" className="flex items-center gap-4 sm:gap-6">
-        <a href="/assistant-studio/login" className={s.link+' inline-flex min-h-11 items-center'}>Sign in</a>
-        <span className="hidden sm:inline-flex"><Signup small/></span>
-      </nav>
-    </header>
+    <PrimaryNav/>
 
     <main>
       <section className="container relative grid min-h-[min(83vh,820px)] items-center gap-14 py-20 md:py-28 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:py-36">
@@ -84,6 +79,7 @@ export default function Page(){
           <p className={s.fg2+' mt-8 max-w-[550px] text-[17px] leading-[1.85]'}>Upload your pages, docs, and FAQs. Paste one line of code. Your site answers customer questions 24/7, from your own content.</p>
           <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
             <a href={SIGNUP} className="button button-primary w-full sm:w-auto">Create your assistant <span aria-hidden="true">→</span></a>
+            <a href="/assistant-studio/login" className={s.link+' inline-flex min-h-11 items-center px-2'}>Sign in</a>
           </div>
           <p className={s.fg3+' mt-4 text-sm'}>Free to start · No credit card required · Live in 10 minutes</p>
         </div>
