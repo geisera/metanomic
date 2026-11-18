@@ -138,7 +138,7 @@ export default function Page(){
       <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
           <div className="relative">
-            <h2 id="final-cta" className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Your assistant can be live in 10 minutes.</h2>
+            <h2 id="final-cta" className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Your AI assistant can be live in 10 minutes.</h2>
             <p className={s.bandSub+' mt-4 text-lg'}>Free to start. No credit card required.</p>
             <Signup className="mt-8 w-full sm:w-auto"/>
           </div>
