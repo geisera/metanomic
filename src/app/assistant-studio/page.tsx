@@ -53,7 +53,7 @@ function SampleChat(){
 }
 
 export default function Page(){
-  return <div data-studio-landing className={s.page+' min-h-screen bg-mint font-[family-name:var(--font-geist)] text-ink'}>
+  return <div data-studio-landing className={s.page+' min-h-screen font-[family-name:var(--font-geist)] text-ink'}>
     <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-4 sm:px-8">
       <span className="font-semibold">Assistant Studio</span>
       <nav aria-label="Account" className="flex flex-wrap items-center gap-3 sm:gap-5">

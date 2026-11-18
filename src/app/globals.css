@@ -104,4 +104,4 @@ html[data-theme=light] .navlink:hover{color:var(--foreground)}
   --color-night-2: #13232D;
 }
 
-body:has([data-studio-landing]) :is(.theme-footer,.metanomic-starfield) { display:none; }
+body:has([data-studio-landing]) .metanomic-starfield { opacity:.9; }
