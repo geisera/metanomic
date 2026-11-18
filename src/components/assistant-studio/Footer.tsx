@@ -1,3 +1,4 @@
+import ThemeControl from '@/components/ThemeControl';
 import Link from 'next/link';
 import {base,wrap} from './constants';
 const columns=[
@@ -12,6 +13,6 @@ export default function Footer(){
       <h2 className="font-semibold text-mint">{label}</h2>
       <ul className="mt-4 space-y-2">{links.map(([name,href])=><li key={name}>{href?<Link href={href} className="hover:text-mint">{name}</Link>:<span>{name}</span>}</li>)}</ul>
     </div>)}</div>
-    <p className="mt-8 text-sm">© 2026 Metanomic.</p>
+    <div className="studio-footer-bottom mt-8 flex flex-wrap items-center justify-between gap-4"><p className="text-sm">© 2026 Metanomic.</p><ThemeControl/></div>
   </div></footer>;
 }

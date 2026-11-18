@@ -1,6 +1,5 @@
 import {copy} from "@/app/assistant-studio/content";
 export {base,copy} from '@/app/assistant-studio/content';
-export const dashboardImage={src:'/images/studio-dashboard.png',width:960,height:600,alt:'Illustrative Assistant Studio dashboard with setup checklist and chat preview'};
 export const wrap='mx-auto max-w-7xl px-6 lg:px-8';
 export const section='scroll-mt-24 py-16 sm:py-24';
 export const heading='text-balance text-3xl font-semibold tracking-tight sm:text-4xl';
@@ -14,4 +13,4 @@ export const features=[
  ['Custom look','Match the widget to your brand.','M4 5h16v14H4zM4 9h16m-12 4h4'],
 ];
 export const questions=['Are you open Sunday?','How do I reset my API token?','When does the next cohort start?','Can I launch one for each client site?','How do I apply for assistance?'];
-export const faq=copy.faq.map(entry=>entry.id==='branding'?{...entry,a:'Branding removal is planned for paid tiers. Availability has not been announced.'}:entry.id==='storage'?{...entry,a:entry.a.split(' TODO:')[0]+' Contact Metanomic for data residency requirements.'}:entry);
+export const faq=copy.faq.map(entry=>entry.id==='branding'?{...entry,a:'Branding removal is planned for paid tiers. Availability has not been announced.'}:entry.id==='storage'?{...entry,a:'Metanomic stores account information, assistant settings, and knowledge documents in its hosted database. OpenAI API keys are encrypted before storage. Contact Metanomic for data residency requirements.'}:entry);

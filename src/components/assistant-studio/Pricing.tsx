@@ -9,6 +9,7 @@ async function onNotify(email:string){void email;return false;}
 export default function Pricing(){
   const [feedback,setFeedback]=useState('');
   return <section id="pricing" className={wrap+' '+section}>
+    <p aria-hidden="true" className="mb-3 text-sm font-semibold text-slate">Pricing</p>
     <h2 className={heading}>Pricing</h2>
     <div className="mt-10 grid gap-4 md:grid-cols-2">
       <article className="flex flex-col items-start rounded-3xl bg-white p-6 ring-1 ring-line sm:p-8">
@@ -21,7 +22,7 @@ export default function Pricing(){
       </article>
       <article className="rounded-3xl bg-night p-6 text-mint sm:p-8">
         <h3 className="font-semibold">Pro &amp; Business</h3>
-        <p className="mt-3 text-3xl font-semibold">Coming soon</p>
+        <p className="mt-3 inline-flex rounded-full bg-night-2 px-3 py-1 text-sm font-semibold ring-1 ring-mint/30">Coming soon</p>
         <p className="mt-6 text-muted-2">Higher limits, more content sources, and branding removal.</p>
         <form className="mt-6" onSubmit={async e=>{
           e.preventDefault();

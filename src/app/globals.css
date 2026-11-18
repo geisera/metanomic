@@ -103,3 +103,25 @@ html[data-theme=light] .navlink:hover{color:var(--foreground)}
   --color-night: #091019;
   --color-night-2: #13232D;
 }
+
+/* The landing page follows the same browser preference as the rest of the site. */
+body:has([data-studio-landing]) .theme-footer { display:none; }
+.studio-footer-bottom .theme-control { color:var(--color-muted-2); }
+.studio-footer-bottom .theme-control select {
+  background:var(--color-night-2);
+  color:var(--color-mint);
+  border-color:var(--color-muted-2);
+}
+html[data-theme=dark] [data-studio-landing] {
+  background:var(--color-night);
+  color:var(--color-mint);
+}
+html[data-theme=dark] [data-studio-landing] :is(.bg-mint,.bg-mint-2,.bg-white) { background-color:var(--color-night-2); }
+html[data-theme=dark] [data-studio-landing] :is(.text-slate,.text-ink) { color:var(--color-mint); }
+html[data-theme=dark] [data-studio-landing] button.bg-white:hover,
+html[data-theme=dark] [data-studio-landing] button.bg-white[aria-pressed=true] {
+  background-color:var(--color-lime);
+  color:var(--color-lime-ink);
+}
+[data-studio-landing]:has(dialog[open]) { isolation:isolate; }
+html:has([data-studio-landing] dialog[open]) { overflow:hidden; }

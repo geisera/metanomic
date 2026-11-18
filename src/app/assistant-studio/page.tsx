@@ -23,7 +23,7 @@ export const metadata:Metadata={
 
 export default function Page(){
   const faqData={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map(({q,a})=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))};
-  return <div className="min-h-screen bg-mint font-[family-name:var(--font-geist)] text-ink [&_:is(a,button,input,summary):focus-visible]:outline-2 [&_:is(a,button,input,summary):focus-visible]:outline-offset-2 [&_:is(a,button,input,summary):focus-visible]:outline-current">
+  return <div data-studio-landing className="min-h-screen bg-mint font-[family-name:var(--font-geist)] text-ink [&_:is(a,button,input,summary):focus-visible]:outline-2 [&_:is(a,button,input,summary):focus-visible]:outline-offset-2 [&_:is(a,button,input,summary):focus-visible]:outline-current">
     <SessionRedirect/>
     <Header/>
     <main>
