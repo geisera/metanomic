@@ -88,3 +88,18 @@ html[data-theme=light] .navlink:hover{color:var(--foreground)}
 .theme-control{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
 .theme-control select{min-height:44px;border:1px solid var(--muted);border-radius:6px;background:var(--background);color:var(--foreground);padding:8px 12px;font:inherit}
 .theme-control select:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+
+@theme {
+  --font-sans: "Geist", "Geist Fallback", Arial, Helvetica, sans-serif;
+  --color-mint: #EDF4EF;
+  --color-mint-2: #ECF0ED;
+  --color-lime: #C9EC8A;
+  --color-lime-ink: #162315;
+  --color-ink: #10212B;
+  --color-slate: #415660;
+  --color-muted: #73858D;
+  --color-muted-2: #9CAAB3;
+  --color-line: #B9C8CE;
+  --color-night: #091019;
+  --color-night-2: #13232D;
+}

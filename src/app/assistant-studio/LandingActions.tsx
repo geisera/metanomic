@@ -41,9 +41,9 @@ export function StepList({compact=false}:{compact?:boolean}){
     {!compact&&index===2&&<><pre className={s.snippet}><code>{copy.snippet}</code></pre><button className={s.secondary} onClick={copySnippet}>{copy.copyCode}</button><small role="status">{feedback}</small></>}
   </li>)}</ol>;
 }
-export function Demo(){
+export function Demo({marketing=false}:{marketing?:boolean}){
   const [selected,setSelected]=useState<number|null>(null);
-  return <div className={s.panel}><p>{copy.demo.notice}</p><div className={s.actions}>{copy.demo.questions.map(([question],i)=><button className={s.secondary} key={question} aria-pressed={selected===i} onClick={()=>{setSelected(i);track('demo_interaction',{kind:'starter_question',question});}}>{question}</button>)}</div><p role="status">{selected===null?'':copy.demo.questions[selected][1]}</p></div>;
+  return <div className={marketing?"mt-5":s.panel}>{!marketing&&<p>{copy.demo.notice}</p>}<div className={marketing?"flex flex-wrap gap-3":s.actions}>{copy.demo.questions.map(([question],i)=><button className={marketing?"min-h-11 rounded-full bg-white px-4 py-2 text-sm font-semibold ring-1 ring-lime-ink/20 hover:bg-lime aria-pressed:bg-lime":s.secondary} key={question} aria-pressed={selected===i} onClick={()=>{setSelected(i);track('demo_interaction',{kind:'starter_question',question});}}>{question}</button>)}</div><p className={marketing?"mt-4 max-w-2xl text-slate":undefined} role="status">{selected===null?'':copy.demo.questions[selected][1]}</p></div>;
 }
 export function FAQAccordion(){
   const [expanded,setExpanded]=useState<string[]>([]);
