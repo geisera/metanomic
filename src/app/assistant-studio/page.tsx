@@ -127,7 +127,7 @@ export default function Page(){
       </section>
 
       <section aria-labelledby="features" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-        <div className="bg-[var(--surface-solid)] py-24 sm:py-32">
+        <div className="rounded-2xl bg-[var(--surface-solid)] py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mx-auto max-w-2xl lg:mx-0">
               <h2 id="features" className="text-4xl font-semibold tracking-tight text-pretty text-[var(--fg)] sm:text-5xl">
