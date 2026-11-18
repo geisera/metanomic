@@ -13,7 +13,7 @@ const password = (v: unknown) => { if (typeof v !== 'string' || v.length < 12 ||
 export async function GET() { try {
     const s = await session();
     const admins=await rest<unknown[]>('knowledge_admins?user_id=eq.'+s.user.id+'&select=user_id',{session:s});
-    return json({user:{id:s.user.id,email:s.user.email,name:s.user.user_metadata?.display_name||'',is_admin:admins.length>0}});
+    return json({user:{id:s.user.id,email:s.user.email,created_at:s.user.created_at,name:s.user.user_metadata?.display_name||'',is_admin:admins.length>0}});
 }
 catch (e) {
     return failure(e);

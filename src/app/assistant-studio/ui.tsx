@@ -5,7 +5,7 @@ import type {Agent} from '@/lib/studio/core';
 import s from './studio.module.css';
 export class ApiError extends Error {constructor(message:string,public code?:string){super(message);}}
 export async function call(path:string,body?:unknown){const response=await fetch('/api/theia-studio/'+path,{cache:'no-store',...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{})});const data=await response.json();if(!response.ok)throw new ApiError(data.error||'Request failed.',data.code);return data;}
-export type User={id:string;email:string;name:string;is_admin?:boolean};
+export type User={id:string;email:string;name:string;created_at?:string;is_admin?:boolean};
 export type Usage={agent_id:string;day:string;requests:number;failed_requests:number};
 export type Snapshot={tier?:{id:string;name:string;assistants:number;websites:number;documents:number};agents:Agent[];keys:{last_four:string;validated_at:string}[];usage:Usage[];documents:{id:string;agent_id:string;published:boolean}[]};
 const GuardContext=createContext<{flags:Map<string,boolean>;leave:()=>boolean}|null>(null);

@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, type FormEvent } from 'react';
 import Link from 'next/link';
 import { call } from '../Studio';
+import {track} from '@/lib/navigation-analytics';
 import FieldHelp from '../FieldHelp';
 import s from '../studio.module.css';
 export default function Confirm() {
@@ -27,6 +28,7 @@ export default function Confirm() {
         try {
             const d = await call('auth', { action: 'verify', ...link });
             setRecovery(d.recovery);
+            if(link.type==='signup')track('signup_complete',{});
             setNotice(d.message);
             setLink(null);
         }

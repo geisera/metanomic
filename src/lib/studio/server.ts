@@ -8,6 +8,7 @@ export type Session = {
     user: {
         id: string;
         email: string;
+        created_at?: string;
         user_metadata?: {
             display_name?: string;
         };
