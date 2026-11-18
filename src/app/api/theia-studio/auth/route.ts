@@ -36,7 +36,7 @@ export async function POST(req: Request) {
         }
         if (b.action === 'magiclink') {
             const address = email(b.email);
-            await gate('mail:' + address, 3, 3600);
+            await gate('mail:' + address, 5, 3600);
             await sendAuthLink(address, 'magiclink');
             return json({ message: 'If an account can sign in with this email, we’ve sent a sign-in link. Check your inbox and spam folder.' });
         }
