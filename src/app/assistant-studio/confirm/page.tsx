@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useRef, type FormEvent } from 'react';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import { call } from '../Studio';
 import {track} from '@/lib/navigation-analytics';
 import FieldHelp from '../FieldHelp';
@@ -11,6 +12,7 @@ export default function Confirm() {
         type: string;
     } | null>(null), [recovery, setRecovery] = useState(false), [busy, setBusy] = useState(false), [notice, setNotice] = useState(''), [error, setError] = useState('');
     const initialized = useRef(false);
+    const router = useRouter();
     useEffect(() => {
         if (initialized.current)
             return;
@@ -27,6 +29,11 @@ export default function Confirm() {
         setError('');
         try {
             const d = await call('auth', { action: 'verify', ...link });
+            if(link.type==='magiclink'){
+                track('signin_complete',{});
+                router.replace('/assistant-studio/dashboard');
+                return;
+            }
             setRecovery(d.recovery);
             if(link.type==='signup')track('signup_complete',{});
             setNotice(d.message);
@@ -55,5 +62,5 @@ export default function Confirm() {
             setBusy(false);
         }
     }
-    return <main className={s.shell}><div className='container'><section className={'card ' + s.auth}><p className='eyebrow'>Assistant Studio</p><h1>Confirm your account request</h1><p className={s.help}>Only continue if you requested this email. Opening this page does not automatically use your link.</p>{link?.token_hash && <button className='button button-primary' onClick={verify} disabled={busy}>Confirm</button>}{recovery && <form className={s.form} onSubmit={reset}><FieldHelp id="studio-recovery-help-1" label="New password" caption={<>New password</>} control={<input name='password' type='password' autoComplete='new-password' minLength={12} maxLength={128} required aria-describedby="studio-recovery-help-1"/>}>Choose a unique password of 12–128 characters. After saving, return to Studio and sign in with this new password.</FieldHelp><button className='button button-primary' disabled={busy}>Set new password</button></form>}{error && <p className={s.alert} role='alert'>{error}</p>}{notice && <p className={s.alert} role='status'>{notice}</p>}<Link className={s.textButton} href='/assistant-studio'>Continue to Assistant Studio →</Link></section></div></main>;
+    return <main className={s.shell}><div className='container'><section className={'card ' + s.auth}><p className='eyebrow'>Assistant Studio</p><h1>{link?.type==='magiclink'?'Sign in to Assistant Studio':'Confirm your account request'}</h1><p className={s.help}>Only continue if you requested this email. Opening this page does not automatically use your link.</p>{link?.token_hash && <button className='button button-primary' onClick={verify} disabled={busy}>{link.type==='magiclink'?'Sign in':'Confirm'}</button>}{recovery && <form className={s.form} onSubmit={reset}><FieldHelp id="studio-recovery-help-1" label="New password" caption={<>New password</>} control={<input name='password' type='password' autoComplete='new-password' minLength={12} maxLength={128} required aria-describedby="studio-recovery-help-1"/>}>Choose a unique password of 12–128 characters. After saving, return to Studio and sign in with this new password.</FieldHelp><button className='button button-primary' disabled={busy}>Set new password</button></form>}{error && <p className={s.alert} role='alert'>{error}</p>}{notice && <p className={s.alert} role='status'>{notice}</p>}<Link className={s.textButton} href='/assistant-studio'>Continue to Assistant Studio →</Link></section></div></main>;
 }

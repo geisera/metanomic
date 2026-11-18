@@ -34,6 +34,12 @@ export async function POST(req: Request) {
             await setSession(await r.json());
             return json({ ok: true });
         }
+        if (b.action === 'magiclink') {
+            const address = email(b.email);
+            await gate('mail:' + address, 3, 3600);
+            await sendAuthLink(address, 'magiclink');
+            return json({ message: 'If an account can sign in with this email, we’ve sent a sign-in link. Check your inbox and spam folder.' });
+        }
         if (b.action === 'signup' || b.action === 'recover') {
             const address = email(b.email);
             const terms = b.action === 'signup' ? await signupTerms() : null;
@@ -46,12 +52,14 @@ export async function POST(req: Request) {
             return json({ message: 'If the address is eligible, a verification email has been sent. Check your inbox and spam folder. Existing accounts can use password recovery.' });
         }
         if (b.action === 'verify') {
-            if (!['signup', 'recovery', 'email_change'].includes(String(b.type)))
+            if (!['signup', 'recovery', 'email_change', 'magiclink'].includes(String(b.type)))
                 throw new StudioError('Invalid verification type.');
-            const r = await authFetch('verify', { token_hash: text(b.token_hash, 500, 10), type: b.type });
+            const r = await authFetch('verify', { token_hash: text(b.token_hash, 500, 10), type: b.type === 'magiclink' ? 'recovery' : b.type });
             if (!r.ok)
                 throw new StudioError('This verification link is invalid or expired. Request a new one.');
             const d = await r.json();
+            if (b.type === 'magiclink' && !d.access_token)
+                throw new StudioError('Sign-in could not be completed. Request a new link.', 401);
             if (d.access_token) {
                 await setSession(d);
                 if (b.type === 'recovery')
