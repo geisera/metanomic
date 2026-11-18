@@ -27,7 +27,7 @@ export default function AuthForm({signup=false,termsVersion}:{signup?:boolean;te
     }catch(e){setError((e as Error).message);}
     finally{setBusy(false);}
   }
-  return <div className={s.site}>{!recover&&<SessionRedirect/>}<header className={s.header}><div className={'container '+s.navRow}><Link className={s.brand} href={base}>{copy.brand}</Link></div></header>
+  return <div className={s.site}>{!recover&&<SessionRedirect/>}<header className={s.header}><div className={'container '+s.navRow}><Link className={s.brand} href={base}><span>Assistant Studio</span><small>by Metanomic.ai</small></Link></div></header>
     <main className={'container '+s.authSingle}>
       <section className={s.panel}><h1>{mode==='magiclink'?a.login:a[mode]}</h1>{mode==='magiclink'&&<p>Enter your email and we’ll send you a one-time sign-in link.</p>}<form className={s.authForm} onSubmit={submit}>
         <label htmlFor="auth-email">{signup?a.workEmail:a.email}</label>

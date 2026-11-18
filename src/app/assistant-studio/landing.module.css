@@ -19,7 +19,8 @@
 .navRow,.nav,.actions { display: flex; align-items: center; gap: 16px; }
 .navRow { position: relative; justify-content: space-between; min-height: 72px; }
 .nav { flex-wrap: wrap; }
-.site .brand { color: #edf4ef; font-weight: 700; font-size: 20px; }
+.site .brand { display: inline-flex; align-items: baseline; gap: 7px; color: #edf4ef; font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+.site .brand small { color: var(--fg-3); font-size: 12px; font-weight: 500; letter-spacing: 0; }
 .nav a:not(.primary) { color: #edf4ef; min-height: 44px; display: inline-flex; align-items: center; }
 .nav a:hover { text-decoration: underline; }
 .menu { display: none; min-width: 44px; min-height: 44px; }
