@@ -69,7 +69,7 @@ function SampleChat(){
 
 export default function Page(){
   return <div data-studio-landing className={s.page+' min-h-screen font-[family-name:var(--font-geist)]'}>
-    <PrimaryNav/>
+    <PrimaryNav studio/>
 
     <main>
       <section className="container relative grid min-h-[min(83vh,820px)] items-center gap-14 py-20 md:py-28 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:py-36">

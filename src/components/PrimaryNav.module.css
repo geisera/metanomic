@@ -32,3 +32,8 @@
   .desktop { margin-left: 0; }
   .ctas { justify-self: end; }
 }
+
+@media (max-width: 899px) {
+  .sticky[data-studio] .ctas { display:none; }
+  .sticky[data-studio] .toggle { margin-left:auto; }
+}
