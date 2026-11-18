@@ -157,6 +157,7 @@ export default function Page(){
               <li><strong>Customer insights.</strong> See what visitors ask, how they feel, and which questions went unanswered.</li>
               <li><strong>Human handoff.</strong> Direct visitors to your support email or contact form when they need more help.</li>
               <li>More knowledge documents, assistants, and approved websites</li>
+              <li><strong>Custom calls to action.</strong> Suggest links you choose, such as booking, product, or support pages, based on what visitors ask.</li>
               <li>Remove Metanomic branding</li>
             </ul>
           </article>
