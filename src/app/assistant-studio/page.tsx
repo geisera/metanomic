@@ -1,3 +1,4 @@
+import HowItWorks from '@/components/assistant-studio/HowItWorks';
 import type {Metadata} from 'next';
 import s from './minimal.module.css';
 
@@ -71,6 +72,7 @@ export default function Page(){
         </div>
         <SampleChat/>
       </section>
+      <HowItWorks/>
       <section className="bg-night px-5 py-20 text-center text-mint sm:py-24">
         <h2 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">Your assistant can be live in 10 minutes.</h2>
         <p className="mt-5 text-lg text-muted">Free to start. No credit card required.</p>
