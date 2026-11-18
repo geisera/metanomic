@@ -31,25 +31,25 @@ const benefits=[
 
 const features = [
   {
-    name: 'Unlimited inboxes',
+    name: 'Answer from your own content',
     description:
-      'Non quo aperiam repellendus quas est est. Eos aut dolore aut ut sit nesciunt. Ex tempora quia. Sit nobis consequatur dolores incidunt.',
-    href: '#',
-    icon: 'M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H6.911a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661Z',
+      'Add your FAQs, policies, and product docs so your assistant can answer common customer questions using the information you provide.',
+    href: '/assistant-studio/docs',
+    icon: 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7m-7 4h7',
   },
   {
-    name: 'Manage team members',
+    name: 'Install with one line of code',
     description:
-      'Vero eum voluptatem aliquid nostrum voluptatem. Vitae esse natus. Earum nihil deserunt eos quasi cupiditate. A inventore et molestiae natus.',
-    href: '#',
-    icon: 'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z',
+      'Preview your assistant in Studio, then paste one script tag into a website that supports custom code. Metanomic handles the hosting.',
+    href: '/assistant-studio/docs',
+    icon: 'm17.25 6.75 5.25 5.25-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5',
   },
   {
-    name: 'Spam report',
+    name: 'Bring your own OpenAI key',
     description:
-      'Et quod quaerat dolorem quaerat architecto aliquam accusantium. Ex adipisci et doloremque autem quia quam. Quis eos molestiae at iure impedit.',
-    href: '#',
-    icon: 'm14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0',
+      'Connect your OpenAI API key and pay OpenAI directly for model usage. Metanomic encrypts your saved key and adds no token markup.',
+    href: '/assistant-studio/privacy',
+    icon: 'M15.75 5.25a4.5 4.5 0 0 0-4.39 5.49L3 19.1V21h3v-2.25h2.25V16.5h2.25l2.76-2.76a4.5 4.5 0 1 0 2.49-8.49Zm2.25 4.5h.008v.008H18V9.75Z',
   },
 ];
 
@@ -126,49 +126,61 @@ export default function Page(){
         </ul>
       </section>
       
-      <section aria-labelledby="features" className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-        <div className="bg-white py-24 sm:py-32 dark:bg-gray-900">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl lg:mx-0">
-          <h2 id="features" className="text-4xl font-semibold tracking-tight text-pretty text-gray-900 sm:text-5xl dark:text-white">
-            Stay on top of customer support
+     <section
+        aria-labelledby="features"
+        className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24"
+      >
+        <div className="max-w-2xl">
+          <p className={s.eyebrow}>Why Assistant Studio</p>
+          <h2
+            id="features"
+            className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-5xl"
+          >
+            Give customers answers from the content you already have.
           </h2>
-          <p className="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
-            Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in
-            accusamus quisquam.
+          <p className={`${s.fg2} mt-6 text-lg leading-8`}>
+            Turn your FAQs, policies, and product docs into a chat assistant for your
+            website. Bring your OpenAI key, paste one line of code, and let Metanomic
+            handle the hosting.
           </p>
         </div>
-        <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-            {features.map((feature) => (
-              <div key={feature.name} className="flex flex-col">
-                <dt className="text-base/7 font-semibold text-gray-900 dark:text-white">
-                  <div className="mb-6 flex size-10 items-center justify-center rounded-lg bg-indigo-600 dark:bg-indigo-500">
-                    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-white">
-                      <path strokeLinecap="round" strokeLinejoin="round" d={feature.icon} />
-                    </svg>
-                  </div>
-                  {feature.name}
-                </dt>
-                <dd className="mt-1 flex flex-auto flex-col text-base/7 text-gray-600 dark:text-gray-400">
-                  <p className="flex-auto">{feature.description}</p>
-                  <p className="mt-6">
-                    <a
-                      href={feature.href}
-                      className="text-sm/6 font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                    >
-                      Learn more <span aria-hidden="true">→</span>
-                    </a>
-                  </p>
-                </dd>
+      
+        <ul role="list" className="mt-12 grid gap-5 lg:grid-cols-3">
+          {features.map((feature) => (
+            <li key={feature.name} className={`${s.card} flex flex-col p-5 sm:p-7`}>
+              <span
+                className={`${s.icon} inline-grid size-11 shrink-0 place-items-center rounded-xl`}
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-6"
+                >
+                  <path d={feature.icon} />
+                </svg>
+              </span>
+      
+              <h3 className="mt-5 text-lg font-semibold">{feature.name}</h3>
+              <p className={`${s.fg2} mt-2 leading-7`}>{feature.description}</p>
+      
+              <div className="mt-auto pt-4">
+                <a
+                  href={feature.href}
+                  aria-label={`Learn more: ${feature.name}`}
+                  className={`${s.link} inline-flex min-h-11 items-center gap-2 underline-offset-4 hover:underline`}
+                >
+                  Learn more <span aria-hidden="true">→</span>
+                </a>
               </div>
-            ))}
-          </dl>
-        </div>
-      </div>
-    </div>
+            </li>
+          ))}
+        </ul>
       </section>
-
       <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
           <div className="relative">
