@@ -30,6 +30,7 @@
 
   .logo { justify-self: start; }
   .desktop { margin-left: 0; }
+  .sticky[data-studio] .desktop { flex-direction:column; gap:0; }
   .ctas { justify-self: end; }
 }
 
