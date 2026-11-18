@@ -1,10 +1,18 @@
 export const launcherAnimationFrames = {
   glow: [
-    { boxShadow: '0 0 0 0 transparent' },
-    { boxShadow: '0 0 14px 2px var(--launcher-glow)' },
-    { boxShadow: '0 0 0 0 transparent' },
+    { offset: 0, boxShadow: '0 0 0 0 var(--launcher-glow), 0 0 0 0 var(--launcher-glow)' },
+    { offset: 0.3, boxShadow: '0 0 0 12px transparent, 0 0 0 0 var(--launcher-glow)' },
+    { offset: 0.68, boxShadow: '0 0 0 18px transparent, 0 0 0 16px transparent' },
+    { offset: 1, boxShadow: '0 0 0 18px transparent, 0 0 0 16px transparent' },
   ],
-  pulse: [{ scale: '1' }, { scale: '1.04' }, { scale: '1' }],
+  pulse: [
+    { offset: 0, translate: '0 0' },
+    { offset: 0.2, translate: '0 -10px' },
+    { offset: 0.4, translate: '0 0' },
+    { offset: 0.56, translate: '0 -5px' },
+    { offset: 0.75, translate: '0 0' },
+    { offset: 1, translate: '0 0' },
+  ],
 } satisfies Record<string, Keyframe[]>;
 
 export const launcherAnimationOptions = { duration: 1000, easing: 'ease-in-out' };
