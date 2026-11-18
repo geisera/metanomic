@@ -53,3 +53,24 @@ test('public launcher configuration excludes private assistant fields',()=>{
  const {launcherConfig}=load('launcher');const config=launcherConfig({...agent,instructions:'private instructions',owner_id:'private owner',api_key:'private key'});
  assert.doesNotMatch(JSON.stringify(config),/private|instructions|owner_id|api_key/);
 });
+
+test('launcher animation defaults off and exposes only supported choices',()=>{
+ const {launcherConfig}=load('launcher');
+ assert.equal(launcherConfig(agent).animation,'off');
+ for(const animation of ['glow','pulse'])assert.equal(launcherConfig({...agent,launcher_animation:animation}).animation,animation);
+ assert.equal(launcherConfig({...agent,launcher_animation:'unknown'}).animation,'off');
+});
+
+test('launcher animates once, respects reduced motion, and cancels when opened',()=>{
+ for(const style of ['pill','side-tab'])for(const reduced of [false,true])for(const openEarly of [false,true]){
+  let shadow, pending, plays=0, cancels=0;
+  function element(tag){return {tag,style:{setProperty(){}},setAttribute(){},addEventListener(){},attachShadow(){return shadow=element('shadow');},append(...children){this.children=children;},classList:{toggle(){}},focus(){},animate(frames){assert.equal(frames[1].scale,'1.04');plays++;return {cancel(){cancels++;}}}};}
+  vm.runInNewContext(embedClient,{URL,document:{currentScript:{src:'https://metanomic.ai/theia-embed.js',dataset:{agent:agent.id,style,animation:'pulse'}},createElement:element,body:{append(){}}},window:{addEventListener(){},matchMedia(){return {matches:reduced};}},setTimeout(callback,delay){assert.equal(delay,3000);pending=callback;return 1;},clearTimeout(){pending=undefined;}});
+  const button=shadow.children.find(el=>el.tag==='button');
+  if(openEarly)button.onclick();
+  pending?.();
+  assert.equal(plays,!openEarly&&!reduced?1:0);
+  if(!openEarly)button.onclick();
+  assert.equal(cancels,plays);
+ }
+});

@@ -68,6 +68,8 @@ export async function POST(req: Request) {
             return json({agent:rows[0]});
         }
         if (b.action === 'save-appearance') {
+            const animation=b.launcher_animation??agent.launcher_animation??'off';
+            if(animation!=='off'&&animation!=='glow'&&animation!=='pulse')throw new StudioError('Choose a valid launcher animation.');
             const sendDisplay=b.send_display??agent.send_display??'icon';
             if(!['icon','text'].includes(String(sendDisplay)))throw new StudioError('Choose label text or the paper plane icon.');
             const label=text(b.button_label,60,1);
@@ -83,7 +85,7 @@ export async function POST(req: Request) {
             const sendLabel=text(b.send_label??agent.send_label??'Send message',60,1),sendColor=b.send_color??agent.send_color??b.button_color,sendText=b.send_text_color??agent.send_text_color??b.button_text_color,userColor=b.user_message_color??agent.user_message_color??b.button_color;
             const colors=[b.button_color,b.button_text_color,b.button_outline_color,launcher,sendColor,sendText,userColor];
             if(!colors.every(value=>typeof value==='string'&&/^#[0-9a-fA-F]{6}$/.test(value))||!['left','right','top-left','top-right'].includes(String(b.button_position)))throw new StudioError('Choose valid colors and a position.');
-            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{send_display:sendDisplay,pill_side:pillSide,pill_alignment:pillAlignment,pill_offset:pillOffset,pill_orientation:pillOrientation,tab_offset:tabOffset,tab_orientation:tabOrientation,launcher_style:launcherStyle,tab_side:tabSide,tab_alignment:tabAlignment,send_label:sendLabel,send_color:sendColor,send_text_color:sendText,user_message_color:userColor,button_label:label,button_color:b.button_color,launcher_color:launcher,button_text_color:b.button_text_color,button_outline_color:b.button_outline_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
+            const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{launcher_animation:animation,send_display:sendDisplay,pill_side:pillSide,pill_alignment:pillAlignment,pill_offset:pillOffset,pill_orientation:pillOrientation,tab_offset:tabOffset,tab_orientation:tabOrientation,launcher_style:launcherStyle,tab_side:tabSide,tab_alignment:tabAlignment,send_label:sendLabel,send_color:sendColor,send_text_color:sendText,user_message_color:userColor,button_label:label,button_color:b.button_color,launcher_color:launcher,button_text_color:b.button_text_color,button_outline_color:b.button_outline_color,button_position:b.button_position,updated_at:new Date().toISOString()}});
             return json({agent:rows[0]});
         }
         if (b.action === 'save-embed') {
