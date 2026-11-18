@@ -1,3 +1,4 @@
+import {scheduleEmbedDetection} from '@/lib/studio/install';
 import {runtimeAgent,failure} from '@/lib/studio/server';
 import {launcherConfig} from '@/lib/studio/launcher';
 import {StudioError} from '@/lib/studio/core';
@@ -8,6 +9,7 @@ export async function GET(req:Request,{params}:{params:Promise<{id:string}>}){
   let origin=req.headers.get('origin')||'';
   if(!origin){try{origin=new URL(req.headers.get('referer')||'').origin;}catch{}}
   if(!agent.origins.includes(origin))throw new StudioError('Embed this assistant on an approved website.',403);
+  scheduleEmbedDetection(agent);
   return Response.json(launcherConfig(agent),{headers:{'Access-Control-Allow-Origin':origin,'Vary':'Origin','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
  }catch(e){const response=failure(e);response.headers.set('Cache-Control','no-store');return response;}
 }

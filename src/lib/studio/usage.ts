@@ -3,6 +3,15 @@ import type {Agent} from './core';
 
 // Only post-reservation model attempts count as failed attempts. No message text is stored.
 export async function recordOutcome(agent:Agent, day:string, success:boolean) {
+    if(success && !agent.first_answer_at) {
+        try {
+            await rest('studio_agents?id=eq.' + agent.id + '&first_answer_at=is.null', {
+                admin:true, method:'PATCH', body:{first_answer_at:new Date().toISOString()}, prefer:'return=minimal',
+            });
+        } catch {
+            console.error('Assistant Studio could not record the first answer milestone.');
+        }
+    }
     if(!success) await rest('rpc/studio_record_failure',{admin:true,body:{p_agent:agent.id,p_day:day}});
     if(!process.env.RESEND_API_KEY || !process.env.CONTACT_FROM_EMAIL) return;
     if(!await rest<boolean>('rpc/studio_claim_alert',{admin:true,body:{p_agent:agent.id,p_day:day}})) return;

@@ -65,7 +65,7 @@ export async function answer(agent: Agent, key: string, conversation: Message[],
                 catch { }
             }
             finally {
-                onFinish?.(completed);
+                onFinish?.(completed && !!reply.replace(citationPattern, '').trim());
                 await reader.cancel().catch(() => { });
                 try {
                     controller.close();
