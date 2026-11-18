@@ -149,12 +149,21 @@ export default function Page(){
             <p className={s.fg3+' mb-6 text-sm'}>Bring your own OpenAI key. OpenAI bills you directly for usage.</p>
             <Signup className="mt-auto w-full"/>
           </article>
-          {['Pro','Enterprise'].map(plan=>(
-            <article key={plan} className={s.card+' p-6 sm:p-7'}>
-              <h3 className="text-xl font-semibold">{plan}</h3>
-              <p className={s.fg2+' mt-3'}>Coming soon</p>
-            </article>
-          ))}
+          <article className={s.card+' p-6 sm:p-7'}>
+            <h3 className="text-xl font-semibold">Pro</h3>
+            <p className={s.fg2+' mt-3'}>Coming soon</p>
+            <p className="mt-5 font-semibold">Everything in Starter, plus:</p>
+            <ul className={s.fg2+' mt-3 list-disc space-y-2 pl-5'}>
+              <li><strong>Customer insights.</strong> See what visitors ask, how they feel, and which questions went unanswered.</li>
+              <li><strong>Human handoff.</strong> Direct visitors to your support email or contact form when they need more help.</li>
+              <li>More knowledge documents, assistants, and approved websites</li>
+              <li>Remove Metanomic branding</li>
+            </ul>
+          </article>
+          <article className={s.card+' p-6 sm:p-7'}>
+            <h3 className="text-xl font-semibold">Enterprise</h3>
+            <p className={s.fg2+' mt-3'}>Coming soon</p>
+          </article>
         </div>
       </section>
 
