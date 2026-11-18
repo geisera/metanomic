@@ -37,8 +37,12 @@
 .previewComposer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
+  align-items: stretch;
   gap: 10px;
+}
+
+.previewFrame .previewComposer .sendButton {
+  height: auto;
 }
 
 .previewComposer .sendButton[data-display=text] {
