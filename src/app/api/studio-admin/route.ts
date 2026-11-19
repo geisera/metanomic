@@ -127,6 +127,7 @@ export async function POST(request: Request) {
 async function getWorkspace(actor: string, owner: string) {
     const workspace = await rest<Workspace|null>('rpc/studio_admin_workspace',{ admin:true,body:{p_actor:actor,p_owner:owner} });
     if (!workspace) throw new StudioError('Workspace not found.',404);
+    workspace.emails=await rest<Workspace['emails']>('studio_email_history?account_id=eq.'+owner+'&order=created_at.desc',{admin:true});
     return workspace;
 }
 

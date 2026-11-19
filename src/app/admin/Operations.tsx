@@ -208,6 +208,7 @@ export default function Operations() {
                         </article>;
                     })}</div>
                 </section>
+                <section className={s.panel}><h2>Onboarding email history</h2>{workspace.emails.length?<ul>{workspace.emails.map(mail=><li key={mail.kind}><strong>{mail.kind==='welcome'?'Welcome':'Setup reminder'}</strong> · {date(mail.created_at)} · {mail.status}{mail.reason&&' · '+mail.reason}<br/>{mail.sender||'Sender unrecorded'} → {mail.recipient||'Recipient unrecorded'} {mail.provider_id&&<a href={'https://resend.com/emails/'+mail.provider_id}>View in Resend</a>}</li>)}</ul>:<p>No onboarding emails recorded.</p>}</section>
                 <section className={s.panel}><h2>Access blocks</h2><p className={s.meta}>Blocks apply only to this workspace’s published embeds.</p>
                     {workspace.blocks.length===0?<p>No active blocks.</p>:<ul className={s.results}>{workspace.blocks.map(block=><li key={block.id} className={s.row}>
                         <span>{block.label} · Expires {date(block.expires_at)}</span>{operations&&<button className="button button-outline" type="button" onClick={()=>setChange({action:'remove_block',blockId:block.id})}>Remove block</button>}

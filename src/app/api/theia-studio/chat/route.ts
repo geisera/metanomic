@@ -50,6 +50,9 @@ export async function POST(req: Request) {
             const success=await outcome;
             try {
                 if (!success && !startupFailed) await recordStudioSupportError(trackedAgent.id,requestId,'provider_unavailable',preview);
+                if (preview && success && !trackedAgent.first_preview_at) {
+                    await rest('studio_agents?id=eq.'+trackedAgent.id+'&first_preview_at=is.null',{admin:true,method:'PATCH',body:{first_preview_at:new Date().toISOString()},prefer:'return=minimal'});
+                }
                 if (!preview) {
                     await recordOutcome(trackedAgent,day,success);
                     if(success){

@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import {setupDestination} from '@/lib/studio/setup-link';
 import {useState,useEffect,type FormEvent} from 'react';
 import {useRouter} from 'next/navigation';
 import {track} from '@/lib/navigation-analytics';
@@ -22,7 +23,7 @@ export default function AuthForm({signup=false,termsVersion}:{signup?:boolean;te
     setBusy(true);setError('');setNotice('');
     try{
       const result=await call('auth',{action:mode,email:fields.get('email'),password:fields.get('password'),...(termsVersion?{termsVersion,acceptedTerms:fields.get('accept-terms')==='on'}:{})});
-      if(mode==='login'){track('signin_complete',{});router.replace(base+'/dashboard');}
+      if(mode==='login'){track('signin_complete',{});router.replace(setupDestination());}
       else setNotice(result.message);
     }catch(e){setError((e as Error).message);}
     finally{setBusy(false);}

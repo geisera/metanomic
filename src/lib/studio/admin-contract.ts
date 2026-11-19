@@ -24,6 +24,7 @@ export type Lookup = {
 };
 export type Tier = { id: string; name: string; assistants: number; websites: number; documents: number };
 export type Workspace = Omit<Lookup,'effective_tier'> & {
+    emails: {kind:string;recipient:string|null;sender:string|null;created_at:string;status:string;reason:string|null;provider_id:string|null}[];
     base_tier: string;
     effective_tier: Tier;
     plan_override: { tier_id: string; expires_at: string } | null;

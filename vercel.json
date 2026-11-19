@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
+    { "path": "/api/studio-lifecycle/reminders", "schedule": "17 * * * *" },
     { "path": "/api/samuel/ingest", "schedule": "23 5 * * *" },
     { "path": "/api/samuel/ingest", "schedule": "23 9 * * *" },
     { "path": "/api/samuel/ingest", "schedule": "23 14 * * *" },

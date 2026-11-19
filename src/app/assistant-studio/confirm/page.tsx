@@ -1,4 +1,5 @@
 'use client';
+import {setupDestination} from '@/lib/studio/setup-link';
 import { useEffect, useState, useRef, type FormEvent } from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
@@ -31,7 +32,7 @@ export default function Confirm() {
             const d = await call('auth', { action: 'verify', ...link });
             if(link.type==='magiclink'){
                 track('signin_complete',{});
-                router.replace('/assistant-studio/dashboard');
+                router.replace(setupDestination());
                 return;
             }
             setRecovery(d.recovery);
