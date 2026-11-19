@@ -60,7 +60,7 @@ function setFullscreen(fullscreen){
   frame.classList.toggle('fullscreen',fullscreen);
   frame.contentWindow?.postMessage({type:'theia:fullscreen-state',id,fullscreen},base);
 }
-function toggle(value){open=value;if(open){if(animationTimer!==undefined)clearTimeout(animationTimer);launcherAnimation?.cancel();}if(!open)setFullscreen(false);button.style.display=open?'none':'';frame.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.textContent=open?'Close chat':script.dataset.label||'Chat with us';if(open&&!frame.src)frame.src=base+'/theia-widget/'+encodeURIComponent(id)+(script.dataset.textScale==='double'?'?text=double':'');if(open)frame.focus();else button.focus();}button.onclick=()=>toggle(!open);window.addEventListener('message',event=>{
+function toggle(value){open=value;if(open){if(animationTimer!==undefined)clearTimeout(animationTimer);launcherAnimation?.cancel();}if(!open)setFullscreen(false);button.style.display=open?'none':'';frame.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.textContent=open?'Close chat':script.dataset.label||'Chat with us';if(open&&!frame.src)frame.src=base+'/theia-widget/'+encodeURIComponent(id)+(script.dataset.textScale==='comfortable'?'?text=comfortable':'');if(open)frame.focus();else button.focus();}button.onclick=()=>toggle(!open);window.addEventListener('message',event=>{
   if(event.origin!==base||event.source!==frame.contentWindow||event.data?.id!==id)return;
   if(event.data.type==='theia:close'&&open)toggle(false);
   if(event.data.type==='theia:fullscreen'&&open&&typeof event.data.fullscreen==='boolean')setFullscreen(event.data.fullscreen);
@@ -104,12 +104,14 @@ button.onclick=async()=>{
   finally{checking=false;}
 };`)}}catch{}})();`;
 
-export const widgetDoubleTextCss = `
-body{font-size:30px}
+export const widgetComfortableTextCss = `
+body{font-size:16px}
 #chat{overflow:auto}
 #chat>header,#chat>footer{flex-shrink:0}
 #log{min-height:6rem}
-header h1{font-size:34px;line-height:1.15}
-small,#status,.citations a,.citations span{font-size:24px}
+header h1{font-size:20px;line-height:1.2}
+#clear{font-size:14px}
+.bubble{line-height:1.5}
+small,#status,.citations a,.citations span{font-size:12px}
 textarea{line-height:1.3}
 `;
