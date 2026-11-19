@@ -5,6 +5,8 @@ import { changeAccount, listAccounts } from '@/lib/studio/admin-accounts';
 import { StudioError, text, uuid } from '@/lib/studio/core';
 import { addressFingerprint, domainName } from '@/lib/studio/operations';
 import { failure, gate, rest } from '@/lib/studio/server';
+import { cookies } from 'next/headers';
+import { IMPERSONATION_COOKIE, issueImpersonation, impersonationTtlSeconds } from '@/lib/studio/impersonation';
 
 export const runtime = 'nodejs';
 const json = (value: unknown) => Response.json(value, { headers: { 'Cache-Control': 'no-store' } });
@@ -36,6 +38,22 @@ export async function POST(request: Request) {
         }
         requireStaffMfa(staff);
         await gate('studio-staff-action:' + actor, 120, 3600);
+
+        if (body.action === 'impersonate_stop') {
+            (await cookies()).set(IMPERSONATION_COOKIE, '', { httpOnly:true, secure:process.env.NODE_ENV==='production', sameSite:'lax', path:'/assistant-studio', maxAge:0 });
+            return json({ok:true});
+        }
+        if (body.action === 'impersonate_start') {
+            if (!staff.roles.includes('support') && !staff.roles.includes('operations')) throw new StudioError('Your staff role does not allow View as user.',403);
+            if (!uuid(body.ownerId)) throw new StudioError('Choose an account.');
+            const reason = text(body.reason,300,3);
+            await getWorkspace(actor,body.ownerId);
+            await verifyStaffMfa(staff,body.factorId,body.code,true);
+            const expiresAt = new Date(Date.now()+impersonationTtlSeconds*1000).toISOString();
+            (await cookies()).set(IMPERSONATION_COOKIE, issueImpersonation(actor,body.ownerId), { httpOnly:true, secure:process.env.NODE_ENV==='production', sameSite:'lax', path:'/assistant-studio', maxAge:impersonationTtlSeconds });
+            await auditRead(actor,'impersonate_start',reason,body.ownerId);
+            return json({ok:true,expiresAt,redirectUrl:'/assistant-studio/dashboard'});
+        }
 
         if (body.action === 'stats') {
             const stats=await rest<StudioStats|null>('rpc/studio_admin_stats',{admin:true,body:{p_actor:actor}});
