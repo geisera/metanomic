@@ -36,7 +36,17 @@ export async function POST(req: Request) {
                 throw new StudioError('This website is no longer approved. Update approved websites in Studio.', 403, 'origin_not_approved');
         }
         const policy=await requireStudioRuntime(agent.id,{origin,request:req,dashboard:preview});
-        await gate((ownerSession?'preview:':'chat:') + agent.id + ':' + ip, 20, 3600);
+        const requestsPerHour = 20;
+        await gate(
+            `${preview ? 'preview' : 'chat'}:${agent.id}:${ip}`,
+            requestsPerHour,
+            3600,
+            preview
+                ? `You’ve reached the Preview limit of ${requestsPerHour} requests per hour for this assistant from your IP address. ` +
+                  'Try again one hour after your first request in this window. ' +
+                  'Preview has a separate limit from the public widget’s daily quota.'
+                : undefined
+        );
         const key = await apiKey(agent);
         const docs = await publishedDocs(agent, ownerSession);
         if (!preview && !await rest<boolean>('rpc/studio_reserve', { admin: true, body: { p_agent: agent.id } }))

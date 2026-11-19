@@ -3,10 +3,13 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
 const id='11111111-1111-4111-8111-111111111111';
-function route({authenticated=true,owned=true,reserved=true,fail=false,override=false,invalid=false,suspended=false,embedDisabled=false,blocked=false}={}){const calls=[],jobs=[];class StudioError extends Error{constructor(message,status=400,code){super(message);this.status=status;this.code=code;}}const agent={id,owner_id:'owner',origins:['https://example.com']};const deps={
+function route({authenticated=true,owned=true,reserved=true,fail=false,override=false,invalid=false,suspended=false,embedDisabled=false,blocked=false,rateLimited=false}={}){const calls=[],jobs=[];class StudioError extends Error{constructor(message,status=400,code){super(message);this.status=status;this.code=code;}}const agent={id,owner_id:'owner',origins:['https://example.com']};const deps={
  '@/lib/knowledge-server':{sameOrigin:()=>true,parseBody:r=>r.json()},
  '@/lib/studio/core':{StudioError,messages:v=>v,uuid:v=>v===id},
- '@/lib/studio/server':{session:async()=>{calls.push('session');if(!authenticated)throw new StudioError('Sign in',401);return {user:{id:'owner'}};},ownedAgent:async()=>{calls.push('owned');if(!owned)throw new StudioError('Not found',404);return agent;},runtimeAgent:async()=>agent,publishedDocs:async()=>[],apiKey:async()=>({value:override?'override-key':'shared-key',overrideVersion:override?'mock-version':null}),invalidateAssistantKey:async(agentId,version)=>calls.push(['invalidated',agentId,version]),rest:async path=>{calls.push(path);return reserved;},gate:async key=>calls.push(key),ipOf:()=> 'ip',failure:e=>Response.json({code:e.code,error:e.message},{status:e.status||503})},
+ '@/lib/studio/server':{session:async()=>{calls.push('session');if(!authenticated)throw new StudioError('Sign in',401);return {user:{id:'owner'}};},ownedAgent:async()=>{calls.push('owned');if(!owned)throw new StudioError('Not found',404);return agent;},runtimeAgent:async()=>agent,publishedDocs:async()=>[],apiKey:async()=>({value:override?'override-key':'shared-key',overrideVersion:override?'mock-version':null}),invalidateAssistantKey:async(agentId,version)=>calls.push(['invalidated',agentId,version]),rest:async path=>{calls.push(path);return reserved;},gate:async (key,limit,seconds,message)=>{
+   calls.push(key,['gate',limit,seconds,message]);
+   if(rateLimited)throw new StudioError(message||'Too many requests. Please try again later.',429);
+ },ipOf:()=> 'ip',failure:e=>Response.json({code:e.code,error:e.message},{status:e.status||503})},
  '@/lib/studio/crypto':{checkWidgetToken:()=>({origin:'https://example.com'})},
  'node:crypto':{randomUUID:()=> 'request-fixture'},
  '@/lib/studio/operations':{
@@ -25,6 +28,25 @@ test('owner Preview works even at daily limit and performs no usage writes or al
 test('preview flag cannot bypass authentication or assistant ownership',async()=>{for(const options of [{authenticated:false},{owned:false}]){const r=route(options);assert.ok((await r.post(true)).status>=400);assert.ok(!r.calls.includes('answer'));}});
 test('public messages still reserve quota and report outcomes',async()=>{const r=route();assert.equal((await r.post(false)).status,200);assert.ok(r.calls.includes('rpc/studio_reserve'));assert.ok(r.calls.includes('outcome:true'));assert.ok(r.calls.some(c=>typeof c==="string"&&c.startsWith('chat:')));});
 test('public messages remain blocked at daily limit',async()=>{const r=route({reserved:false});assert.equal((await r.post(false)).status,429);assert.ok(!r.calls.includes('answer'));});
+test('a rate-limited Preview explains its limit and reset window',async()=>{
+ const r=route({rateLimited:true});
+ const response=await r.post(true);
+ assert.equal(response.status,429);
+ const {error}=await response.json();
+ assert.match(error,/20 requests per hour for this assistant from your IP address/);
+ assert.match(error,/one hour after your first request/);
+ assert.match(error,/separate limit from the public widget’s daily quota/);
+ assert.ok(r.calls.includes(`preview:${id}:ip`));
+ assert.deepEqual(r.calls.find(call=>Array.isArray(call)&&call[0]==='gate'),['gate',20,3600,error]);
+ assert.ok(!r.calls.includes('answer'));
+});
+test('rate-limited public chat uses its standard message',async()=>{
+ const r=route({rateLimited:true});
+ const response=await r.post(false);
+ assert.equal(response.status,429);
+ assert.equal((await response.json()).error,'Too many requests. Please try again later.');
+ assert.ok(r.calls.includes(`chat:${id}:ip`));
+});
 test('failed preview cannot change visitor failure counters; failed public attempts do',async()=>{const preview=route({fail:true});assert.equal((await preview.post(true)).status,503);assert.ok(!preview.calls.some(c=>typeof c==="string"&&c.startsWith('outcome:')));const publicChat=route({fail:true});assert.equal((await publicChat.post(false)).status,503);assert.ok(publicChat.calls.includes('outcome:false'));});
 
 test('preview and live chat both use the selected assistant key',async()=>{

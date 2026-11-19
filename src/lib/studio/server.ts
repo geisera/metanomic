@@ -71,8 +71,13 @@ export async function session(ignoreImpersonation = false): Promise<Session> { c
     }
 } throw new StudioError('Sign in to continue.', 401); }
 export const ipOf = (r: Request) => r.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-export async function gate(bucket: string, limit: number, seconds: number) { if (!await rest<boolean>('rpc/studio_gate', { admin: true, body: { p_bucket: fingerprint(bucket), p_limit: limit, p_seconds: seconds } }))
-    throw new StudioError('Too many requests. Please try again later.', 429); }
+export async function gate(bucket: string, limit: number, seconds: number, message = 'Too many requests. Please try again later.') {
+    const allowed = await rest<boolean>('rpc/studio_gate', {
+        admin: true,
+        body: { p_bucket: fingerprint(bucket), p_limit: limit, p_seconds: seconds }
+    });
+    if (!allowed) throw new StudioError(message, 429);
+}
 export async function reserveAuthAttempt(bucket: string, limit: number, seconds: number) {
     const hashedBucket = fingerprint(bucket);
     const result = await rest<{ expires_at: string; retry_after: number }>('rpc/studio_reserve_auth_attempt', {
