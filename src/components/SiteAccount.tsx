@@ -43,7 +43,7 @@ export default function SiteAccount({children}:{children:ReactNode}) {
     return <IdentityContext.Provider value={show ? account : null}>{children}</IdentityContext.Provider>;
 }
 
-type DashboardActions = {navigate:(view:'agents'|'account')=>void;leave:()=>boolean;logout:()=>void};
+type DashboardActions = {navigate:(view:'agents')=>void;leave:()=>boolean;logout:()=>void};
 export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
     const account = useIdentity();
     const [open,setOpen] = useState(false);
@@ -74,17 +74,15 @@ export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
         </button>
         <div id="site-account-panel" className={s.accountPanel} hidden={!open}>
             <strong>{account.label}</strong><small>Signed in as {account.email}</small><hr/>
-            {([
-                ['Open Studio','/assistant-studio/dashboard','agents'],
-                ['Account settings','/assistant-studio/dashboard#account','account'],
-            ] as const).map(([label,href,view])=><a key={view} href={href} onClick={event=>{
+            <a href="/assistant-studio/dashboard" onClick={event=>{
                 if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
                 if(dashboard){
                     event.preventDefault();
-                    dashboard.navigate(view);
+                    dashboard.navigate('agents');
                 }
                 setOpen(false);
-            }}>{label}</a>)}
+            }}>Open Studio</a>
+            <a href="/assistant-studio/account" onClick={()=>setOpen(false)}>Account settings</a>
             <button type="button" onClick={dashboard?dashboard.logout:logout}>Sign out</button>
             {error&&<p role="alert">{error}</p>}
         </div>
