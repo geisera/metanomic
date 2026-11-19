@@ -10,7 +10,7 @@ export const useIdentity = () => useContext(IdentityContext);
 
 export default function SiteAccount({children}:{children:ReactNode}) {
     const path = usePathname();
-    const show = !['/admin', '/assistant-studio/dashboard', '/particles'].includes(path);
+    const show = !['/admin', '/particles'].includes(path);
     const [account, setAccount] = useState<Identity|null>(null);
 
     useEffect(() => {
@@ -43,7 +43,8 @@ export default function SiteAccount({children}:{children:ReactNode}) {
     return <IdentityContext.Provider value={show ? account : null}>{children}</IdentityContext.Provider>;
 }
 
-export function AccountMenu() {
+type DashboardActions = {navigate:(view:'agents'|'account')=>void;leave:()=>boolean;logout:()=>void};
+export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
     const account = useIdentity();
     const [open,setOpen] = useState(false);
     const [error,setError] = useState('');
@@ -73,10 +74,10 @@ export function AccountMenu() {
         </button>
         <div id="site-account-panel" className={s.accountPanel} hidden={!open}>
             <strong>{account.label}</strong><small>Signed in as {account.email}</small><hr/>
-            <a href="/assistant-studio/dashboard">Studio</a>
-            <a href="/assistant-studio/dashboard#account">Account settings</a>
-            <a href="https://platform.openai.com/settings/organization/billing/overview">Billing <small>(OpenAI)</small></a>
-            <button type="button" onClick={logout}>Sign out</button>
+            {dashboard?<button onClick={()=>{setOpen(false);dashboard.navigate('agents');}}>Studio</button>:<a href="/assistant-studio/dashboard">Studio</a>}
+            {dashboard?<button onClick={()=>{setOpen(false);dashboard.navigate('account');}}>Account settings</button>:<a href="/assistant-studio/dashboard#account">Account settings</a>}
+            <a onClick={e=>{if(dashboard&&!dashboard.leave())e.preventDefault();}} href="https://platform.openai.com/settings/organization/billing/overview">Billing <small>(OpenAI)</small></a>
+            <button type="button" onClick={dashboard?dashboard.logout:logout}>Sign out</button>
             {error&&<p role="alert">{error}</p>}
         </div>
     </div>;

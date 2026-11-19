@@ -56,3 +56,5 @@
 
 
 .account{z-index:51}.account :is(a,button):focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+
+@media(max-width:899px){.sticky[data-dashboard] .header .ctas{display:none}.sticky[data-dashboard] .header .toggle{margin-left:auto}}
