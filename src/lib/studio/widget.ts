@@ -60,7 +60,7 @@ function setFullscreen(fullscreen){
   frame.classList.toggle('fullscreen',fullscreen);
   frame.contentWindow?.postMessage({type:'theia:fullscreen-state',id,fullscreen},base);
 }
-function toggle(value){open=value;if(open){if(animationTimer!==undefined)clearTimeout(animationTimer);launcherAnimation?.cancel();}if(!open)setFullscreen(false);button.style.display=open?'none':'';frame.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.textContent=open?'Close chat':script.dataset.label||'Chat with us';if(open&&!frame.src)frame.src=base+'/theia-widget/'+encodeURIComponent(id);if(open)frame.focus();else button.focus();}button.onclick=()=>toggle(!open);window.addEventListener('message',event=>{
+function toggle(value){open=value;if(open){if(animationTimer!==undefined)clearTimeout(animationTimer);launcherAnimation?.cancel();}if(!open)setFullscreen(false);button.style.display=open?'none':'';frame.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.textContent=open?'Close chat':script.dataset.label||'Chat with us';if(open&&!frame.src)frame.src=base+'/theia-widget/'+encodeURIComponent(id)+(script.dataset.textScale==='double'?'?text=double':'');if(open)frame.focus();else button.focus();}button.onclick=()=>toggle(!open);window.addEventListener('message',event=>{
   if(event.origin!==base||event.source!==frame.contentWindow||event.data?.id!==id)return;
   if(event.data.type==='theia:close'&&open)toggle(false);
   if(event.data.type==='theia:fullscreen'&&open&&typeof event.data.fullscreen==='boolean')setFullscreen(event.data.fullscreen);
@@ -92,7 +92,7 @@ header h1{min-width:0;overflow-wrap:anywhere}
 body,#log,.bubble,.user,textarea,button{background:var(--chat-background);color:var(--chat-text)}header,footer,textarea,button,.bubble{border:1px solid var(--chat-outline)}.bubble.assistant:not(.thinking){border-color:transparent}header{border-width:0 0 1px}footer{border-width:1px 0 0}.user{border-left-width:3px}small,#status,a{color:var(--chat-text)}button:focus-visible,textarea:focus-visible{outline-color:var(--chat-text)}#send{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;align-self:center;background:var(--chat-send-background);color:var(--chat-send-text)}.user,textarea{background:var(--chat-user-background);color:var(--chat-user-text)}`;
 
 // Capture currentScript before awaiting the public configuration request.
-export const embedLoader = `(async()=>{const original=document.currentScript,id=original&&original.dataset.agent;if(!id||!/^[a-f0-9-]{36}$/i.test(id))return;const loadConfig=()=>fetch(new URL('/theia-config/'+encodeURIComponent(id),original.src),{credentials:'omit',cache:'no-store'});try{const response=await loadConfig();if(!response.ok)return;const config=await response.json();const configuredScript={src:original.src,dataset:{...config,agent:id,panelSize:original.dataset.panelSize}};${embedClient.replace('document.currentScript','configuredScript').replace('button.onclick=()=>toggle(!open);', `let checking=false;
+export const embedLoader = `(async()=>{const original=document.currentScript,id=original&&original.dataset.agent;if(!id||!/^[a-f0-9-]{36}$/i.test(id))return;const loadConfig=()=>fetch(new URL('/theia-config/'+encodeURIComponent(id),original.src),{credentials:'omit',cache:'no-store'});try{const response=await loadConfig();if(!response.ok)return;const config=await response.json();const configuredScript={src:original.src,dataset:{...config,agent:id,panelSize:original.dataset.panelSize,textScale:original.dataset.textScale}};${embedClient.replace('document.currentScript','configuredScript').replace('button.onclick=()=>toggle(!open);', `let checking=false;
 button.onclick=async()=>{
   if(open){toggle(false);return;}
   if(checking)return;
@@ -104,3 +104,12 @@ button.onclick=async()=>{
   finally{checking=false;}
 };`)}}catch{}})();`;
 
+export const widgetDoubleTextCss = `
+body{font-size:30px}
+#chat{overflow:auto}
+#chat>header,#chat>footer{flex-shrink:0}
+#log{min-height:6rem}
+header h1{font-size:34px;line-height:1.15}
+small,#status,.citations a,.citations span{font-size:24px}
+textarea{line-height:1.3}
+`;
