@@ -3,6 +3,7 @@ import { session, rest, ownedAgent, apiKey, gate, failure } from '@/lib/studio/s
 import { knowledgeSourceUrl, agentInput, origins, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
 import { ASSISTANT_TEMPLATES } from '@/lib/studio/templates';
 import {canOverrideAssistantKey,type AssistantKeyInfo} from '@/lib/studio/assistant-keys';
+import {requireStudioRuntime} from '@/lib/studio/operations';
 import { encrypt } from '@/lib/studio/crypto';
 export const runtime = 'nodejs';
 type Tier={id:string;name:string;assistants:number;websites:number;documents:number};
@@ -25,10 +26,12 @@ export async function GET(req: Request) { try {
         return json({ documents: await rest<Document[]>('studio_documents?agent_id=eq.' + id + '&order=updated_at.desc', { session: s }) });
     }
     const [agents, keys, usage, documents, [tier]] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest('studio_usage?day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}), rest('studio_documents?select=id,agent_id,published', {session:s}), rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{}})]);
+    const limits=agents.length ? await rest<{agent_id:string;message_limit:number;limit_expires_at:string}[]>(
+        'studio_assistant_controls?select=agent_id,message_limit,limit_expires_at&limit_expires_at=gt.'+encodeURIComponent(new Date().toISOString()),{session:s}) : [];
     const assistantKeys = agents.length
         ? (await rest<AssistantKeyInfo[]>('studio_assistant_keys?select=agent_id,last_four,validated_at,invalidated_at,studio_agents!inner()&studio_agents.owner_id=eq.'+s.user.id, {admin:true})).map(({agent_id,last_four,validated_at,invalidated_at})=>({agent_id,last_four,validated_at,invalidated_at}))
         : [];
-    return json({ agents, keys, usage, documents, tier, assistantKeys });
+    return json({ agents, keys, usage, documents, tier, assistantKeys, limits });
 }
 catch (e) {
     return failure(e);
@@ -120,7 +123,7 @@ export async function POST(req: Request) {
         }
         if (b.action === 'publish') {
             const live=b.published===true;
-            if(live){await apiKey(agent);if(!origins(agent.origins).length)throw new StudioError('Save at least one approved website before publishing.',400,'origin_not_approved');}
+            if(live){await requireStudioRuntime(agent.id);await apiKey(agent);if(!origins(agent.origins).length)throw new StudioError('Save at least one approved website before publishing.',400,'origin_not_approved');}
             const first=live&&!agent.published&&!agent.first_published_at;
             const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{published:live,first_published_at:live?(agent.first_published_at||new Date().toISOString()):agent.first_published_at,updated_at:new Date().toISOString()}});
             return json({agent:rows[0],first_publish:first});

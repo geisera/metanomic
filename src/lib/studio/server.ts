@@ -9,6 +9,7 @@ export type Session = {
         id: string;
         email: string;
         created_at?: string;
+        factors?: { id: string; factor_type: string; status: string; friendly_name?: string }[];
         user_metadata?: {
             display_name?: string;
         };

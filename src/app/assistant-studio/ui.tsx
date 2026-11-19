@@ -8,7 +8,7 @@ export async function call(path:string,body?:unknown){const response=await fetch
 export type User={id:string;email:string;name:string;created_at?:string;is_admin?:boolean};
 export type Usage={agent_id:string;day:string;requests:number;failed_requests:number};
 type AssistantKeyInfo=import('@/lib/studio/assistant-keys').AssistantKeyInfo;
-export type Snapshot={tier?:{id:string;name:string;assistants:number;websites:number;documents:number};agents:Agent[];keys:{last_four:string;validated_at:string}[];usage:Usage[];documents:{id:string;agent_id:string;published:boolean}[];assistantKeys?:AssistantKeyInfo[]};
+export type Snapshot={tier?:{id:string;name:string;assistants:number;websites:number;documents:number};agents:Agent[];keys:{last_four:string;validated_at:string}[];usage:Usage[];documents:{id:string;agent_id:string;published:boolean}[];assistantKeys?:AssistantKeyInfo[];limits?:{agent_id:string;message_limit:number;limit_expires_at:string}[]};
 const GuardContext=createContext<{flags:Map<string,boolean>;leave:()=>boolean}|null>(null);
 export function GuardProvider({children}:{children:ReactNode}){const [flags]=useState(()=>new Map<string,boolean>());useEffect(()=>{const before=(e:BeforeUnloadEvent)=>{if([...flags.values()].some(Boolean)){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',before);return()=>window.removeEventListener('beforeunload',before);},[flags]);return <GuardContext.Provider value={{flags:flags,leave:()=>![...flags.values()].some(Boolean)||window.confirm('You have unsaved changes. Discard them and continue?')}}>{children}</GuardContext.Provider>;}
 export function useGuard(){const value=useContext(GuardContext);if(!value)throw new Error('Missing unsaved changes guard');return value;}
