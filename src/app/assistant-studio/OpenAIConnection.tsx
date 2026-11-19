@@ -7,6 +7,11 @@ import s from './studio.module.css';
 
 export default function OpenAIConnection({keyInfo,onUpdate}:{keyInfo?:Snapshot['keys'][number];onUpdate:()=>Promise<void>}){
  const heading=useRef<HTMLHeadingElement>(null);
+ const [replacing,setReplacing]=useState(false);
+ const replaceButton=useRef<HTMLButtonElement>(null);
+ const keyInput=useRef<HTMLInputElement>(null);
+ useEffect(()=>{if(replacing)keyInput.current?.focus();},[replacing]);
+ const keyLabel=keyInfo?'New OpenAI API key':'OpenAI API key';
  const [busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null),[notice,setNotice]=useState('');
  useEffect(()=>{heading.current?.focus();},[]);
 
@@ -22,6 +27,8 @@ export default function OpenAIConnection({keyInfo,onUpdate}:{keyInfo?:Snapshot['
      await call('manage',body);
      form.reset();
      await onUpdate();
+     setReplacing(false);
+     if(action==='key')heading.current?.focus();
      setNotice(action==='remove-key'?'OpenAI key removed.':keyInfo?'OpenAI key replaced.':'OpenAI key connected.');
      if(action==='remove-key')heading.current?.focus();
    }catch(error){
@@ -46,11 +53,16 @@ export default function OpenAIConnection({keyInfo,onUpdate}:{keyInfo?:Snapshot['
    <p className={s.help}>Assistants use this shared key by default. Replacing it applies to assistants that use it. Removing it unpublishes those assistants.</p>
    <p className={s.help}>OpenAI bills you directly for usage. Metanomic encrypts your key and keeps it on the server. We check that your key works, but not your OpenAI balance or model access.</p>
    <a className={s.textButton} href='https://platform.openai.com/api-keys' target='_blank' rel='noreferrer'>Where do I get a key? ↗</a>
-   <form className={s.form} onSubmit={event=>update(event,'key')}>
-     <FieldHelp id='studio-field-help-18' label='OpenAI API key' caption={<>OpenAI API key</>} control={<input name='key' type='password' autoComplete='off' maxLength={2000} required placeholder='Paste your OpenAI API key' aria-describedby='studio-field-help-18'/>}>Use a dedicated OpenAI project key with model-list and Responses API access. Set a budget in OpenAI to manage usage charges.</FieldHelp>
+   {keyInfo&&!replacing?<div>
+     <p>Your shared key ending in <strong>{keyInfo.last_four}</strong> is already configured. No action is needed.</p>
+     <button ref={replaceButton} type='button' className='button button-outline' onClick={()=>setReplacing(true)}>Replace existing key</button>
+   </div>:<form className={s.form} onSubmit={event=>update(event,'key')}>
+     {keyInfo&&<p id='replace-key-warning'>Saving a new key will replace the key ending in <strong>{keyInfo.last_four}</strong> for every assistant using the shared key.</p>}
+     <FieldHelp id='studio-field-help-18' label={keyLabel} caption={keyLabel} control={<input ref={keyInput} name='key' type='password' autoComplete='off' maxLength={2000} required placeholder={keyInfo?'Paste the replacement key':'Paste your OpenAI API key'} aria-describedby={keyInfo?'replace-key-warning studio-field-help-18':'studio-field-help-18'}/>}>Use a dedicated OpenAI project key with model-list and Responses API access. Set a budget in OpenAI to manage usage charges.</FieldHelp>
      <button className='button button-primary' disabled={busy}>{keyInfo?'Replace key':'Connect key'}</button>
+     {keyInfo&&<button type='button' className={s.textButton} disabled={busy} onClick={()=>{setReplacing(false);requestAnimationFrame(()=>replaceButton.current?.focus());}}>Cancel</button>}
      <LastSaved value={keyInfo?.validated_at}/>
-   </form>
+   </form>}
    {keyInfo&&<form onSubmit={event=>update(event,'remove-key')}><button className={s.textButton} disabled={busy}>Remove API key</button></form>}
  </section></div>;
 }
