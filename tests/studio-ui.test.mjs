@@ -38,3 +38,11 @@ test('legacy pill corners migrate into public configuration',()=>{const {launche
 test('Preview renders configured text or paper plane with an accessible label',()=>{const Preview=load('src/app/assistant-studio/Preview.tsx').default;for(const mode of ['icon','text']){const html=render(Preview,{agent:{...agent,send_display:mode,send_label:'Ask Tony'},hasKey:true,onKey:()=>{},onNavigate:()=>{},onUsage:async()=>{}});assert.match(html,/aria-label="Ask Tony"/);if(mode==='text')assert.match(html,/data-display="text">Ask Tony<\/button>/);else assert.match(html,/data-display="icon"><svg/);}});
 
 test('Starter allows two website origins and tier limits can be supplied explicitly',()=>{assert.equal(ui.validOrigins('https://one.example\nhttps://two.example'),true);assert.equal(ui.validOrigins('https://one.example\nhttps://two.example\nhttps://three.example'),false);assert.equal(ui.validOrigins('https://one.example\nhttps://two.example\nhttps://three.example',3),true);const Publish=load('src/app/assistant-studio/Publish.tsx').default;const html=render(Publish,{agent,hasKey:true,onSaved:async()=>{},onKey:()=>{}});assert.match(html,/Up to 2/);});
+test('a saved send-button override takes precedence over the light palette in preview and embed',()=>{
+ const {appearanceCss}=load('src/lib/studio/appearance.ts');
+ const Preview=load('src/app/assistant-studio/Preview.tsx').default;
+ const light={...agent,button_color:'#ecf0ed',button_text_color:'#091019',send_color:'#ce4319',send_text_color:'#ffffff'};
+ const html=render(Preview,{agent:light,hasKey:false,onKey:()=>{},onNavigate:()=>{},onUsage:async()=>{}});
+ assert.match(html,/--chat-send-background:#ce4319/);
+ assert.match(appearanceCss(light),/--chat-send-background:#ce4319/);
+});
