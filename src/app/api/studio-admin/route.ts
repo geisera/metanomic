@@ -41,6 +41,7 @@ export async function POST(request: Request) {
 
         if (body.action === 'impersonate_stop') {
             (await cookies()).set(IMPERSONATION_COOKIE, '', { httpOnly:true, secure:process.env.NODE_ENV==='production', sameSite:'lax', path:'/', maxAge:0 });
+            (await cookies()).set(IMPERSONATION_COOKIE, '', { httpOnly:true, secure:process.env.NODE_ENV==='production', sameSite:'lax', path:'/assistant-studio', maxAge:0 });
             return json({ok:true});
         }
         if (body.action === 'impersonate_start') {
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
             await getWorkspace(actor,body.ownerId);
             await verifyStaffMfa(staff,body.factorId,body.code,true);
             const expiresAt = new Date(Date.now()+impersonationTtlSeconds*1000).toISOString();
+            (await cookies()).set(IMPERSONATION_COOKIE, '', { httpOnly:true, secure:process.env.NODE_ENV==='production', sameSite:'lax', path:'/assistant-studio', maxAge:0 });
             (await cookies()).set(IMPERSONATION_COOKIE, issueImpersonation(actor,body.ownerId), { httpOnly:true, secure:process.env.NODE_ENV==='production', sameSite:'lax', path:'/', maxAge:impersonationTtlSeconds });
             await auditRead(actor,'impersonate_start',reason,body.ownerId);
             return json({ok:true,expiresAt,redirectUrl:'/assistant-studio/dashboard'});
