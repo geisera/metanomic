@@ -46,6 +46,8 @@ export async function POST(req: Request) {
         const b = await parseBody(req, 240000);
         if (!b)
             throw new StudioError('Invalid or oversized request.');
+        if (s.impersonatedBy && typeof b.action === 'string')
+            await rest('studio_staff_audit', { admin:true, body:{ actor_id:s.impersonatedBy, owner_id:s.user.id, action:'impersonated_'+b.action, reason:'Assistant Studio change while viewing as user' }, prefer:'return=minimal' });
         if (b.action === 'key') {
             const key = await validatedKey(b.key,s.user.id);
             await rest('studio_keys?on_conflict=owner_id', { session: s, body: { owner_id: s.user.id, ...key }, prefer: 'resolution=merge-duplicates,return=minimal' });
