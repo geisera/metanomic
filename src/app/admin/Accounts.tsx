@@ -14,10 +14,13 @@ type Props={
     reauth:ReactNode;
     request:Request;
     onOpenWorkspace:(ownerId:string)=>void;
+    clearWorkspace:()=>void;
+    workspaceBusy:boolean;
+    workspaceRevision:number;
     onSessionChange:()=>Promise<void>;
 };
 
-export default function Accounts({roles,reauth,request,onOpenWorkspace,onSessionChange}:Props){
+export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWorkspace,workspaceBusy,workspaceRevision,onSessionChange}:Props){
     const [fields,setFields]=useState(initial);
     const [filter,setFilter]=useState(initial);
     const [directory,setDirectory]=useState<AccountDirectory|null>(null);
@@ -48,7 +51,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onSession
             if(cause.status===401||cause.status===403)await onSessionChange();
         });
         return ()=>{current=false;};
-    },[filter,request,revision,onSessionChange]);
+    },[filter,request,revision,workspaceRevision,onSessionChange]);
 
     function search(event:FormEvent<HTMLFormElement>){
         event.preventDefault();
@@ -59,6 +62,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onSession
         setDirectory(null);setFilter({...filter,page});
     }
     function show(account:Account){
+        clearWorkspace();
         setSelected(account);setAction(null);setNotice('');setError('');
     }
     async function save(event:FormEvent<HTMLFormElement>){
@@ -73,7 +77,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onSession
                 expectedEmail:selected?.email,expectedName:selected?.display_name,
                 confirmOwnership:values.confirmOwnership==='on',
             });
-            if(result.account)setSelected(result.account);
+            if(result.account){clearWorkspace();setSelected(result.account);}
             setAction(null);
             setNotice(action==='reset_account_password'?'Password reset requested.':accountActions[action].label+' completed.');
             refresh(value=>value+1);
@@ -119,7 +123,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onSession
                     <td>{plans.find(tier=>tier.id===account.tier_id)?.name||account.tier_id}{account.effective_tier!==account.tier_id&&<><br/><span className={s.meta}>Effective plan {account.effective_tier}</span></>}</td>
                     <td>{account.inactive?'Inactive':'Active'}{account.suspended&&<><br/>Workspace suspended</>}{account.is_staff&&<><br/>Staff</>}</td>
                     <td>{date(account.last_sign_in_at)}</td>
-                    <td><button className="button button-outline" type="button" aria-label={'Select '+account.email} aria-pressed={selected?.owner_id===account.owner_id} onClick={()=>show(account)}>Select</button></td>
+                    <td><button className="button button-outline" type="button" aria-label={'Select '+account.email} aria-pressed={selected?.owner_id===account.owner_id} disabled={workspaceBusy||busy} onClick={()=>show(account)}>Select</button></td>
                 </tr>)}</tbody>
             </table></div>:<p>{directory.count?'No accounts on this page.':'No accounts match these filters.'}</p>}
             {(filter.page>1||directory.count>pageSize)&&<div className={s.row}>
@@ -142,7 +146,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onSession
             {selected.is_staff&&<p className={s.meta}>Staff sign-in and identity are managed separately.</p>}
             <div className={s.row}>
                 {activeAccountActions.map(id=><button type="button" className="button button-outline" key={id} disabled={busy} onClick={()=>{setError('');setAction(id);}}>{accountActions[id].label}</button>)}
-                <button type="button" className="button button-outline" onClick={()=>onOpenWorkspace(selected.owner_id)}>Open workspace</button>
+                <button type="button" className="button button-outline" disabled={workspaceBusy||busy} onClick={()=>onOpenWorkspace(selected.owner_id)}>Open workspace</button>
             </div>
         </section>}
         {action&&<section className={s.panel} aria-labelledby="account-action">

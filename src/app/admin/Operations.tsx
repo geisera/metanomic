@@ -37,6 +37,7 @@ export default function Operations() {
     const [error,setError] = useState('');
     const [notice,setNotice] = useState('');
     const [enrollment,setEnrollment] = useState<{factorId:string;secret:string;qrImage:string|null}|null>(null);
+    const [workspaceRevision,setWorkspaceRevision] = useState(0);
     const [workspace,setWorkspace] = useState<Workspace|null>(null);
     const [change,setChange] = useState<Change|null>(null);
     const changeHeading=useRef<HTMLHeadingElement>(null);
@@ -104,7 +105,7 @@ export default function Operations() {
         const fields=Object.fromEntries(new FormData(event.currentTarget));
         void run(async()=>{
             const result=await submit<{workspace:Workspace}>({...fields,...change,ownerId:workspace.owner_id});
-            setWorkspace(result.workspace);setChange(null);setNotice(actions[change.action].label+' completed.');
+            setWorkspace(result.workspace);setWorkspaceRevision(value=>value+1);setChange(null);setNotice(actions[change.action].label+' completed.');
         });
     }
 
@@ -143,6 +144,7 @@ export default function Operations() {
         </section>}
         {staff?.verified&&<>
             <Accounts roles={staff.roles} request={submit} onOpenWorkspace={open} onSessionChange={load}
+                workspaceBusy={busy} workspaceRevision={workspaceRevision} clearWorkspace={()=>{setWorkspace(null);setChange(null);}}
                 reauth={<><p className={s.meta}>Enter a fresh authenticator code to authorize this change.</p><FactorSelect staff={staff}/><AuthenticatorCode/></>}/>
             {workspace&&<>
                 <section className={s.panel} aria-labelledby="workspace-heading"><h2 id="workspace-heading">{workspace.email}</h2><span className={s.status}>{workspace.suspended?'Suspended':'Active'}</span>
