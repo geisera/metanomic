@@ -7,7 +7,7 @@ import {track} from '@/lib/navigation-analytics';
 import s from './PrimaryNav.module.css';
 const groups={Solutions:[{label:'Custom agents',href:'/#services'},{label:'Workflow automation',href:'/#services'},{label:'Customer service agents',href:'/#services'},{label:'Enterprise AI',href:'/enterprise-ai-stack'}],Company:[{label:'About',href:'/#about'},{label:'Contact',href:'/contact'}]};
 type Group=keyof typeof groups;
-type DashboardView = 'agents' | 'account' | 'help';
+type DashboardView = 'agents' | 'help';
 type DashboardNav = { view: DashboardView; signedIn: boolean; navigate: (view: DashboardView)=>void; leave: ()=>boolean; logout: ()=>void };
 export default function PrimaryNav({studio=false,dashboard}:{studio?:boolean;dashboard?:DashboardNav}){
  const account=useIdentity();
@@ -28,7 +28,7 @@ export default function PrimaryNav({studio=false,dashboard}:{studio?:boolean;das
  function studioLinks(drawer=false){
   if(dashboard){
    const links: [DashboardView,string][] = dashboard.signedIn ? [['agents','Assistants'],['help','Help']] : [['help','Help']];
-   return <>{links.map(([view,label])=><button type="button" className={s.navLink} key={view} aria-pressed={dashboard.view===view} onClick={()=>{dashboard.navigate(view);if(drawer)closeMobile();}}>{label}</button>)}</>;
+   return <>{links.map(([view,label])=><button type="button" className={s.navLink} key={view} aria-pressed={dashboard.view===view} onClick={()=>{dashboard.navigate(view);if(drawer){setMobile(false);dialog.current?.close();toggle.current?.focus();}}}>{label}</button>)}</>;
   }
   return <>
   <Link href="/assistant-studio/dashboard" className={s.navLink} onClick={()=>clicked('Open Studio')}>Open Studio</Link>
