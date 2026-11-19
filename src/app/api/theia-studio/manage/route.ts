@@ -25,16 +25,16 @@ export async function GET(req: Request) { try {
         await ownedAgent(s, id);
         return json({ documents: await rest<Document[]>('studio_documents?agent_id=eq.' + id + '&order=updated_at.desc', { session: s }) });
     }
-    const [agents, keys] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s })]);
-    const [tier] = s.impersonatedBy ? await (async()=>{ const [account] = await rest<{tier_id:string}[]>('studio_accounts?owner_id=eq.'+s.user.id+'&select=tier_id',{admin:true}); return rest<Tier[]>('studio_tiers?id=eq.'+(account?.tier_id||'starter'),{admin:true}); })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
+    const [agents, keys] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }).catch(()=>[]) ]);
+    const [tier] = s.impersonatedBy ? await (async()=>{ try { const [account] = await rest<{tier_id:string}[]>('studio_accounts?owner_id=eq.'+s.user.id+'&select=tier_id',{admin:true}); return rest<Tier[]>('studio_tiers?id=eq.'+(account?.tier_id||'starter'),{admin:true}); } catch { return [{id:'starter',name:'Starter',assistants:1,websites:2,documents:1}]; } })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
     const agentFilter = agents.length ? '&agent_id=in.(' + agents.map(agent=>agent.id).join(',') + ')' : '';
     const [usage, documents, limits] = agents.length ? await Promise.all([
         rest('studio_usage?agent_id=in.(' + agents.map(agent=>agent.id).join(',') + ')&day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}),
         rest('studio_documents?select=id,agent_id,published' + agentFilter, { session: s }),
         rest<{agent_id:string;message_limit:number;limit_expires_at:string}[]>('studio_assistant_controls?select=agent_id,message_limit,limit_expires_at&limit_expires_at=gt.'+encodeURIComponent(new Date().toISOString()) + agentFilter,{session:s}),
-    ]) : [[], [], []];
+    ]).catch(()=>[[], [], []]) : [[], [], []];
     const assistantKeys = agents.length
-        ? (await rest<AssistantKeyInfo[]>('studio_assistant_keys?select=agent_id,last_four,validated_at,invalidated_at,studio_agents!inner()&studio_agents.owner_id=eq.'+s.user.id, {admin:true})).map(({agent_id,last_four,validated_at,invalidated_at})=>({agent_id,last_four,validated_at,invalidated_at}))
+        ? (await rest<AssistantKeyInfo[]>('studio_assistant_keys?select=agent_id,last_four,validated_at,invalidated_at,studio_agents!inner()&studio_agents.owner_id=eq.'+s.user.id, {admin:true}).catch(()=>[])).map(({agent_id,last_four,validated_at,invalidated_at})=>({agent_id,last_four,validated_at,invalidated_at}))
         : [];
     return json({ agents, keys, usage, documents, tier, assistantKeys, limits });
 }
