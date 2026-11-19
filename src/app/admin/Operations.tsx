@@ -107,10 +107,11 @@ export default function Operations() {
         event.preventDefault();
         if(!impersonateOwner)return;
         const fields=Object.fromEntries(new FormData(event.currentTarget));
+        const popup=window.open('about:blank','_blank','noopener,noreferrer');
         void run(async()=>{
             const result=await submit<{redirectUrl:string}>({action:'impersonate_start',ownerId:impersonateOwner,reason:fields.reason,factorId:fields.factorId,code:fields.code});
-            setNotice('View as user opened in a new tab.');
-            window.open(result.redirectUrl,'_blank','noopener,noreferrer');
+            if(popup) popup.location.href=result.redirectUrl; else window.location.href=result.redirectUrl;
+            setNotice('View as user opened.');
             setImpersonateOwner(null);
         });
     }
