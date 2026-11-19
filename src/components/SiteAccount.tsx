@@ -79,7 +79,7 @@ export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
             <strong>{account.label}</strong><small>Signed in as {account.email}</small><hr/>
             {dashboard?<button onClick={()=>{setOpen(false);dashboard.navigate('agents');}}>Studio</button>:<a href="/assistant-studio/dashboard">Studio</a>}
             {studioLanding && <a href="/assistant-studio/dashboard#account">Account settings</a>}
-            <a onClick={e=>{if(dashboard&&!dashboard.leave())e.preventDefault();}} href="https://platform.openai.com/settings/organization/billing/overview">Billing <small>(OpenAI)</small></a>
+            <a onClick={e=>{if(dashboard&&!dashboard.leave())e.preventDefault();}} href="https://platform.openai.com/settings">OpenAI settings</a>
             {studioRoute && <a href="/" onClick={event=>{if(dashboard && !dashboard.leave())event.preventDefault();}}>Metanomic home</a>}
             <button type="button" onClick={dashboard?dashboard.logout:logout}>Sign out</button>
             {error&&<p role="alert">{error}</p>}
