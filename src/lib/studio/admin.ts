@@ -41,7 +41,7 @@ export async function enrollStaffMfa(staff: Staff) {
     if (!response.ok || !uuid(data?.id) || typeof data?.totp?.secret !== 'string')
         throw new StudioError('Authenticator enrollment is unavailable. Try again or contact the project owner.', 503);
     const svg = typeof data.totp.qr_code === 'string' ? data.totp.qr_code.trim() : '';
-    const qrImage = /^(?:<\?xml[^>]*\?>\s*)?<svg(?:\s|>)/.test(svg) ? 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64') : null;
+    const qrImage = /^(?:<\?xml[^>]*\?>\s*)?(?:<!--[\s\S]*?-->\s*)*<svg(?:\s|>)/.test(svg) ? 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64') : null;
     return { factorId: data.id as string, secret: data.totp.secret as string, qrImage };
 }
 
