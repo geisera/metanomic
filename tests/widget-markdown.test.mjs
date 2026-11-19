@@ -12,7 +12,15 @@ function load(name){
 }
 
 function element(tag='div'){
-  return {tag,textContent:'',value:'',children:[],disabled:false,attrs:{},style:{},append(...items){this.children.push(...items);},replaceChildren(...items){this.children=items;},setAttribute(key,value){this.attrs[key]=value;},remove(){},focus(){},click(){this.onclick?.();}};
+  return {
+    tag, value:'', children:[], disabled:false, attrs:{}, style:{},
+    get textContent(){return this.children.map(child=>typeof child==='string'?child:child.textContent).join('');},
+    set textContent(value){this.children=[value];},
+    append(...items){this.children.push(...items);},
+    replaceChildren(...items){this.children=items;},
+    setAttribute(key,value){this.attrs[key]=value;},
+    remove(){}, focus(){}, click(){this.onclick?.();},
+  };
 }
 
 const quote = '- **Queen Maribel the Uncrowned**: She rules the kingdom from the Orchard Crown, a hollow pear tree. She avoids wearing a metal crown because iron silences the kingdom’s bells.';
@@ -36,4 +44,29 @@ test('widget renders bold within a list and keeps user text and unsafe HTML iner
   assert.equal(list.children[0].children.some(child=>typeof child==='string'&&child.includes('**')),false);
   assert.ok(paragraph.children.some(child=>child.tag==='a'&&child.href==='https://example.com/'));
   assert.equal(paragraph.children.some(child=>child.tag==='script'||child.tag==='img'),false);
+});
+
+test('reply formatter creates clickable links for the reported reply and common model variants',()=>{
+  const context={URL,location:{origin:'https://metanomic.ai'},document:{createElement:element}};
+  const render=vm.runInNewContext('('+load('reply-markdown').renderReplyMarkdown.toString()+')',context);
+  const root=element();
+  const variants=[
+    'The secret link is to Google: [https://google.com](https://google.com)',
+    'The secret link is to Google: **[https://google.com](https://google.com)**',
+    'The secret link is to Google: <https://google.com>',
+    'The secret link is to Google: (https://google.com).',
+  ];
+  const descendants=node=>[node,...(node.children??[]).flatMap(child=>typeof child==='string'?[]:descendants(child))];
+  for (const reply of variants) {
+    render(root,reply);
+    const links=descendants(root).filter(node=>node.tag==='a');
+    assert.equal(links.length,1,reply);
+    assert.equal(links[0].textContent,'https://google.com');
+    assert.equal(links[0].href,'https://google.com/');
+    assert.equal(links[0].target,'_blank');
+    assert.equal(links[0].rel,'noopener noreferrer');
+  }
+  assert.equal(root.textContent,variants.at(-1));
+  render(root,'[Unsafe](javascript:alert(1)) https://name:pass@example.com `https://google.com`');
+  assert.equal(descendants(root).some(node=>node.tag==='a'),false);
 });

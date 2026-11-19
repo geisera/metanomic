@@ -155,7 +155,7 @@
 .formattedReply ul{list-style:disc}
 .formattedReply ol{list-style:decimal}
 .formattedReply li + li{margin-top:.3em}
-.formattedReply a{text-decoration:underline;text-underline-offset:2px}
+.formattedReply a{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
 .formattedReply a:focus-visible{outline-color:var(--chat-text)}
 .formattedReply :is(pre,code){font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 .formattedReply code{padding:.1em .3em;border-radius:4px;background:color-mix(in srgb,var(--chat-text) 10%,transparent)}

@@ -2,8 +2,28 @@
 export function renderReplyMarkdown(root: HTMLElement, text: string) {
   root.replaceChildren();
 
+  function appendLink(parent: HTMLElement, label: string, href: string) {
+    let safeUrl: URL | undefined;
+    try {
+      const url = new URL(href, location.origin);
+      if ((url.protocol === 'https:' || url.protocol === 'http:') && !url.username && !url.password) safeUrl = url;
+    } catch {
+      // An invalid destination still has a readable label.
+    }
+    if (!safeUrl) {
+      parent.append(label);
+      return;
+    }
+    const link = document.createElement('a');
+    link.textContent = label;
+    link.href = safeUrl.href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    parent.append(link);
+  }
+
   function appendInline(parent: HTMLElement, value: string) {
-    const pattern = /(!?\[[^\]\n]+\]\([^\)\n]+\)|\x60[^\x60\n]+\x60|\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*|_[^_\n]+_)/g;
+    const pattern = /!?\[[^\]\n]+\]\((?:[^()\n]|\([^()\n]*\))+\)|\x60[^\x60\n]+\x60|\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*|_[^_\n]+_|<https?:\/\/[^<>\s]+>|\bhttps?:\/\/[^\s<>\[\]"'\x60*]+/gi;
     let position = 0;
     for (const match of value.matchAll(pattern)) {
       parent.append(value.slice(position, match.index));
@@ -12,24 +32,20 @@ export function renderReplyMarkdown(root: HTMLElement, text: string) {
         parent.append(token.slice(2, token.indexOf(']')));
       } else if (token.startsWith('[')) {
         const close = token.indexOf(']');
-        const label = token.slice(1, close);
-        let safeUrl: URL | undefined;
-        try {
-          const url = new URL(token.slice(close + 2, -1), location.origin);
-          if ((url.protocol === 'https:' || url.protocol === 'http:') && !url.username && !url.password) safeUrl = url;
-        } catch {
-          // An invalid destination still has a readable label.
+        appendLink(parent, token.slice(1, close), token.slice(close + 2, -1));
+      } else if (token.startsWith('<')) {
+        const url = token.slice(1, -1);
+        appendLink(parent, url, url);
+      } else if (/^https?:/i.test(token)) {
+        let url = token.replace(/[.,!?;:]+$/, '');
+        const opening = url.match(/\(/g)?.length ?? 0;
+        let closing = url.match(/\)/g)?.length ?? 0;
+        while (closing > opening && url.endsWith(')')) {
+          url = url.slice(0, -1).replace(/[.,!?;:]+$/, '');
+          closing--;
         }
-        if (safeUrl) {
-          const link = document.createElement('a');
-          link.textContent = label;
-          link.href = safeUrl.href;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          parent.append(link);
-        } else {
-          parent.append(label);
-        }
+        appendLink(parent, url, url);
+        parent.append(token.slice(url.length));
       } else if (token.charCodeAt(0) === 96) {
         const code = document.createElement('code');
         code.textContent = token.slice(1, -1);
@@ -37,7 +53,7 @@ export function renderReplyMarkdown(root: HTMLElement, text: string) {
       } else {
         const bold = token.startsWith('**') || token.startsWith('__');
         const emphasis = document.createElement(bold ? 'strong' : 'em');
-        emphasis.textContent = token.slice(bold ? 2 : 1, bold ? -2 : -1);
+        appendInline(emphasis, token.slice(bold ? 2 : 1, bold ? -2 : -1));
         parent.append(emphasis);
       }
       position = match.index + token.length;
