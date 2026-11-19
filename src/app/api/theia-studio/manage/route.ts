@@ -156,8 +156,11 @@ export async function POST(req: Request) {
             return json({ ok: true });
         }
         if (b.action === 'delete-agent') {
-            await rest('studio_agents?id=eq.' + agent.id, { session: s, method: 'DELETE' });
-            return json({ ok: true });
+            if (text(b.confirm_name,80,1) !== agent.name)
+                throw new StudioError('Type the assistant name exactly to confirm deletion.');
+            const deleted=await rest<Agent[]>('studio_agents?id=eq.' + agent.id, { session: s, method: 'DELETE' });
+            if(!deleted[0])throw new StudioError('Assistant could not be deleted.',409);
+            return json({ ok: true, deleted_agent_id: agent.id });
         }
         if (b.action === 'save-document') {
             if(!b.id){const docs=await rest<Document[]>('studio_documents?select=id&agent_id=eq.'+agent.id,{session:s});if(docs.length>=tier.documents)throw new StudioError(`${tier.name} allows ${tier.documents} knowledge document(s) per assistant.`,400,'tier_limit');}
