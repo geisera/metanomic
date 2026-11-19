@@ -9,7 +9,7 @@ const icons = {
   embed: 'm8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18',
   profile: 'M20 21v-2a6 6 0 0 0-6-6h-4a6 6 0 0 0-6 6v2M16 6a4 4 0 1 0-8 0 4 4 0 0 0 8 0',
   security: 'M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6l-9-4Zm-4 10 3 3 5-6',
-  danger: 'M12 3a8 8 0 0 0-8 8c0 3 1.6 5.4 4 6.8V21h8v-3.2c2.4-1.4 4-3.8 4-6.8a8 8 0 0 0-8-8ZM8.5 11h.01M15.5 11h.01M10 17v2m4-2v2',
+  danger: 'M12 3 2.5 20h19L12 3Zm0 6v5m0 3h.01',
 } as const;
 
 export function SettingsIcon({name}:{name:keyof typeof icons}) {
