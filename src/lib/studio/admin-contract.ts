@@ -57,6 +57,7 @@ export type Account = {
 export type AccountDirectory = { accounts: Account[]; count: number; tiers: Tier[] };
 
 export const accountActions = {
+    send_account_email: { label: 'Send email', role: 'support' },
     update_account: { label: 'Edit profile', role: 'operations' },
     activate_account: { label: 'Activate sign-in', role: 'operations' },
     deactivate_account: { label: 'Deactivate sign-in', role: 'operations' },

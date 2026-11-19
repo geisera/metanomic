@@ -114,6 +114,8 @@ function accountHandlers({roles=['operations','billing'],isStaff=false}={}){
     };
     const handlers=load('src/lib/studio/admin-accounts.ts',{
         './admin-contract':contract,'./admin':admin,'./core':core,'./operations':{domainName:v=>new URL(v).hostname},
+        'node:crypto':{createHash:()=>({update:()=>({digest:()=> 'stable-send-id'})})},
+        './support-email':{sendSupportEmail:async(...data)=>{calls.push(['email',data]);return 'provider-id';}},
         './mail':{sendAuthLink:async(...data)=>{calls.push(['mail',data]);}},'./server':server,
     });
     return {calls,staff,...handlers};
@@ -163,4 +165,14 @@ test('Stats returns aggregate counts to MFA-verified staff and logs the access',
     assert.deepEqual(await response.json(),{members:3,tiers:[{id:'starter',members:3}]});
     assert.deepEqual(allowed.calls.find(call=>Array.isArray(call)&&call[0]==='rpc/studio_admin_stats')[1],{p_actor:actor});
     assert.equal(allowed.calls.find(call=>Array.isArray(call)&&call[0]==='studio_staff_audit')[1].action,'view_stats');
+});
+
+test('support email resolves the account recipient and requires review and fresh MFA',async()=>{
+ const service=accountHandlers({roles:['support']});
+ const body={ownerId:owner,expectedEmail:'old@example.invalid',reason:'Support reply',subject:'Setup help',message:'Your assistant is ready.',messageId:factor};
+ await assert.rejects(()=>service.changeAccount(service.staff,'send_account_email',body),/Confirm the recipient/);
+ await assert.rejects(()=>service.changeAccount(service.staff,'send_account_email',{...body,confirmSend:true}),/MFA required/);
+ await service.changeAccount(service.staff,'send_account_email',{...body,confirmSend:true,code:'123456',email:'attacker@example.invalid'});
+ assert.deepEqual(service.calls.find(call=>Array.isArray(call)&&call[0]==='email')[1],['old@example.invalid','Setup help','Your assistant is ready.','stable-send-id',actor]);
+ assert.equal(service.calls.filter(call=>Array.isArray(call)&&call[0]==='studio_staff_audit').at(-1)[1].after_state.status,'accepted');
 });

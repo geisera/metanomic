@@ -26,6 +26,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWork
     const [directory,setDirectory]=useState<AccountDirectory|null>(null);
     const [selected,setSelected]=useState<Account|null>(null);
     const [action,setAction]=useState<AccountAction|null>(null);
+    const [messageId,setMessageId]=useState('');
     const [plan,setPlan]=useState('pro');
     const [busy,setBusy]=useState(false);
     const [notice,setNotice]=useState('');
@@ -75,11 +76,12 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWork
             const result=await request<{account?:Account}>({
                 ...values,action,ownerId:selected?.owner_id,
                 expectedEmail:selected?.email,expectedName:selected?.display_name,
+                messageId,confirmSend:values.confirmSend==='on',
                 confirmOwnership:values.confirmOwnership==='on',
             });
             if(result.account){clearWorkspace();setSelected(result.account);}
             setAction(null);
-            setNotice(action==='reset_account_password'?'Password reset requested.':accountActions[action].label+' completed.');
+            setNotice(action==='send_account_email'?'Email accepted for delivery.':action==='reset_account_password'?'Password reset requested.':accountActions[action].label+' completed.');
             refresh(value=>value+1);
         }catch(cause){
             const problem=cause as Error&{status?:number;code?:string};
@@ -96,6 +98,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWork
         ...(selected.email_confirmed_at&&!selected.inactive?['reset_account_password'] as const:[]),
         'revoke_account_sessions',
     ]:[];
+    if(selected&&roles.includes('support'))activeAccountActions.push('send_account_email');
     if(selected&&billing)activeAccountActions.push('set_membership');
 
     return <section className={s.panel} aria-labelledby="accounts-heading">
@@ -145,7 +148,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWork
             </dl>
             {selected.is_staff&&<p className={s.meta}>Staff sign-in and identity are managed separately.</p>}
             <div className={s.row}>
-                {activeAccountActions.map(id=><button type="button" className="button button-outline" key={id} disabled={busy} onClick={()=>{setError('');setAction(id);}}>{accountActions[id].label}</button>)}
+                {activeAccountActions.map(id=><button type="button" className="button button-outline" key={id} disabled={busy} onClick={()=>{setError('');if(id==='send_account_email')setMessageId(crypto.randomUUID());setAction(id);}}>{accountActions[id].label}</button>)}
                 <button type="button" className="button button-outline" disabled={workspaceBusy||busy} onClick={()=>onOpenWorkspace(selected.owner_id)}>Open workspace</button>
             </div>
         </section>}
@@ -155,6 +158,12 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWork
             {action==='reset_account_password'&&<p>Sends a reset link to {selected?.email}.</p>}
             {action==='revoke_account_sessions'&&<p>Ends existing sessions. The account holder can sign in again.</p>}
             <form key={action+selected?.owner_id} onSubmit={save} className={s.form}>
+                {action==='send_account_email'&&selected&&<>
+                    <p>To <strong>{selected.email}</strong></p>
+                    <label>Subject<input name="subject" maxLength={160} required/></label>
+                    <label>Message<textarea name="message" rows={10} maxLength={12000} required/></label>
+                    <label className={s.check}><input name="confirmSend" type="checkbox" required/>I reviewed the recipient and message and am ready to send.</label>
+                </>}
                 {action==='update_account'&&selected&&<>
                     <label>Display name<input name="displayName" defaultValue={selected.display_name} maxLength={80}/></label>
                     <label>Email address<input name="email" type="email" defaultValue={selected.email} maxLength={254} required/></label>
@@ -168,7 +177,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWork
                 </>}
                 <label>Reason or case reference<textarea name="reason" minLength={3} maxLength={300} required/></label>
                 {reauth}
-                <div className={s.row}><button type="submit" className="button button-primary" disabled={busy}>Confirm change</button><button type="button" className="button button-outline" disabled={busy} onClick={()=>setAction(null)}>Cancel</button></div>
+                <div className={s.row}><button type="submit" className="button button-primary" disabled={busy}>{action==='send_account_email'?'Send email':'Confirm change'}</button><button type="button" className="button button-outline" disabled={busy} onClick={()=>setAction(null)}>Cancel</button></div>
             </form>
         </section>}
     </section>;

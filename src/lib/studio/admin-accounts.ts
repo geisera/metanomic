@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { sendSupportEmail } from './support-email';
 import { accountActions, type Account, type AccountAction, type AccountDirectory } from './admin-contract';
 import { requireStaffMfa, verifyStaffMfa, type studioStaff } from './admin';
 import { StudioError, text, uuid } from './core';
@@ -74,6 +76,26 @@ export async function changeAccount(staff:Staff, action:AccountAction, body:Reco
     if (!uuid(body.ownerId)) throw new StudioError('Choose an account.');
     const owner=body.ownerId;
     const account=await getAccount(actor,owner);
+    if (action==='send_account_email') {
+        if (body.expectedEmail!==account.email) throw new StudioError('This account’s email changed. Reopen the account before sending.',409);
+        const subject=text(body.subject,160,1),message=text(body.message,12000,1);
+        if (/[\r\n]/.test(subject)) throw new StudioError('Use a single line for the subject.');
+        if (!uuid(body.messageId)) throw new StudioError('Reopen the email composer before sending.');
+        if (body.confirmSend!==true) throw new StudioError('Confirm the recipient and message before sending.');
+        await verifyStaffMfa(staff,body.factorId,body.code,true);
+        const sendId=createHash('sha256').update(actor+':'+owner+':'+body.messageId).digest('hex');
+        const details={recipient:account.email,subject,send_id:sendId};
+        await audit(actor,owner,'send_account_email_requested',reason,null,details);
+        let emailId:string;
+        try {
+            emailId=await sendSupportEmail(account.email,subject,message,sendId,actor);
+        } catch(error) {
+            await audit(actor,owner,'send_account_email_unconfirmed',reason,null,details);
+            throw error;
+        }
+        await audit(actor,owner,'send_account_email',reason,null,{...details,email_id:emailId,status:'accepted'});
+        return {account};
+    }
     if (account.is_staff) throw new StudioError('Use the staff identity tools for changes to a staff account.',403);
 
     const patch:Record<string,unknown>={};

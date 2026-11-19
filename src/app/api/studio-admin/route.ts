@@ -25,7 +25,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         if (!sameOrigin(request)) throw new StudioError('Cross-origin requests are not permitted.', 403);
-        const body = await parseBody(request, 8000);
+        const body = await parseBody(request, 24000);
         if (!body) throw new StudioError('Invalid request.');
         const staff = await studioStaff();
         const actor = staff.session.user.id;
