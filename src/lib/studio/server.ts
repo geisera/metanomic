@@ -45,8 +45,8 @@ catch {
     return null;
 } if (!uuid(sid) || !await rest<boolean>('rpc/studio_session_active', { admin: true, body: { p_user: u.id, p_session: sid } }))
     return null; return { token, user: u }; }
-export async function session(): Promise<Session> { const jar = await cookies(); let token = jar.get(ACCESS)?.value; const current = token ? await validate(token) : null; if (current) {
-    const claim = readImpersonation(jar.get(IMPERSONATION_COOKIE)?.value, current.user.id);
+export async function session(ignoreImpersonation = false): Promise<Session> { const jar = await cookies(); let token = jar.get(ACCESS)?.value; const current = token ? await validate(token) : null; if (current) {
+    const claim = ignoreImpersonation ? null : readImpersonation(jar.get(IMPERSONATION_COOKIE)?.value, current.user.id);
     if (claim) {
         const target = await authFetch('admin/users/' + claim.ownerId, undefined, undefined, true);
         if (target.ok) {
