@@ -44,7 +44,7 @@ test('remote appearance overrides old attributes and configuration failures hide
  for(const ok of [true,false]){
  let host,shadow,requested;
  function element(tag){return {tag,style:{},children:[],setAttribute(){},addEventListener(){},attachShadow(){shadow=element('shadow');return shadow;},append(...children){this.children.push(...children);},classList:{toggle(){}},focus(){}};}
- await vm.runInNewContext(embedLoader,{URL,document:{currentScript:{src:'https://metanomic.ai/theia-embed.js',dataset:{agent:agent.id,label:'Old label',color:'#ff0000'}},createElement:element,body:{append(el){host=el;}}},window:{addEventListener(){}},fetch:async url=>{requested=String(url);return {ok,json:async()=>({label:'Saved label',color:'#112233'})};}});
+ await vm.runInNewContext(embedLoader,{URL,document:{currentScript:{src:'https://metanomic.ai/theia-embed.js',dataset:{agent:agent.id,label:'Old label',color:'#ff0000'}},createElement:element,body:{append(el){host=el;}}},window:{addEventListener(){}},fetch:async (url,options)=>{requested=String(url);assert.equal(options.referrerPolicy,'strict-origin');assert.equal(options.credentials,'omit');return {ok,json:async()=>({label:'Saved label',color:'#112233'})};}});
  assert.equal(requested,'https://metanomic.ai/theia-config/'+agent.id);
  if(ok){const button=shadow.children.find(e=>e.tag==='button');assert.equal(button.textContent,'Saved label');assert.equal(button.style.background,'#112233');}else assert.equal(host,undefined);
  }
