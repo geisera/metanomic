@@ -15,7 +15,7 @@ export default function Studio(){return <GuardProvider><StudioContent/></GuardPr
 function StudioContent(){
  const router=useRouter();
  const [user,setUser]=useState<User|null>(null),[data,setData]=useState<Snapshot|null>(null),[loading,setLoading]=useState(true),[view,setView]=useState<'agents'|'settings'|'account'|'help'>('agents'),[error,setError]=useState('');const {leave}=useGuard();
- const load=useCallback(async()=>{try{const d=await call('auth');setUser(d.user);setData(await call('manage'));}catch(e){setUser(null);if((e as Error).message==='Sign in to continue.')router.replace(base+'/login');else setError((e as Error).message);}finally{setLoading(false);}},[router]);
+ const load=useCallback(async()=>{try{const d=await call('auth');setUser({...d.user, impersonating:d.impersonating, impersonationExpiresAt:d.impersonationExpiresAt});setData(await call('manage'));}catch(e){setUser(null);if((e as Error).message==='Sign in to continue.')router.replace(base+'/login');else setError((e as Error).message);}finally{setLoading(false);}},[router]);
  const refresh=useCallback(async()=>{setData(await call('manage'));},[]);
  useEffect(()=>{queueMicrotask(()=>void load());},[load]);
  function navigate(next:typeof view){if(leave())setView(next);}
