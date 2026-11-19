@@ -1,5 +1,5 @@
 import { parseBody, sameOrigin } from '@/lib/knowledge-server';
-import { actions, accountActions, type AccountAction, type AdminAction, type Workspace } from '@/lib/studio/admin-contract';
+import { actions, accountActions, type AccountAction, type AdminAction, type StudioStats, type Workspace } from '@/lib/studio/admin-contract';
 import { enrollStaffMfa, requireStaffMfa, studioStaff, verifyStaffMfa } from '@/lib/studio/admin';
 import { changeAccount, listAccounts } from '@/lib/studio/admin-accounts';
 import { StudioError, text, uuid } from '@/lib/studio/core';
@@ -37,6 +37,12 @@ export async function POST(request: Request) {
         requireStaffMfa(staff);
         await gate('studio-staff-action:' + actor, 120, 3600);
 
+        if (body.action === 'stats') {
+            const stats=await rest<StudioStats|null>('rpc/studio_admin_stats',{admin:true,body:{p_actor:actor}});
+            if (!stats) throw new StudioError('Staff access is required.',403);
+            await auditRead(actor,'view_stats','Studio totals');
+            return json(stats);
+        }
         if (body.action === 'accounts') return json(await listAccounts(staff,body));
         if (typeof body.action==='string'&&Object.hasOwn(accountActions,body.action))
             return json(await changeAccount(staff,body.action as AccountAction,body));

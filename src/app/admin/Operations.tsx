@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { actions, accountActions, type AccountAction, type AdminAction, type StaffRole, type Workspace } from '@/lib/studio/admin-contract';
 import Accounts from './Accounts';
+import Stats from './Stats';
 import s from './operations.module.css';
 
 type Staff = { roles: StaffRole[]; verified: boolean; factors: { id: string; name?: string }[] };
@@ -31,6 +32,7 @@ async function submit<T>(body?: object, endpoint = '/api/studio-admin'): Promise
 }
 
 export default function Operations() {
+    const [view,setView] = useState<'accounts'|'stats'>('accounts');
     const [staff,setStaff] = useState<Staff|null>(null);
     const [state,setState] = useState<'loading'|'sign-in'|'blocked'|'ready'>('loading');
     const [busy,setBusy] = useState(false);
@@ -115,7 +117,7 @@ export default function Operations() {
 
     return <main className={s.shell}><div className={s.container}>
         <header className={s.header}><div><p className={s.eyebrow}>Metanomic · Internal</p><h1>Studio operations</h1></div><div className={s.row}><Link href="/assistant-studio/dashboard">Assistant Studio</Link>{staff&&<button type="button" className="button button-outline" disabled={busy} onClick={()=>void run(async()=>{
-            await submit({action:'logout'},'/api/theia-studio/auth');setStaff(null);setEnrollment(null);setWorkspace(null);setChange(null);setState('sign-in');
+            await submit({action:'logout'},'/api/theia-studio/auth');setStaff(null);setEnrollment(null);setWorkspace(null);setChange(null);setView('accounts');setState('sign-in');
         })}>Sign out</button>}</div></header>
         {error&&<p className={s.message} data-error="true" role="alert">{error}</p>}
         {notice&&<p className={s.message} role="status">{notice}</p>}
@@ -143,6 +145,12 @@ export default function Operations() {
             </form>}
         </section>}
         {staff?.verified&&<>
+            <nav className={s.row} aria-label="Operations views">
+                <button type="button" className={'button '+(view==='accounts'?'button-primary':'button-outline')} aria-pressed={view==='accounts'} onClick={()=>setView('accounts')}>Accounts</button>
+                <button type="button" className={'button '+(view==='stats'?'button-primary':'button-outline')} aria-pressed={view==='stats'} onClick={()=>setView('stats')}>Stats</button>
+            </nav>
+            {view==='stats'&&<Stats request={submit} onSessionChange={load}/>}
+            <div className={s.adminView} hidden={view!=='accounts'}>
             <Accounts roles={staff.roles} request={submit} onOpenWorkspace={open} onSessionChange={load}
                 workspaceBusy={busy} workspaceRevision={workspaceRevision} clearWorkspace={()=>{setWorkspace(null);setChange(null);}}
                 reauth={<><p className={s.meta}>Enter a fresh authenticator code to authorize this change.</p><FactorSelect staff={staff}/><AuthenticatorCode/></>}/>
@@ -211,6 +219,7 @@ export default function Operations() {
                     </form>
                 </section>}
             </>}
+            </div>
         </>}
     </div></main>;
 }

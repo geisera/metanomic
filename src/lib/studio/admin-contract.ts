@@ -67,3 +67,23 @@ export const accountActions = {
     save_membership_plan: { label: 'Configure membership plans', role: 'billing' },
 } as const;
 export type AccountAction = keyof typeof accountActions;
+
+export type StudioStats = {
+    as_of: string;
+    members: number;
+    active_members: number;
+    verified_members: number;
+    new_members: number;
+    suspended_workspaces: number;
+    assistants: number;
+    published_assistants: number;
+    live_embeds: number;
+    knowledge_documents: number;
+    messages: number;
+    failed: number;
+    tiers: {
+        id: string; name: string; configured: boolean; members: number; active_members: number;
+        assistants: number; live_embeds: number; messages: number;
+    }[];
+    days: {day:string; messages:number; failed:number}[];
+};

@@ -33,6 +33,7 @@ function route({roles=['support'],level='aal2',status='verified',allowOrigin=tru
             if(path.startsWith('studio_staff?'))return roles.length?[{roles}]:[];
             if(path==='rpc/studio_admin_workspace')return {owner_id:owner};
             if(path==='rpc/studio_admin_lookup')return [];
+            if(path==='rpc/studio_admin_stats')return {members:3,tiers:[{id:'starter',members:3}]};
         },
         failure:e=>Response.json({error:e.message,code:e.code},{status:e.status||503}),
     };
@@ -149,4 +150,17 @@ test('staff identities are protected and changing membership requires billing pe
     const operations=accountHandlers({roles:['operations']});
     await assert.rejects(()=>operations.changeAccount(operations.staff,'set_membership',{ownerId:owner,reason:'Test',tier:'pro',code:'123456'}),/No access/);
     assert.equal(operations.calls.length,0);
+});
+
+test('Stats returns aggregate counts to MFA-verified staff and logs the access',async()=>{
+    const blocked=route({level:'aal1'});
+    assert.equal((await blocked.post({action:'stats'})).status,403);
+    assert.ok(!blocked.calls.some(call=>Array.isArray(call)&&call[0]==='rpc/studio_admin_stats'));
+    const allowed=route();
+    const response=await allowed.post({action:'stats'});
+    assert.equal(response.status,200);
+    assert.equal(response.headers.get('Cache-Control'),'no-store');
+    assert.deepEqual(await response.json(),{members:3,tiers:[{id:'starter',members:3}]});
+    assert.deepEqual(allowed.calls.find(call=>Array.isArray(call)&&call[0]==='rpc/studio_admin_stats')[1],{p_actor:actor});
+    assert.equal(allowed.calls.find(call=>Array.isArray(call)&&call[0]==='studio_staff_audit')[1].action,'view_stats');
 });
