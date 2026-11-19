@@ -80,7 +80,7 @@ export async function runtimeAgent(id: string) { if (!uuid(id))
 export async function apiKey(owner: string, s?: Session) { const rows = await rest<{
     ciphertext: string;
 }[]>('studio_keys?owner_id=eq.' + owner + '&select=ciphertext&limit=1', s ? { session: s } : { admin: true }); if (!rows[0])
-    throw new StudioError('No API key connected. Connect a key in Account to continue.', 503, 'missing_key'); return decrypt(rows[0].ciphertext, owner); }
+    throw new StudioError('No API key connected. Connect a key in Studio settings to continue.', 503, 'missing_key'); return decrypt(rows[0].ciphertext, owner); }
 export async function publishedDocs(agent: Agent, s?: Session) { return rest<Document[]>('studio_documents?agent_id=eq.' + agent.id + '&published=eq.true&limit=20', s ? { session: s } : { admin: true }); }
 export function failure(e: unknown) {
     const error = e instanceof StudioError ? e : new StudioError('Studio is temporarily unavailable. Please try again.', 503);

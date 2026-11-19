@@ -46,3 +46,23 @@ test('a saved send-button override takes precedence over the light palette in pr
  assert.match(html,/--chat-send-background:#ce4319/);
  assert.match(appearanceCss(light),/--chat-send-background:#ce4319/);
 });
+
+test('OpenAI key management is shared in Studio settings and no longer appears in Account',()=>{
+  const OpenAIConnection=load('src/app/assistant-studio/OpenAIConnection.tsx').default;
+  const props={onUpdate:async()=>{}};
+  const empty=render(OpenAIConnection,props);
+  assert.match(empty,/No key connected/);
+  assert.match(empty,/Connect key/);
+  assert.doesNotMatch(empty,/Remove API key/);
+  const connected=render(OpenAIConnection,{...props,keyInfo:{last_four:'1234',validated_at:new Date().toISOString()}});
+  assert.match(connected,/ending 1234/);
+  assert.match(connected,/Replace key/);
+  assert.match(connected,/Remove API key/);
+  assert.match(connected,/Removing it unpublishes every assistant/);
+  const Account=load('src/app/assistant-studio/Account.tsx').Account;
+  assert.doesNotMatch(render(Account,{...props,user:{id:'test',name:'Test',email:'test@example.invalid',is_admin:true}}),/name="key"|Remove API key|Where do I get a key/);
+  const Workspace=load('src/app/assistant-studio/Workspace.tsx').default;
+  const assistant=render(Workspace,{data:{agents:[agent],keys:[{}],usage:[],documents:[]},refresh:async()=>{},onKey:()=>{}});
+  assert.match(assistant,/Manage OpenAI key/);
+  assert.doesNotMatch(assistant,/name="key"/);
+});
