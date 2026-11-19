@@ -111,7 +111,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWork
                 <label>Account status<select value={fields.status} onChange={event=>setFields({...fields,status:event.target.value})}><option value="">Any status</option><option value="active">Sign-in active</option><option value="inactive">Sign-in inactive</option><option value="suspended">Workspace suspended</option></select></label>
                 <label>Email verification<select value={fields.verified} onChange={event=>setFields({...fields,verified:event.target.value})}><option value="">Any verification status</option><option value="verified">Verified</option><option value="unverified">Unverified</option></select></label>
                 <button type="submit" className="button button-primary">Apply filters</button>
-                <button type="button" className="button button-outline" onClick={()=>{setFields(initial);setFilter({...initial});setError('');setDirectory(null);}}>Clear</button>
+                <button type="button" className="button button-outline" disabled={busy||workspaceBusy} onClick={()=>{setFields(initial);setFilter({...initial});setSelected(null);setAction(null);setMessageId('');clearWorkspace();setError('');setNotice('');setDirectory(null);}}>Clear</button>
             </div>
         </form>
         {error&&<p role="alert" className={s.message} data-error="true">{error}</p>}
