@@ -137,3 +137,7 @@
 .assistantCard{min-width:0;border:1px solid var(--muted);border-radius:8px;overflow-wrap:anywhere}.assistantCard[data-selected=true]{border-color:var(--lime);background:var(--site-11212d)}.assistantCard .agentButton{display:block;width:100%;border:0;border-radius:7px 7px 0 0;background:transparent;padding:16px 16px 4px}.assistantCard .headerUsage{width:auto;margin:0;padding:0 16px 16px}
 
 .impersonationBar{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:max-content;z-index:100;display:flex;align-items:center;gap:12px;max-width:min(620px,calc(100vw - 24px));padding:10px 14px;border:1px solid var(--lime);border-radius:10px;background:var(--site-11212d);box-shadow:0 12px 30px rgba(0,0,0,.35);font-size:13px;line-height:1.4}.impersonationBar strong{color:var(--foreground)}.impersonationBar span{min-width:0;overflow-wrap:anywhere;color:var(--muted)}.impersonationBar button{margin-left:auto;white-space:nowrap}@media(max-width:650px){.impersonationBar{width:calc(100% - 24px);align-items:center;flex-wrap:wrap}.impersonationBar button{margin-left:0}}
+
+.connectionVerified{display:flex;align-items:center;gap:12px;padding:16px;border:1px solid var(--lime);border-radius:8px;background:var(--site-11212d);color:var(--foreground)}
+.connectionVerified svg{flex:none;color:var(--lime)}
+.connectionVerified p{margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.5}

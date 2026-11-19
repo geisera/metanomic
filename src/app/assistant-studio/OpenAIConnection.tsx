@@ -35,7 +35,14 @@ export default function OpenAIConnection({keyInfo,onUpdate}:{keyInfo?:Snapshot['
    <h2 id='openai-connection-heading' ref={heading} tabIndex={-1}>OpenAI connection</h2>
    <ErrorNotice error={error}/>
    <Notice>{notice}</Notice>
-   <p className={s.help}>{keyInfo?`Connected · ending ${keyInfo.last_four} · validated ${new Date(keyInfo.validated_at).toLocaleString()}`:'No key connected.'}</p>
+   <div role="status" className={keyInfo ? s.connectionVerified : s.help}>
+     {keyInfo ? <>
+       <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+         <circle cx="12" cy="12" r="10"/><path d="m7 12 3 3 7-7" strokeLinecap="round" strokeLinejoin="round"/>
+       </svg>
+       <div><strong>API key connected</strong><p>Key ending in {keyInfo.last_four} · Last verified by OpenAI <time dateTime={keyInfo.validated_at}>{new Date(keyInfo.validated_at).toLocaleString()}</time></p></div>
+     </> : 'No key connected.'}
+   </div>
    <p className={s.help}>Assistants use this shared key by default. Replacing it applies to assistants that use it. Removing it unpublishes those assistants.</p>
    <p className={s.help}>OpenAI bills you directly for usage. Metanomic encrypts your key and keeps it on the server. We check that your key works, but not your OpenAI balance or model access.</p>
    <a className={s.textButton} href='https://platform.openai.com/api-keys' target='_blank' rel='noreferrer'>Where do I get a key? ↗</a>
