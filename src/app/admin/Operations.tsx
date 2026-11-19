@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { actions, type AdminAction, type Lookup, type StaffRole, type Workspace } from '@/lib/studio/admin-contract';
 import s from './operations.module.css';
 
@@ -34,7 +35,7 @@ export default function Operations() {
     const [busy,setBusy] = useState(false);
     const [error,setError] = useState('');
     const [notice,setNotice] = useState('');
-    const [enrollment,setEnrollment] = useState<{factorId:string;secret:string}|null>(null);
+    const [enrollment,setEnrollment] = useState<{factorId:string;secret:string;qrImage:string|null}|null>(null);
     const [results,setResults] = useState<Lookup[]|null>(null);
     const [workspace,setWorkspace] = useState<Workspace|null>(null);
     const [change,setChange] = useState<Change|null>(null);
@@ -46,6 +47,7 @@ export default function Operations() {
         } catch (e) {
             const problem=e as Error & {status?:number};
             setStaff(null);
+            setEnrollment(null);
             setWorkspace(null);
             setResults(null);
             setChange(null);
@@ -134,7 +136,15 @@ export default function Operations() {
         {state==='blocked'&&<section className={s.panel+' '+s.authPanel}><h2>Staff access required</h2><p>Sign in with a Metanomic account that has Studio operations access.</p><Link href="/assistant-studio/login">Go to sign-in</Link></section>}
         {staff&&!staff.verified&&<section className={s.panel+' '+s.authPanel}><h2>Verify your authenticator</h2>
             {!staff.factors.length&&!enrollment&&<><p>Set up an authenticator app to access customer records and operations.</p><button className="button button-primary" disabled={busy} onClick={()=>void run(async()=>setEnrollment(await submit({action:'enroll'})))}>Set up authenticator</button></>}
-            {enrollment&&<><p>Add a time-based account called Metanomic to your authenticator app, then enter this setup key.</p><code>{enrollment.secret}</code><p className={s.meta}>Keep this setup key private.</p></>}
+            {enrollment&&<>{enrollment.qrImage&&<>
+                <p>Scan this QR code with your authenticator app, then enter the six-digit code it generates.</p>
+                <Image src={enrollment.qrImage} alt="QR code for Metanomic staff MFA setup" className={s.mfaQr} width={208} height={208} unoptimized/>
+            </>}
+            {!enrollment.qrImage&&<p>Add a time-based account called Metanomic to your authenticator app, then enter the six-digit code it generates.</p>}
+            <details open={enrollment.qrImage?undefined:true}><summary>{enrollment.qrImage?'Can’t scan? Use the setup key':'Manual setup key'}</summary>
+                <code>{enrollment.secret}</code>
+            </details>
+            <p className={s.meta}>Keep the QR code and setup key private.</p></>}
             {(staff.factors.length>0||enrollment)&&<form className={s.form} onSubmit={verify}>
                 {enrollment?<input type="hidden" name="factorId" value={enrollment.factorId}/>:<FactorSelect staff={staff}/>}
                 <AuthenticatorCode/><button className="button button-primary" disabled={busy}>Verify code</button>

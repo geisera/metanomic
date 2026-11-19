@@ -17,13 +17,14 @@ const owner='c35e6552-f086-4f0a-9e2d-0a04d3d06b8f';
 const factor='e9ca2204-9208-47e3-a276-47ec9d97c3c7';
 const token=level=>'header.'+Buffer.from(JSON.stringify({aal:level})).toString('base64url')+'.signature';
 
-function route({roles=['support'],level='aal2',status='verified',allowOrigin=true}={}) {
+function route({roles=['support'],level='aal2',status='verified',allowOrigin=true,qrCode}={}) {
     const calls=[];
     const server={
         session:async()=>({token:token(level),user:{id:actor,factors:[{id:factor,factor_type:'totp',status}]}}),
         gate:async()=>{},
         authFetch:async (path)=>{
             calls.push(path);
+            if(path==='factors')return Response.json({id:factor,totp:{secret:'FIXTURESECRET',qr_code:qrCode}});
             return path.endsWith('/challenge')?Response.json({id:factor}):Response.json({access_token:token('aal2'),refresh_token:'fixture',user:{id:actor}});
         },
         setSession:async()=>{calls.push('session_updated');},
@@ -73,4 +74,17 @@ test('workspace restoration requires fresh verification before invoking the audi
     const write=app.calls.findIndex(call=>Array.isArray(call)&&call[0]==='rpc/studio_admin_change');
     assert.ok(write>app.calls.indexOf('session_updated'));
     assert.equal(app.calls[write][1].p_reason,'Case resolved');
+});
+
+test('staff enrollment returns the QR as an inline SVG image with a manual fallback',async()=>{
+    const svg='<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"/></svg>';
+    for(const qrCode of [svg,'<?xml version="1.0"?>\n'+svg,undefined]){
+        const app=route({level:'aal1',status:'unverified',qrCode});
+        const response=await app.post({action:'enroll'});
+        assert.equal(response.status,200);
+        assert.equal(response.headers.get('Cache-Control'),'no-store');
+        assert.deepEqual(await response.json(),{
+            factorId:factor,secret:'FIXTURESECRET',qrImage:qrCode?'data:image/svg+xml;base64,'+Buffer.from(qrCode).toString('base64'):null,
+        });
+    }
 });

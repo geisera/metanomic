@@ -39,3 +39,4 @@
 .status{align-self:start;justify-self:start;font-size:13px;padding:4px 10px;border:1px solid currentColor;border-radius:999px}
 .confirm{position:sticky;bottom:12px;z-index:2}
 @media(max-width:600px){.confirm{position:static}.facts div{grid-template-columns:1fr;gap:0}}
+.mfaQr{display:block;width:min(208px,100%);height:auto;padding:12px;background:#fff;border-radius:8px}
