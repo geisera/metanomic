@@ -72,7 +72,7 @@ export async function POST(req: Request) {
                 (await cookies()).delete(IMPERSONATION_COOKIE);
                 return json({ ok: true, impersonationEnded: true });
             }
-            if (['profile','password','email','delete'].includes(String(b.action)))
+            if (['password','email','delete'].includes(String(b.action)))
                 throw new StudioError('Exit View as user before changing account security or profile settings.', 403, 'impersonation_read_only');
         }
         if (b.action === 'logout' || b.action === 'logout-all') {
@@ -83,9 +83,14 @@ export async function POST(req: Request) {
             return json({ ok: true });
         }
         if (b.action === 'profile') {
-            const r = await authFetch('user', { data: { display_name: text(b.name, 80) } }, s.token, false, 'PUT');
+            const name = text(b.name, 80);
+            const r = s.impersonatedBy
+                ? await authFetch('admin/users/' + s.user.id, { user_metadata: { ...(s.user.user_metadata || {}), display_name: name } }, undefined, true, 'PUT')
+                : await authFetch('user', { data: { display_name: name } }, s.token, false, 'PUT');
             if (!r.ok)
                 throw new StudioError('Profile update failed.');
+            if (s.impersonatedBy)
+                await rest('studio_staff_audit', { admin:true, body:{ actor_id:s.impersonatedBy, owner_id:s.user.id, action:'impersonated_profile', reason:'Profile updated while viewing as user' }, prefer:'return=minimal' });
             return json({ ok: true });
         }
         const recovery = (await cookies()).get('theia_studio_recovery')?.value === fingerprint('recovery:' + s.user.id + ':' + s.token);
