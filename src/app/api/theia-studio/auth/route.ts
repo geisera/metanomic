@@ -1,3 +1,5 @@
+import { after } from 'next/server';
+import { sendStudioWelcome } from '@/lib/studio/welcome';
 import { accountLabel } from '@/lib/studio/account-label';
 import { cookies } from 'next/headers';
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
@@ -64,6 +66,12 @@ export async function POST(req: Request) {
                 throw new StudioError('Sign-in could not be completed. Request a new link.', 401);
             if (d.access_token) {
                 await setSession(d);
+                if (b.type === 'signup' && d.user?.id && d.user.email && d.user.email_confirmed_at) {
+                    after(async () => {
+                        try { await sendStudioWelcome(d.user.id, d.user.email); }
+                        catch { console.error('Studio welcome could not record the send outcome.'); }
+                    });
+                }
                 if (b.type === 'recovery')
                     (await cookies()).set('theia_studio_recovery', fingerprint('recovery:' + d.user.id + ':' + d.access_token), { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', path: '/', maxAge: 600 });
             }
