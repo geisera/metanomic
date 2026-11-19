@@ -10,6 +10,7 @@ const initial:Filters={query:'',tier:'',status:'',verified:'',page:1};
 const date=(value:string|null)=>value?new Date(value).toLocaleString():'Never';
 const pageSize=25;
 type Props={
+    membershipView:boolean;
     roles:StaffRole[];
     reauth:ReactNode;
     request:Request;
@@ -21,14 +22,13 @@ type Props={
     onSessionChange:()=>Promise<void>;
 };
 
-export default function Accounts({roles,reauth,request,onOpenWorkspace,onImpersonate,clearWorkspace,workspaceBusy,workspaceRevision,onSessionChange}:Props){
+export default function Accounts({membershipView,roles,reauth,request,onOpenWorkspace,onImpersonate,clearWorkspace,workspaceBusy,workspaceRevision,onSessionChange}:Props){
     const [fields,setFields]=useState(initial);
     const [filter,setFilter]=useState(initial);
     const [directory,setDirectory]=useState<AccountDirectory|null>(null);
     const [selected,setSelected]=useState<Account|null>(null);
     const [action,setAction]=useState<AccountAction|null>(null);
     const [messageId,setMessageId]=useState('');
-    const [plan,setPlan]=useState('pro');
     const [busy,setBusy]=useState(false);
     const [notice,setNotice]=useState('');
     const [error,setError]=useState('');
@@ -41,7 +41,6 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onImperso
     const plans=directory?.tiers??[];
     const operations=roles.includes('operations');
     const billing=roles.includes('billing');
-    const currentPlan=plans.find(tier=>tier.id===plan);
 
     useEffect(()=>{
         let current=true;
@@ -102,6 +101,8 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onImperso
     if(selected&&roles.includes('support'))activeAccountActions.push('send_account_email');
     if(selected&&billing)activeAccountActions.push('set_membership');
 
+    if(membershipView && billing) return <MembershipPlans plans={plans} ready={directory!==null} request={request} reauth={reauth} onSaved={()=>refresh(value=>value+1)} loadError={directory===null?error:''}/>;
+
     return <section className={s.panel} aria-labelledby="accounts-heading">
         <h2 id="accounts-heading">Accounts</h2>
         <p className={s.meta}>Search and select an account to review its profile, membership, and sign-in status.</p>
@@ -136,7 +137,6 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onImperso
                 <button className="button button-outline" type="button" disabled={filter.page*pageSize>=directory.count} onClick={()=>move(filter.page+1)}>Next</button>
             </div>}
         </>}
-        {billing&&<div><button type="button" className="button button-outline" onClick={()=>{setError('');setAction('save_membership_plan');}}>Configure membership plans</button></div>}
         {selected&&<section className={s.panel} aria-labelledby="selected-account">
             <h3 id="selected-account" ref={accountHeading} tabIndex={-1}>{selected.display_name||selected.email}</h3>
             <dl className={s.facts}>
@@ -171,15 +171,54 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,onImperso
                 </>}
                 {(action==='update_account'||action==='verify_account_email')&&<label className={s.check}><input name="confirmOwnership" type="checkbox" required={action==='verify_account_email'}/> {action==='update_account'?'If I changed the address, I verified the replacement address with the account owner.':'I verified this address with the account owner.'}</label>}
                 {action==='set_membership'&&selected&&<><label>Membership<select name="tier" defaultValue={selected.tier_id} required>{plans.map(tier=><option key={tier.id} value={tier.id}>{tier.name}</option>)}</select></label><p className={s.meta}>Sets the base membership. An active override still applies until it expires or is cleared.</p></>}
-                {action==='save_membership_plan'&&<>
-                    <p>These limits apply to all accounts on the selected plan. A plan becomes selectable as soon as you save its limits.</p>
-                    <label>Plan<select name="tier" value={plan} onChange={event=>setPlan(event.target.value)}><option value="starter">Starter</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select></label>
-                    <div key={plan} className={s.row}><label>Assistants<input type="number" name="assistants" min={1} max={10} defaultValue={currentPlan?.assistants} required/></label><label>Websites per assistant<input type="number" name="websites" min={1} max={10} defaultValue={currentPlan?.websites} required/></label><label>Documents per assistant<input type="number" name="documents" min={1} max={20} defaultValue={currentPlan?.documents} required/></label></div>
-                </>}
+                
                 <label>Reason or case reference<textarea name="reason" minLength={3} maxLength={300} required/></label>
                 {reauth}
                 <div className={s.row}><button type="submit" className="button button-primary" disabled={busy}>{action==='send_account_email'?'Send email':'Confirm change'}</button><button type="button" className="button button-outline" disabled={busy} onClick={()=>setAction(null)}>Cancel</button></div>
             </form>
         </section>}
+    </section>;
+}
+
+function MembershipPlans({plans,ready,request,reauth,onSaved,loadError}:{
+    plans:AccountDirectory['tiers'];ready:boolean;request:Request;reauth:ReactNode;onSaved:()=>void;loadError:string;
+}){
+    const [plan,setPlan]=useState('pro');
+    const [busy,setBusy]=useState(false);
+    const [notice,setNotice]=useState('');
+    const [error,setError]=useState('');
+    const currentPlan=plans.find(tier=>tier.id===plan);
+
+    async function save(event:FormEvent<HTMLFormElement>){
+        event.preventDefault();
+        if(busy)return;
+        const form=event.currentTarget;
+        const fields=Object.fromEntries(new FormData(form));
+        setBusy(true);setNotice('');setError('');
+        try{
+            await request({...fields,action:'save_membership_plan'});
+            form.reset();
+            setNotice('Membership plan saved.');
+            onSaved();
+        }catch(cause){
+            setError((cause as Error).message);
+        }finally{
+            setBusy(false);
+        }
+    }
+    return <section className={s.panel} aria-labelledby="membership-heading">
+        <h2 id="membership-heading">Membership configuration</h2>
+        {(loadError||error)&&<p role="alert">{loadError||error}</p>}
+        {notice&&<p role="status">{notice}</p>}
+        {ready?<form className={s.form} onSubmit={save}>
+            <fieldset disabled={busy} className={s.form}>
+                    <p>These limits apply to all accounts on the selected plan. A plan becomes selectable as soon as you save its limits.</p>
+                    <label>Plan<select name="tier" value={plan} onChange={event=>setPlan(event.target.value)}><option value="starter">Starter</option><option value="pro">Pro</option><option value="enterprise">Enterprise</option></select></label>
+                    <div key={[plan,currentPlan?.assistants,currentPlan?.websites,currentPlan?.documents].join('-')} className={s.row}><label>Assistants<input type="number" name="assistants" min={1} max={10} defaultValue={currentPlan?.assistants} required/></label><label>Websites per assistant<input type="number" name="websites" min={1} max={10} defaultValue={currentPlan?.websites} required/></label><label>Documents per assistant<input type="number" name="documents" min={1} max={20} defaultValue={currentPlan?.documents} required/></label></div>
+                <label>Reason or case reference<textarea name="reason" minLength={3} maxLength={300} required/></label>
+                {reauth}
+                <button className="button button-primary" type="submit">Save plan</button>
+            </fieldset>
+        </form>:!loadError&&<p role="status">Loading membership plans…</p>}
     </section>;
 }

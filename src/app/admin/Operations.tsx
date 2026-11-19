@@ -32,7 +32,7 @@ async function submit<T>(body?: object, endpoint = '/api/studio-admin'): Promise
 }
 
 export default function Operations() {
-    const [view,setView] = useState<'accounts'|'stats'>('accounts');
+    const [view,setView] = useState<'accounts'|'membership'|'stats'>('accounts');
     const [staff,setStaff] = useState<Staff|null>(null);
     const [state,setState] = useState<'loading'|'sign-in'|'blocked'|'ready'>('loading');
     const [busy,setBusy] = useState(false);
@@ -160,16 +160,16 @@ export default function Operations() {
         {staff?.verified&&<>
             <nav className={s.row} aria-label="Operations views">
                 <button type="button" className={'button '+(view==='accounts'?'button-primary':'button-outline')} aria-pressed={view==='accounts'} onClick={()=>setView('accounts')}>Accounts</button>
+                {billing&&<button type="button" className={'button '+(view==='membership'?'button-primary':'button-outline')} aria-pressed={view==='membership'} onClick={()=>setView('membership')}>Membership configuration</button>}
                 <button type="button" className={'button '+(view==='stats'?'button-primary':'button-outline')} aria-pressed={view==='stats'} onClick={()=>setView('stats')}>Stats</button>
             </nav>
             {view==='stats'&&<Stats request={submit} onSessionChange={load}/>}
-            <div className={s.adminView} hidden={view!=='accounts'}>
-            <Accounts roles={staff.roles} request={submit} onOpenWorkspace={open} onSessionChange={load}
+            <div className={s.adminView} hidden={view==='stats'}>
+            <Accounts membershipView={view==='membership'} roles={staff.roles} request={submit} onOpenWorkspace={open} onSessionChange={load}
                 workspaceBusy={busy} workspaceRevision={workspaceRevision} onImpersonate={beginImpersonation} clearWorkspace={()=>{setWorkspace(null);setChange(null);setImpersonateOwner(null);}}
                 reauth={<><p className={s.meta}>Enter a fresh authenticator code to authorize this change.</p><FactorSelect staff={staff}/><AuthenticatorCode/></>}/>
-<>
+<div className={s.adminView} hidden={view!=='accounts'}>
             {impersonateOwner&&<section className={s.panel+' '+s.confirm} aria-labelledby="impersonate-heading"><h2 id="impersonate-heading">View as user</h2><p>This opens the selected account’s Assistant Studio for 15 minutes. Changes made in Studio apply to the selected account and are recorded as staff activity. Account security, billing, and deletion actions remain blocked.</p><form className={s.form} onSubmit={confirmImpersonation}><label>Reason or case reference<textarea name="reason" minLength={3} maxLength={300} required/></label><p className={s.meta}>Enter a fresh authenticator code to authorize impersonation.</p><FactorSelect staff={staff}/><AuthenticatorCode/><div className={s.row}><button className="button button-primary" disabled={busy}>Open Studio as user</button><button type="button" className="button button-outline" disabled={busy} onClick={()=>setImpersonateOwner(null)}>Cancel</button></div></form></section>}
-            </>
             {workspace&&<>
                 <section className={s.panel} aria-labelledby="workspace-heading"><h2 id="workspace-heading">{workspace.email}</h2><span className={s.status}>{workspace.suspended?'Suspended':'Active'}</span>
                     <dl className={s.facts}>
@@ -235,7 +235,7 @@ export default function Operations() {
                     </form>
                 </section>}
             </>}
-            </div>
+            </div></div>
         </>}
     </div></main>;
 }
