@@ -46,6 +46,7 @@ export default function SiteAccount({children}:{children:ReactNode}) {
 type DashboardActions = {navigate:(view:'agents'|'account')=>void;leave:()=>boolean;logout:()=>void};
 export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
     const path = usePathname();
+    const studioLanding = path === '/assistant-studio' || path === '/assistant-studio/';
     const studioRoute = path === '/assistant-studio' || path.startsWith('/assistant-studio/');
     const account = useIdentity();
     const [open,setOpen] = useState(false);
@@ -77,7 +78,7 @@ export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
         <div id="site-account-panel" className={s.accountPanel} hidden={!open}>
             <strong>{account.label}</strong><small>Signed in as {account.email}</small><hr/>
             {dashboard?<button onClick={()=>{setOpen(false);dashboard.navigate('agents');}}>Studio</button>:<a href="/assistant-studio/dashboard">Studio</a>}
-            {dashboard?<button onClick={()=>{setOpen(false);dashboard.navigate('account');}}>Account settings</button>:<a href="/assistant-studio/dashboard#account">Account settings</a>}
+            {studioLanding && <a href="/assistant-studio/dashboard#account">Account settings</a>}
             <a onClick={e=>{if(dashboard&&!dashboard.leave())e.preventDefault();}} href="https://platform.openai.com/settings/organization/billing/overview">Billing <small>(OpenAI)</small></a>
             {studioRoute && <a href="/" onClick={event=>{if(dashboard && !dashboard.leave())event.preventDefault();}}>Metanomic home</a>}
             <button type="button" onClick={dashboard?dashboard.logout:logout}>Sign out</button>
