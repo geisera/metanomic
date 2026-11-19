@@ -110,6 +110,7 @@
 .settingsSection .compactUsage { margin-top: 28px; }
 .settingsForm .saveBar { margin-top: 0; }
 .settingsContent .dangerZone { padding: 24px 0; border-width: 1px 0 0; border-radius: 0; }
+.dangerPanel{display:grid;gap:24px}.dangerPanel>h2{margin:0}.dangerAction{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:start;padding:24px;border:1px solid var(--site-273843);border-radius:8px}.dangerAction h3{margin:0}.dangerAction .help{margin:6px 0 0}.dangerAction form{min-width:min(100%,360px);margin:0}.dangerAction .dangerButton{align-self:start}@media(max-width:700px){.dangerAction{grid-template-columns:1fr}.dangerAction form{min-width:0;width:100%}}
 .settingsLayout .account { max-width: none; }
 .settingsLayout .account > section {
   padding: 0 0 32px;
