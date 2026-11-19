@@ -108,7 +108,7 @@ async function resolveAssistantKey(agent: Agent) {
     if (key?.source === 'override_invalid')
         throw new StudioError('This assistant’s OpenAI key is invalid. Replace it in the assistant’s Settings.', 503, 'assistant_key_invalid');
     if (!key?.ciphertext)
-        throw new StudioError('No API key connected. Connect a key in Studio settings to continue.', 503, 'missing_key');
+        throw new StudioError('No API key connected. Connect a key in Model settings to continue.', 503, 'missing_key');
     return {...key, ciphertext: key.ciphertext};
 }
 

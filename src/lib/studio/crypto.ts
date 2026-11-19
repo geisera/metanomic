@@ -11,7 +11,7 @@ export function decrypt(value: string, owner: string) { try {
     return Buffer.concat([d.update(data), d.final()]).toString('utf8');
 }
 catch {
-    throw new StudioError('The stored API key could not be read. Replace it in Studio settings.', 503);
+    throw new StudioError('The stored API key could not be read. Replace it in Model settings.', 503);
 } }
 export const fingerprint = (value: string) => createHmac('sha256', key()).update(value).digest('hex');
 export function widgetToken(agent: string, origin: string, ip: string) { const data = Buffer.from(JSON.stringify({ agent, origin, ip: fingerprint(ip), expires: Date.now() + 3600000 })).toString('base64url'); return data + '.' + fingerprint('widget:' + data); }

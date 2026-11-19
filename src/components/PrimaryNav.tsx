@@ -27,7 +27,7 @@ export default function PrimaryNav({studio=false,dashboard}:{studio?:boolean;das
  function book(location:'header'|'mobile_drawer'){return <Link className={s.book} href='/contact' onClick={()=>{track('nav_cta_primary_click',{location});if(mobile)closeMobile();}}>Book a call <span aria-hidden>→</span></Link>;}
  function studioLinks(drawer=false){
   if(dashboard){
-   const links: [DashboardView,string][] = dashboard.signedIn ? [['agents','Assistants'],['settings','Studio settings'],['help','Help']] : [['help','Help']];
+   const links: [DashboardView,string][] = dashboard.signedIn ? [['agents','Assistants'],['settings','Model settings'],['help','Help']] : [['help','Help']];
    return <>{links.map(([view,label])=><button type="button" className={s.navLink} key={view} aria-pressed={dashboard.view===view} onClick={()=>{dashboard.navigate(view);if(drawer)closeMobile();}}>{label}</button>)}</>;
   }
   return <>
