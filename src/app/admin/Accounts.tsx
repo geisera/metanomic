@@ -14,13 +14,14 @@ type Props={
     reauth:ReactNode;
     request:Request;
     onOpenWorkspace:(ownerId:string)=>void;
+    onImpersonate:(ownerId:string)=>void;
     clearWorkspace:()=>void;
     workspaceBusy:boolean;
     workspaceRevision:number;
     onSessionChange:()=>Promise<void>;
 };
 
-export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWorkspace,workspaceBusy,workspaceRevision,onSessionChange}:Props){
+export default function Accounts({roles,reauth,request,onOpenWorkspace,onImpersonate,clearWorkspace,workspaceBusy,workspaceRevision,onSessionChange}:Props){
     const [fields,setFields]=useState(initial);
     const [filter,setFilter]=useState(initial);
     const [directory,setDirectory]=useState<AccountDirectory|null>(null);
@@ -149,7 +150,7 @@ export default function Accounts({roles,reauth,request,onOpenWorkspace,clearWork
             {selected.is_staff&&<p className={s.meta}>Staff sign-in and identity are managed separately.</p>}
             <div className={s.row}>
                 {activeAccountActions.map(id=><button type="button" className="button button-outline" key={id} disabled={busy} onClick={()=>{setError('');if(id==='send_account_email')setMessageId(crypto.randomUUID());setAction(id);}}>{accountActions[id].label}</button>)}
-                <button type="button" className="button button-outline" disabled={workspaceBusy||busy} onClick={()=>onOpenWorkspace(selected.owner_id)}>Open workspace</button>
+                <button type="button" className="button button-outline" disabled={workspaceBusy||busy} onClick={()=>onOpenWorkspace(selected.owner_id)}>Open workspace</button>{(roles.includes('support')||roles.includes('operations'))&&<button type="button" className="button button-outline" disabled={workspaceBusy||busy} onClick={()=>onImpersonate(selected.owner_id)}>View as user</button>}
             </div>
         </section>}
         {action&&<section className={s.panel} aria-labelledby="account-action">
