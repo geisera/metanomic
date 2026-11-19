@@ -67,7 +67,19 @@ export async function POST(req: Request) {
             if(existing.length>=tier.assistants)throw new StudioError(`${tier.name} allows ${tier.assistants} assistant(s).`,400,'tier_limit');
             const template=ASSISTANT_TEMPLATES.find(t=>t.id===(b.template||'blank'));
             if(!template)throw new StudioError('Choose a starter template.');
-            const rows = await rest<Agent[]>('studio_agents', { session: s, body: { owner_id: s.user.id, name: text(b.name, 80, 1),greeting:template.greeting,instructions:template.instructions } });
+            const rows = await rest<Agent[]>('studio_agents', { session: s, body: {
+                owner_id: s.user.id,
+                name: text(b.name, 80, 1),
+                greeting: template.greeting,
+                instructions: template.instructions,
+                button_color: '#ecf0ed',
+                button_text_color: '#091019',
+                button_outline_color: '#52616a',
+                launcher_color: '#ecf0ed',
+                send_color: '#091019',
+                send_text_color: '#ecf0ed',
+                user_message_color: '#ecf0ed',
+            } });
             return json({ agent: rows[0] });
         }
         const agent = await ownedAgent(s, b.agent_id);
