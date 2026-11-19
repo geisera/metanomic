@@ -74,13 +74,45 @@ export async function releaseAuthAttempt({ bucket, expiresAt }: Awaited<ReturnTy
 export async function ownedAgent(s: Session, id: unknown) { if (!uuid(id))
     throw new StudioError('Choose an assistant.'); const rows = await rest<Agent[]>('studio_agents?id=eq.' + id + '&limit=1', { session: s }); if (!rows[0])
     throw new StudioError('Assistant not found.', 404); return rows[0]; }
-export async function runtimeAgent(id: string) { if (!uuid(id))
+export async function runtimeAgent(id: string, checkKey = true) { if (!uuid(id))
     throw new StudioError('Assistant not found.', 404); const rows = await rest<Agent[]>('studio_agents?id=eq.' + id + '&published=eq.true&limit=1', { admin: true }); if (!rows[0])
-    throw new StudioError('This assistant is not published.', 404); rows[0].origins = origins(rows[0].origins); return rows[0]; }
-export async function apiKey(owner: string, s?: Session) { const rows = await rest<{
-    ciphertext: string;
-}[]>('studio_keys?owner_id=eq.' + owner + '&select=ciphertext&limit=1', s ? { session: s } : { admin: true }); if (!rows[0])
-    throw new StudioError('No API key connected. Connect a key in Studio settings to continue.', 503, 'missing_key'); return decrypt(rows[0].ciphertext, owner); }
+    throw new StudioError('This assistant is not published.', 404); rows[0].origins = origins(rows[0].origins); if (checkKey) await resolveAssistantKey(rows[0]); return rows[0]; }
+type ResolvedAssistantKey = {
+    source: 'shared' | 'override' | 'upgrade_required' | 'override_invalid';
+    ciphertext: string | null;
+    override_version: string | null;
+};
+
+async function resolveAssistantKey(agent: Agent) {
+    const [key] = await rest<ResolvedAssistantKey[]>('rpc/studio_resolve_assistant_key', {
+        admin: true, body: { p_agent: agent.id, p_owner: agent.owner_id }
+    });
+    if (key?.source === 'upgrade_required')
+        throw new StudioError('This assistant’s OpenAI key requires Pro or Enterprise.', 403, 'assistant_key_upgrade');
+    if (key?.source === 'override_invalid')
+        throw new StudioError('This assistant’s OpenAI key is invalid. Replace it in the assistant’s Settings.', 503, 'assistant_key_invalid');
+    if (!key?.ciphertext)
+        throw new StudioError('No API key connected. Connect a key in Studio settings to continue.', 503, 'missing_key');
+    return {...key, ciphertext: key.ciphertext};
+}
+
+export async function apiKey(agent: Agent) {
+    const key = await resolveAssistantKey(agent);
+    try {
+        return {value: decrypt(key.ciphertext, agent.owner_id), overrideVersion: key.override_version};
+    } catch (error) {
+        if (key.source === 'override')
+            throw new StudioError('This assistant’s OpenAI key could not be read. Replace it in the assistant’s Settings.', 503, 'assistant_key_invalid');
+        throw error;
+    }
+}
+
+export async function invalidateAssistantKey(agentId: string, version: string) {
+    await rest('studio_assistant_keys?agent_id=eq.'+agentId+'&validated_at=eq.'+encodeURIComponent(version), {
+        admin: true, method: 'PATCH', body: {invalidated_at:new Date().toISOString()}, prefer:'return=minimal'
+    });
+}
+
 export async function publishedDocs(agent: Agent, s?: Session) { return rest<Document[]>('studio_documents?agent_id=eq.' + agent.id + '&published=eq.true&limit=20', s ? { session: s } : { admin: true }); }
 export function failure(e: unknown) {
     const error = e instanceof StudioError ? e : new StudioError('Studio is temporarily unavailable. Please try again.', 503);

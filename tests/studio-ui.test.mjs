@@ -58,11 +58,23 @@ test('OpenAI key management is shared in Studio settings and no longer appears i
   assert.match(connected,/ending 1234/);
   assert.match(connected,/Replace key/);
   assert.match(connected,/Remove API key/);
-  assert.match(connected,/Removing it unpublishes every assistant/);
+  assert.match(connected,/Removing it unpublishes those assistants/);
   const Account=load('src/app/assistant-studio/Account.tsx').Account;
   assert.doesNotMatch(render(Account,{...props,user:{id:'test',name:'Test',email:'test@example.invalid',is_admin:true}}),/name="key"|Remove API key|Where do I get a key/);
   const Workspace=load('src/app/assistant-studio/Workspace.tsx').default;
   const assistant=render(Workspace,{data:{agents:[agent],keys:[{}],usage:[],documents:[]},refresh:async()=>{},onKey:()=>{}});
   assert.match(assistant,/Manage OpenAI key/);
-  assert.doesNotMatch(assistant,/name="key"/);
+  assert.match(assistant,/<fieldset[^>]*disabled=""[^>]*>.*?name="key"/s);
+});
+
+test('Starter sees the upgrade explanation and disabled key controls, while paid tiers can set a key',()=>{
+ const panel=load('src/app/assistant-studio/AssistantOpenAIConnection.tsx').default;
+ const props={agentId:agent.id,sharedConnected:true,onSharedKey:()=>{},onSaved:async()=>{}};
+ const starter=render(panel,{...props,allowed:false});
+ assert.match(starter,/Upgrade to Pro or Enterprise/);
+ assert.match(starter,/<fieldset[^>]*disabled=""/);
+ const paid=render(panel,{...props,allowed:true,keyInfo:{last_four:'8765',invalidated_at:null}});
+ assert.doesNotMatch(paid,/disabled/);
+ assert.match(paid,/separate key ending 8765/);
+ assert.match(paid,/Use shared key/);
 });

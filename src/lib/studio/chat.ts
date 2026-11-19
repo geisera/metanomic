@@ -9,7 +9,7 @@ export async function answer(agent: Agent, key: string, conversation: Message[],
     if (!response.ok || !response.body) {
         const problem=await response.json().catch(()=>({}));
         const providerCode=problem?.error?.code;
-        if(response.status===401) throw new StudioError('The OpenAI key is invalid. Replace it in Account.',503,'invalid_key');
+        if(response.status===401) throw new StudioError('The OpenAI key is invalid. Replace it in Studio settings.',503,'invalid_key');
         if(response.status===403 || response.status===404 || providerCode==='model_not_found') throw new StudioError('Your key cannot access this model. Choose another model or check OpenAI project permissions.',503,'model_access');
         if(providerCode==='insufficient_quota') throw new StudioError('Your OpenAI account has insufficient credit. Check API billing and project limits.',503,'insufficient_credit');
         throw new StudioError(response.status===429?'OpenAI is rate-limiting this key. Wait briefly and try again.':'The AI service could not answer. Please try again later.',503,'provider_unavailable');

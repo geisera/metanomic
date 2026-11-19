@@ -1,6 +1,6 @@
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { StudioError, messages, uuid } from '@/lib/studio/core';
-import { session, ownedAgent, runtimeAgent, publishedDocs, apiKey, rest, gate, ipOf, failure } from '@/lib/studio/server';
+import { session, ownedAgent, runtimeAgent, publishedDocs, apiKey, invalidateAssistantKey, rest, gate, ipOf, failure } from '@/lib/studio/server';
 import { checkWidgetToken } from '@/lib/studio/crypto';
 import { after } from 'next/server';
 import { recordOutcome } from '@/lib/studio/usage';
@@ -24,12 +24,12 @@ export async function POST(req: Request) {
         }
         else {
             const token = checkWidgetToken(b.token, b.agent_id, ip);
-            agent = await runtimeAgent(b.agent_id);
+            agent = await runtimeAgent(b.agent_id, false);
             if (!agent.origins.includes(token.origin))
                 throw new StudioError('This website is no longer approved. Update approved websites in Studio.', 403, 'origin_not_approved');
         }
         await gate((ownerSession?'preview:':'chat:') + agent.id + ':' + ip, 20, 3600);
-        const key = await apiKey(agent.owner_id, ownerSession);
+        const key = await apiKey(agent);
         const docs = await publishedDocs(agent, ownerSession);
         let finish:(success:boolean)=>void=()=>{};
         // Only authenticated, ownership-checked Preview requests bypass visitor usage.
@@ -41,7 +41,16 @@ export async function POST(req: Request) {
             after(async()=>{try{await recordOutcome(agent,day,await outcome);}catch{console.error('Studio usage reporting failed');}});
         }
         let stream;
-        try { stream=await answer(agent,key,conversation,docs,req.signal,finish); } catch(e){finish(false);throw e;}
+        try {
+            stream = await answer(agent,key.value,conversation,docs,req.signal,finish);
+        } catch (error) {
+            finish(false);
+            if (key.overrideVersion && error instanceof StudioError && error.code === 'invalid_key') {
+                await invalidateAssistantKey(agent.id,key.overrideVersion).catch(()=>console.error('Studio could not mark an assistant key invalid'));
+                throw new StudioError('This assistant’s OpenAI key is invalid. Replace it in the assistant’s Settings.',503,'assistant_key_invalid');
+            }
+            throw error;
+        }
         return new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
     }
     catch (e) {

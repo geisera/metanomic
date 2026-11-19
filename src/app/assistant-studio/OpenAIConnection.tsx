@@ -36,7 +36,7 @@ export default function OpenAIConnection({keyInfo,onUpdate}:{keyInfo?:Snapshot['
    <ErrorNotice error={error}/>
    <Notice>{notice}</Notice>
    <p className={s.help}>{keyInfo?`Connected · ending ${keyInfo.last_four} · validated ${new Date(keyInfo.validated_at).toLocaleString()}`:'No key connected.'}</p>
-   <p className={s.help}>All assistants on this account use this key. Replacing it applies to every assistant. Removing it unpublishes every assistant.</p>
+   <p className={s.help}>Assistants use this shared key by default. Replacing it applies to assistants that use it. Removing it unpublishes those assistants.</p>
    <p className={s.help}>OpenAI bills you directly for usage. Metanomic encrypts your key and keeps it on the server. We check that your key works, but not your OpenAI balance or model access.</p>
    <a className={s.textButton} href='https://platform.openai.com/api-keys' target='_blank' rel='noreferrer'>Where do I get a key? ↗</a>
    <form className={s.form} onSubmit={event=>update(event,'key')}>

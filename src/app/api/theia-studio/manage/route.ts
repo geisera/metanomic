@@ -2,19 +2,33 @@ import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { session, rest, ownedAgent, apiKey, gate, failure } from '@/lib/studio/server';
 import { knowledgeSourceUrl, agentInput, origins, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
 import { ASSISTANT_TEMPLATES } from '@/lib/studio/templates';
+import {canOverrideAssistantKey,type AssistantKeyInfo} from '@/lib/studio/assistant-keys';
 import { encrypt } from '@/lib/studio/crypto';
 export const runtime = 'nodejs';
 type Tier={id:string;name:string;assistants:number;websites:number;documents:number};
 const json = (v: unknown) => Response.json(v, { headers: { 'Cache-Control': 'no-store' } });
+async function validatedKey(value: unknown, owner: string) {
+    const key = text(value, 2000, 20);
+    if (/\s/.test(key)) throw new StudioError('Paste a valid OpenAI API key.');
+    await gate('key:' + owner, 5, 3600);
+    const response = await fetch('https://api.openai.com/v1/models', {
+        headers: {Authorization:'Bearer '+key}, signal:AbortSignal.timeout(12000), cache:'no-store', redirect:'error'
+    });
+    if (!response.ok)
+        throw new StudioError('OpenAI could not validate this key. Replace it with a valid key that allows model listing.',400,'invalid_key');
+    return {ciphertext:encrypt(key,owner),last_four:key.slice(-4),validated_at:new Date().toISOString()};
+}
 export async function GET(req: Request) { try {
     const s = await session(), id = new URL(req.url).searchParams.get('agent');
     if (id) {
         await ownedAgent(s, id);
         return json({ documents: await rest<Document[]>('studio_documents?agent_id=eq.' + id + '&order=updated_at.desc', { session: s }) });
     }
-    const [agents, keys, usage, documents] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest('studio_usage?day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}), rest('studio_documents?select=id,agent_id,published', {session:s})]);
-    const [tier]=await rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{}});
-    return json({ agents, keys, usage, documents, tier });
+    const [agents, keys, usage, documents, [tier]] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest('studio_usage?day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}), rest('studio_documents?select=id,agent_id,published', {session:s}), rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{}})]);
+    const assistantKeys = agents.length
+        ? (await rest<AssistantKeyInfo[]>('studio_assistant_keys?select=agent_id,last_four,validated_at,invalidated_at,studio_agents!inner()&studio_agents.owner_id=eq.'+s.user.id, {admin:true})).map(({agent_id,last_four,validated_at,invalidated_at})=>({agent_id,last_four,validated_at,invalidated_at}))
+        : [];
+    return json({ agents, keys, usage, documents, tier, assistantKeys });
 }
 catch (e) {
     return failure(e);
@@ -29,19 +43,12 @@ export async function POST(req: Request) {
         if (!b)
             throw new StudioError('Invalid or oversized request.');
         if (b.action === 'key') {
-            const value = text(b.key, 2000, 20);
-            if (/\s/.test(value))
-                throw new StudioError('Paste a valid OpenAI API key.');
-            await gate('key:' + s.user.id, 5, 3600);
-            const r = await fetch('https://api.openai.com/v1/models', { headers: { Authorization: 'Bearer ' + value }, signal: AbortSignal.timeout(12000), cache: 'no-store', redirect: 'error' });
-            if (!r.ok)
-                throw new StudioError('OpenAI could not validate this key. Replace it with a valid key that allows model listing.', 400, 'invalid_key');
-            await rest('studio_keys?on_conflict=owner_id', { session: s, body: { owner_id: s.user.id, ciphertext: encrypt(value, s.user.id), last_four: value.slice(-4), validated_at: new Date().toISOString() }, prefer: 'resolution=merge-duplicates,return=minimal' });
+            const key = await validatedKey(b.key,s.user.id);
+            await rest('studio_keys?on_conflict=owner_id', { session: s, body: { owner_id: s.user.id, ...key }, prefer: 'resolution=merge-duplicates,return=minimal' });
             return json({ ok: true });
         }
         if (b.action === 'remove-key') {
-            await rest('studio_agents?owner_id=eq.' + s.user.id, { session: s, method: 'PATCH', body: { published: false } });
-            await rest('studio_keys?owner_id=eq.' + s.user.id, { session: s, method: 'DELETE' });
+            await rest('rpc/studio_remove_openai_key', {admin:true,body:{p_owner:s.user.id}});
             return json({ ok: true });
         }
         const [tier]=await rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{}});
@@ -54,6 +61,20 @@ export async function POST(req: Request) {
             return json({ agent: rows[0] });
         }
         const agent = await ownedAgent(s, b.agent_id);
+        if (b.action === 'set-assistant-key' || b.action === 'use-shared-key') {
+            if (!canOverrideAssistantKey(tier?.id))
+                throw new StudioError('A separate OpenAI key requires Pro or Enterprise.',403,'tier_limit');
+            if (b.action === 'set-assistant-key') {
+                const key = await validatedKey(b.key,s.user.id);
+                await rest('studio_assistant_keys?on_conflict=agent_id', {
+                    admin:true, body:{agent_id:agent.id,...key,invalidated_at:null},
+                    prefer:'resolution=merge-duplicates,return=minimal'
+                });
+            } else {
+                await rest('rpc/studio_remove_openai_key', {admin:true,body:{p_owner:s.user.id,p_agent:agent.id}});
+            }
+            return json({ok:true});
+        }
         function checkSites(sites:string[]){if(sites.length>tier.websites&&!sites.every(site=>agent.origins.includes(site)))throw new StudioError(`${tier.name} allows ${tier.websites} approved websites per assistant.`,400,'tier_limit');}
         if (b.action === 'save-agent') {
             const valid=agentInput({...b,published:false,origins:agent.origins});
@@ -99,7 +120,7 @@ export async function POST(req: Request) {
         }
         if (b.action === 'publish') {
             const live=b.published===true;
-            if(live){await apiKey(s.user.id,s);if(!origins(agent.origins).length)throw new StudioError('Save at least one approved website before publishing.',400,'origin_not_approved');}
+            if(live){await apiKey(agent);if(!origins(agent.origins).length)throw new StudioError('Save at least one approved website before publishing.',400,'origin_not_approved');}
             const first=live&&!agent.published&&!agent.first_published_at;
             const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{published:live,first_published_at:live?(agent.first_published_at||new Date().toISOString()):agent.first_published_at,updated_at:new Date().toISOString()}});
             return json({agent:rows[0],first_publish:first});
