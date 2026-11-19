@@ -134,3 +134,4 @@
 }
 .colorControl{display:grid;grid-template-columns:minmax(0,1fr) 7.5ch;align-items:center;gap:8px}
 .shell .colorControl input[type=text]{width:100%;min-width:0;height:44px;padding:3px 4px;font-family:monospace;font-size:13px}
+.assistantCard{min-width:0;border:1px solid var(--muted);border-radius:8px;overflow-wrap:anywhere}.assistantCard[data-selected=true]{border-color:var(--lime);background:var(--site-11212d)}.assistantCard .agentButton{display:block;width:100%;border:0;border-radius:7px 7px 0 0;background:transparent;padding:16px 16px 4px}.assistantCard .headerUsage{width:auto;margin:0;padding:0 16px 16px}
