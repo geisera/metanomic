@@ -25,7 +25,8 @@ export async function GET(req: Request) { try {
         await ownedAgent(s, id);
         return json({ documents: await rest<Document[]>('studio_documents?agent_id=eq.' + id + '&order=updated_at.desc', { session: s }) });
     }
-    const [agents, keys, [tier]] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{p_owner:s.user.id}})]);
+    const [agents, keys] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s })]);
+    const [tier] = s.impersonatedBy ? await (async()=>{ const [account] = await rest<{tier_id:string}[]>('studio_accounts?owner_id=eq.'+s.user.id+'&select=tier_id',{admin:true}); return rest<Tier[]>('studio_tiers?id=eq.'+(account?.tier_id||'starter'),{admin:true}); })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
     const agentFilter = agents.length ? '&agent_id=in.(' + agents.map(agent=>agent.id).join(',') + ')' : '';
     const [usage, documents, limits] = agents.length ? await Promise.all([
         rest('studio_usage?agent_id=in.(' + agents.map(agent=>agent.id).join(',') + ')&day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}),
