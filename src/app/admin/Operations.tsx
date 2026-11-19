@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { actions, type AdminAction, type Lookup, type StaffRole, type Workspace } from '@/lib/studio/admin-contract';
+import { actions, accountActions, type AccountAction, type AdminAction, type StaffRole, type Workspace } from '@/lib/studio/admin-contract';
+import Accounts from './Accounts';
 import s from './operations.module.css';
 
 type Staff = { roles: StaffRole[]; verified: boolean; factors: { id: string; name?: string }[] };
@@ -18,7 +19,7 @@ const commonErrors:Record<string,string>={
     model_access:'The connected key cannot access this model',insufficient_credit:'OpenAI billing or credit needs attention',
     origin_not_approved:'A request came from a website that is no longer approved',
 };
-const operationLabel = (value: string) => Object.hasOwn(actions,value) ? actions[value as AdminAction].label : value.replaceAll('_',' ');
+const operationLabel = (value: string) => Object.hasOwn(actions,value) ? actions[value as AdminAction].label : Object.hasOwn(accountActions,value) ? accountActions[value as AccountAction].label : value.replaceAll('_',' ');
 
 async function submit<T>(body?: object, endpoint = '/api/studio-admin'): Promise<T> {
     const response = await fetch(endpoint, body ? {
@@ -36,7 +37,6 @@ export default function Operations() {
     const [error,setError] = useState('');
     const [notice,setNotice] = useState('');
     const [enrollment,setEnrollment] = useState<{factorId:string;secret:string;qrImage:string|null}|null>(null);
-    const [results,setResults] = useState<Lookup[]|null>(null);
     const [workspace,setWorkspace] = useState<Workspace|null>(null);
     const [change,setChange] = useState<Change|null>(null);
     const changeHeading=useRef<HTMLHeadingElement>(null);
@@ -49,7 +49,6 @@ export default function Operations() {
             setStaff(null);
             setEnrollment(null);
             setWorkspace(null);
-            setResults(null);
             setChange(null);
             setState(problem.status===401?'sign-in':'blocked');
             if(problem.status!==401)setError(problem.message);
@@ -67,7 +66,7 @@ export default function Operations() {
         catch(e){
             const problem=e as Error & {status?:number;code?:string};
             if(problem.status===401||problem.code==='mfa_required'||(problem.status===403&&staff?.verified&&problem.code!=='invalid_mfa_code')){
-                setWorkspace(null);setResults(null);setChange(null);await load();
+                setWorkspace(null);setChange(null);await load();
             }
             setError(problem.message);
         }
@@ -93,14 +92,6 @@ export default function Operations() {
             await load();
         });
     }
-    function search(event:FormEvent<HTMLFormElement>){
-        event.preventDefault();
-        const query=new FormData(event.currentTarget).get('query');
-        void run(async()=>{
-            setWorkspace(null);setChange(null);setResults(null);
-            setResults((await submit<{results:Lookup[]}>({action:'lookup',query})).results);
-        });
-    }
     function open(ownerId:string){
         void run(async()=>{
             setWorkspace(null);setChange(null);
@@ -123,7 +114,7 @@ export default function Operations() {
 
     return <main className={s.shell}><div className={s.container}>
         <header className={s.header}><div><p className={s.eyebrow}>Metanomic · Internal</p><h1>Studio operations</h1></div><div className={s.row}><Link href="/assistant-studio/dashboard">Assistant Studio</Link>{staff&&<button type="button" className="button button-outline" disabled={busy} onClick={()=>void run(async()=>{
-            await submit({action:'logout'},'/api/theia-studio/auth');setStaff(null);setEnrollment(null);setResults(null);setWorkspace(null);setChange(null);setState('sign-in');
+            await submit({action:'logout'},'/api/theia-studio/auth');setStaff(null);setEnrollment(null);setWorkspace(null);setChange(null);setState('sign-in');
         })}>Sign out</button>}</div></header>
         {error&&<p className={s.message} data-error="true" role="alert">{error}</p>}
         {notice&&<p className={s.message} role="status">{notice}</p>}
@@ -151,10 +142,8 @@ export default function Operations() {
             </form>}
         </section>}
         {staff?.verified&&<>
-            <section className={s.panel} aria-labelledby="lookup-heading"><h2 id="lookup-heading">Find a workspace</h2>
-                <form className={s.form+' '+s.row} onSubmit={search}><label>Email, approved domain, or assistant ID<input name="query" autoComplete="off" minLength={3} maxLength={254} required placeholder="name@example.com"/></label><button className="button button-primary" disabled={busy}>Search</button></form>
-                {results&&(!results.length?<p role="status">No matching workspaces.</p>:<ul className={s.results}>{results.map(result=><li key={result.owner_id}><button type="button" className={s.result} disabled={busy} aria-pressed={workspace?.owner_id===result.owner_id} onClick={()=>open(result.owner_id)}><strong>{result.email}</strong><span className={s.meta}>{result.effective_tier}{result.suspended?' · Suspended':''}</span></button></li>)}</ul>)}
-            </section>
+            <Accounts roles={staff.roles} request={submit} onOpenWorkspace={open} onSessionChange={load}
+                reauth={<><p className={s.meta}>Enter a fresh authenticator code to authorize this change.</p><FactorSelect staff={staff}/><AuthenticatorCode/></>}/>
             {workspace&&<>
                 <section className={s.panel} aria-labelledby="workspace-heading"><h2 id="workspace-heading">{workspace.email}</h2><span className={s.status}>{workspace.suspended?'Suspended':'Active'}</span>
                     <dl className={s.facts}>

@@ -39,3 +39,31 @@ export type Workspace = Omit<Lookup,'effective_tier'> & {
         usage: { day: string; requests: number; failed: number }[];
     }[];
 };
+
+export type Account = {
+    owner_id: string;
+    email: string;
+    display_name: string;
+    email_confirmed_at: string | null;
+    created_at: string;
+    last_sign_in_at: string | null;
+    inactive: boolean;
+    suspended: boolean;
+    is_staff: boolean;
+    tier_id: string;
+    effective_tier: string;
+};
+
+export type AccountDirectory = { accounts: Account[]; count: number; tiers: Tier[] };
+
+export const accountActions = {
+    update_account: { label: 'Edit profile', role: 'operations' },
+    activate_account: { label: 'Activate sign-in', role: 'operations' },
+    deactivate_account: { label: 'Deactivate sign-in', role: 'operations' },
+    verify_account_email: { label: 'Mark email verified', role: 'operations' },
+    reset_account_password: { label: 'Send password reset', role: 'operations' },
+    revoke_account_sessions: { label: 'Sign out all devices', role: 'operations' },
+    set_membership: { label: 'Change membership', role: 'billing' },
+    save_membership_plan: { label: 'Configure membership plans', role: 'billing' },
+} as const;
+export type AccountAction = keyof typeof accountActions;

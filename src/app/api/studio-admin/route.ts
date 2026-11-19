@@ -1,6 +1,7 @@
 import { parseBody, sameOrigin } from '@/lib/knowledge-server';
-import { actions, type AdminAction, type Workspace } from '@/lib/studio/admin-contract';
+import { actions, accountActions, type AccountAction, type AdminAction, type Workspace } from '@/lib/studio/admin-contract';
 import { enrollStaffMfa, requireStaffMfa, studioStaff, verifyStaffMfa } from '@/lib/studio/admin';
+import { changeAccount, listAccounts } from '@/lib/studio/admin-accounts';
 import { StudioError, text, uuid } from '@/lib/studio/core';
 import { addressFingerprint, domainName } from '@/lib/studio/operations';
 import { failure, gate, rest } from '@/lib/studio/server';
@@ -35,6 +36,10 @@ export async function POST(request: Request) {
         }
         requireStaffMfa(staff);
         await gate('studio-staff-action:' + actor, 120, 3600);
+
+        if (body.action === 'accounts') return json(await listAccounts(staff,body));
+        if (typeof body.action==='string'&&Object.hasOwn(accountActions,body.action))
+            return json(await changeAccount(staff,body.action as AccountAction,body));
 
         if (body.action === 'lookup') {
             const input = text(body.query, 254, 3).toLowerCase();

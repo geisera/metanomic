@@ -88,3 +88,65 @@ test('staff enrollment returns the QR as an inline SVG image with a manual fallb
         });
     }
 });
+
+function accountHandlers({roles=['operations','billing'],isStaff=false}={}){
+    const calls=[];
+    const account={owner_id:owner,email:'old@example.invalid',display_name:'Owner',email_confirmed_at:'today',inactive:false,is_staff:isStaff};
+    const staff={roles,verified:true,session:{user:{id:actor}}};
+    const admin={
+        requireStaffMfa:(_staff,role)=>{if(!staff.roles.includes(role))throw new core.StudioError('No access',403);},
+        verifyStaffMfa:async(_staff,_factor,code)=>{if(code!=='123456')throw new core.StudioError('MFA required',403);calls.push('verified');},
+    };
+    const server={
+        authFetch:async(path,body)=>{
+            calls.push([path,body]);
+            if(body.email)account.email=body.email;
+            if(body.user_metadata)account.display_name=body.user_metadata.display_name;
+            if(body.ban_duration)account.inactive=body.ban_duration!=='none';
+            return new Response(null,{status:200});
+        },
+        rest:async(path,options)=>{
+            calls.push([path,options.body]);
+            if(path==='rpc/studio_admin_accounts')return {accounts:[{...account}],count:1,tiers:[]};
+            if(path==='rpc/studio_admin_revoke_sessions')return 3;
+        },
+    };
+    const handlers=load('src/lib/studio/admin-accounts.ts',{
+        './admin-contract':contract,'./admin':admin,'./core':core,'./operations':{domainName:v=>new URL(v).hostname},
+        './mail':{sendAuthLink:async(...data)=>{calls.push(['mail',data]);}},'./server':server,
+    });
+    return {calls,staff,...handlers};
+}
+
+test('account directory sends constrained filters and pagination to the server',async()=>{
+    const service=accountHandlers();
+    const result=await service.listAccounts(service.staff,{query:' HTTPS://EXAMPLE.INVALID ',tier:'pro',status:'inactive',verified:'verified',page:2});
+    assert.equal(result.count,1);
+    assert.deepEqual(service.calls[0][1],{
+        p_actor:actor,p_page:2,p_query:'example.invalid',p_tier:'pro',p_status:'inactive',p_verified:'verified',
+    });
+});
+
+test('changing a login email requires ownership confirmation, MFA, an audit record and session revocation',async()=>{
+    const service=accountHandlers();
+    const body={ownerId:owner,reason:'Support case',expectedEmail:'old@example.invalid',expectedName:'Owner',email:'new@example.invalid',displayName:'New name'};
+    await assert.rejects(()=>service.changeAccount(service.staff,'update_account',body),/Confirm you verified/);
+    await assert.rejects(()=>service.changeAccount(service.staff,'update_account',{...body,confirmOwnership:true}),/MFA required/);
+    assert.ok(!service.calls.some(call=>Array.isArray(call)&&call[0].startsWith('admin/users')));
+    const result=await service.changeAccount(service.staff,'update_account',{...body,confirmOwnership:true,code:'123456'});
+    assert.equal(result.account.email,'new@example.invalid');
+    assert.deepEqual(service.calls.find(call=>Array.isArray(call)&&call[0].startsWith('admin/users'))[1],{
+        user_metadata:{display_name:'New name'},email:'new@example.invalid',email_confirm:true,
+    });
+    const events=service.calls.filter(call=>Array.isArray(call)&&call[0]==='studio_staff_audit');
+    assert.deepEqual(events.map(call=>call[1].action),['update_account_requested','update_account']);
+    assert.equal(events[1][1].after_state.sessions_revoked,3);
+});
+
+test('staff identities are protected and changing membership requires billing permission',async()=>{
+    const protectedAccount=accountHandlers({isStaff:true});
+    await assert.rejects(()=>protectedAccount.changeAccount(protectedAccount.staff,'deactivate_account',{ownerId:owner,reason:'Test',code:'123456'}),/staff identity/);
+    const operations=accountHandlers({roles:['operations']});
+    await assert.rejects(()=>operations.changeAccount(operations.staff,'set_membership',{ownerId:owner,reason:'Test',tier:'pro',code:'123456'}),/No access/);
+    assert.equal(operations.calls.length,0);
+});
