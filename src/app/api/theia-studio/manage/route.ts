@@ -61,7 +61,7 @@ export async function POST(req: Request) {
             await rest('rpc/studio_remove_openai_key', {admin:true,body:{p_owner:s.user.id}});
             return json({ ok: true });
         }
-        const [tier]=await rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{}});
+        const [tier] = s.impersonatedBy ? await (async()=>{ const [account] = await rest<{tier_id:string}[]>('studio_accounts?owner_id=eq.'+s.user.id+'&select=tier_id',{admin:true}); return rest<Tier[]>('studio_tiers?id=eq.'+(account?.tier_id||'starter'),{admin:true}); })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
         if (b.action === 'create-agent') {
             const existing=await rest<Agent[]>('studio_agents?select=id',{session:s});
             if(existing.length>=tier.assistants)throw new StudioError(`${tier.name} allows ${tier.assistants} assistant(s).`,400,'tier_limit');
