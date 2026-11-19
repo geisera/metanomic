@@ -8,7 +8,7 @@ import Accounts from './Accounts';
 import Stats from './Stats';
 import s from './operations.module.css';
 
-type Staff = { roles: StaffRole[]; verified: boolean; factors: { id: string; name?: string }[] };
+type Staff = { accountLabel: string; roles: StaffRole[]; verified: boolean; factors: { id: string; name?: string }[] };
 type Change = { action: AdminAction; agentId?: string; blockId?: string };
 const date = (value: string | null) => value ? new Date(value).toLocaleString() : 'None recorded';
 const keyLabels = {
@@ -129,7 +129,7 @@ export default function Operations() {
     const ownerContext=workspace?.assistants.find(agent=>agent.id===change?.agentId)?.name||workspace?.email;
 
     return <main className={s.shell}><div className={s.container}>
-        <header className={s.header}><div><p className={s.eyebrow}>Metanomic · Internal</p><h1>Studio operations</h1></div><div className={s.row}><Link href="/assistant-studio/dashboard">Assistant Studio</Link>{staff&&<button type="button" className="button button-outline" disabled={busy} onClick={()=>void run(async()=>{
+        <header className={s.header}><div><p className={s.eyebrow}>Metanomic · Internal</p><h1>Studio operations</h1></div><div className={s.row}>{staff&&<span className={s.meta} style={{overflowWrap:"anywhere"}}>Signed in as {staff.accountLabel}</span>}<Link href="/assistant-studio/dashboard">Assistant Studio</Link>{staff&&<button type="button" className="button button-outline" disabled={busy} onClick={()=>void run(async()=>{
             await submit({action:'logout'},'/api/theia-studio/auth');setStaff(null);setEnrollment(null);setWorkspace(null);setChange(null);setView('accounts');setState('sign-in');
         })}>Sign out</button>}</div></header>
         {error&&<p className={s.message} data-error="true" role="alert">{error}</p>}

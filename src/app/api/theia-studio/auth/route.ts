@@ -1,3 +1,4 @@
+import { accountLabel } from '@/lib/studio/account-label';
 import { cookies } from 'next/headers';
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { StudioError, text } from '@/lib/studio/core';
@@ -15,7 +16,7 @@ const password = (v: unknown) => { if (typeof v !== 'string' || v.length < 12 ||
 export async function GET() { try {
     const s = await session();
     const admins=await rest<unknown[]>('knowledge_admins?user_id=eq.'+s.user.id+'&select=user_id',{session:s});
-    return json({user:{id:s.user.id,email:s.user.email,created_at:s.user.created_at,name:s.user.user_metadata?.display_name||'',is_admin:admins.length>0},impersonating:Boolean(s.impersonatedBy),impersonationExpiresAt:s.impersonationExpiresAt||null});
+    return json({user:{signedInLabel:s.staffLabel || accountLabel(s.user),id:s.user.id,email:s.user.email,created_at:s.user.created_at,name:s.user.user_metadata?.display_name||'',is_admin:admins.length>0},impersonating:Boolean(s.impersonatedBy),impersonationExpiresAt:s.impersonationExpiresAt||null});
 }
 catch (e) {
     return failure(e);

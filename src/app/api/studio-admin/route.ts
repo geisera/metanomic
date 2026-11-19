@@ -1,3 +1,4 @@
+import { accountLabel } from '@/lib/studio/account-label';
 import { parseBody, sameOrigin } from '@/lib/knowledge-server';
 import { actions, accountActions, type AccountAction, type AdminAction, type StudioStats, type Workspace } from '@/lib/studio/admin-contract';
 import { enrollStaffMfa, requireStaffMfa, studioStaff, verifyStaffMfa } from '@/lib/studio/admin';
@@ -15,6 +16,7 @@ export async function GET() {
     try {
         const staff = await studioStaff();
         return json({
+            accountLabel: accountLabel(staff.session.user),
             roles: staff.roles,
             verified: staff.verified,
             factors: staff.factors.filter(factor => factor.status === 'verified').map(({id,friendly_name})=>({id, name:friendly_name})),

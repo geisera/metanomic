@@ -1,3 +1,4 @@
+import { accountLabel } from '@/lib/studio/account-label';
 import { cookies } from 'next/headers';
 import { getKnowledgeConfig } from '@/lib/knowledge-server';
 import { StudioError, uuid, origins, type Agent, type Document } from './core';
@@ -7,6 +8,7 @@ export const ACCESS = 'theia_studio_access', REFRESH = 'theia_studio_refresh';
 export type Session = {
     token: string;
     impersonatedBy?: string;
+    staffLabel?: string;
     impersonationExpiresAt?: string;
     user: {
         id: string;
@@ -52,7 +54,7 @@ export async function session(ignoreImpersonation = false): Promise<Session> { c
         if (target.ok) {
             const user = await target.json();
             if (uuid(user?.id) && user.id === claim.ownerId && user.email_confirmed_at && !user.is_anonymous)
-                return { ...current, user, impersonatedBy: current.user.id, impersonationExpiresAt: claim.expiresAt };
+                return { ...current, user, staffLabel: accountLabel(current.user), impersonatedBy: current.user.id, impersonationExpiresAt: claim.expiresAt };
         }
     }
     return current;
