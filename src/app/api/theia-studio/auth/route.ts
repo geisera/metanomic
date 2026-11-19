@@ -5,6 +5,7 @@ import { session, setSession, clearSession, authFetch, reserveAuthAttempt, ipOf,
 import { fingerprint } from '@/lib/studio/crypto';
 import { recordStudioTermsAcceptance, signupTerms } from '@/lib/studio/terms';
 import { sendAuthLink } from '@/lib/studio/mail';
+import { IMPERSONATION_COOKIE } from '@/lib/studio/impersonation';
 export const runtime = 'nodejs';
 const json = (v: unknown) => Response.json(v, { headers: { 'Cache-Control': 'no-store' } });
 const email = (v: unknown) => { const e = text(v, 254, 3).toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
@@ -14,7 +15,7 @@ const password = (v: unknown) => { if (typeof v !== 'string' || v.length < 12 ||
 export async function GET() { try {
     const s = await session();
     const admins=await rest<unknown[]>('knowledge_admins?user_id=eq.'+s.user.id+'&select=user_id',{session:s});
-    return json({user:{id:s.user.id,email:s.user.email,created_at:s.user.created_at,name:s.user.user_metadata?.display_name||'',is_admin:admins.length>0}});
+    return json({user:{id:s.user.id,email:s.user.email,created_at:s.user.created_at,name:s.user.user_metadata?.display_name||'',is_admin:admins.length>0},impersonating:Boolean(s.impersonatedBy),impersonationExpiresAt:s.impersonationExpiresAt||null});
 }
 catch (e) {
     return failure(e);
@@ -66,6 +67,14 @@ export async function POST(req: Request) {
             return json({ ok: true, recovery: b.type === 'recovery', message: 'Email confirmed. If you changed your email, confirm the link sent to the other address too.' });
         }
         const s = await session();
+        if (s.impersonatedBy) {
+            if (b.action === 'logout' || b.action === 'logout-all') {
+                (await cookies()).delete(IMPERSONATION_COOKIE);
+                return json({ ok: true, impersonationEnded: true });
+            }
+            if (['profile','password','email','delete'].includes(String(b.action)))
+                throw new StudioError('Exit View as user before changing account security or profile settings.', 403, 'impersonation_read_only');
+        }
         if (b.action === 'logout' || b.action === 'logout-all') {
             const r = await authFetch('logout?scope=' + (b.action === 'logout-all' ? 'global' : 'local'), {}, s.token);
             if (!r.ok)
