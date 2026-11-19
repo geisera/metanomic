@@ -16,7 +16,7 @@ export default function AuthForm({signup=false,termsVersion}:{signup?:boolean;te
   const mode=signup?'signup':signInMode;
   const recover=mode==='recover';
   function changeSignInMode(next:typeof signInMode){setSignInMode(next);setError('');setNotice('');setShow(false);}
-  useEffect(()=>{if(signup)track('signup_start',{});},[signup]);
+  useEffect(()=>{if(signup)track('signup_start',{});if(new URLSearchParams(window.location.search).get('next')==='account'){try{sessionStorage.setItem('studio-setup-destination','setup=account');}catch{}}},[signup]);
   async function submit(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
     const fields=new FormData(event.currentTarget);
