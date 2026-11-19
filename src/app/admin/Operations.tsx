@@ -42,6 +42,7 @@ export default function Operations() {
     const [workspaceRevision,setWorkspaceRevision] = useState(0);
     const [workspace,setWorkspace] = useState<Workspace|null>(null);
     const [change,setChange] = useState<Change|null>(null);
+    const [impersonateOwner,setImpersonateOwner] = useState<string|null>(null);
     const changeHeading=useRef<HTMLHeadingElement>(null);
     const load=useCallback(async()=>{
         try {
@@ -69,7 +70,7 @@ export default function Operations() {
         catch(e){
             const problem=e as Error & {status?:number;code?:string};
             if(problem.status===401||problem.code==='mfa_required'||(problem.status===403&&staff?.verified&&problem.code!=='invalid_mfa_code')){
-                setWorkspace(null);setChange(null);await load();
+                setWorkspace(null);setChange(null);setImpersonateOwner(null);await load();
             }
             setError(problem.message);
         }
@@ -99,6 +100,18 @@ export default function Operations() {
         void run(async()=>{
             setWorkspace(null);setChange(null);
             setWorkspace((await submit<{workspace:Workspace}>({action:'workspace',ownerId})).workspace);
+        });
+    }
+    function beginImpersonation(ownerId:string){ setImpersonateOwner(ownerId); setChange(null); }
+    function confirmImpersonation(event:FormEvent<HTMLFormElement>){
+        event.preventDefault();
+        if(!impersonateOwner)return;
+        const fields=Object.fromEntries(new FormData(event.currentTarget));
+        void run(async()=>{
+            const result=await submit<{redirectUrl:string}>({action:'impersonate_start',ownerId:impersonateOwner,reason:fields.reason,factorId:fields.factorId,code:fields.code});
+            setNotice('View as user opened in a new tab.');
+            window.open(result.redirectUrl,'_blank','noopener,noreferrer');
+            setImpersonateOwner(null);
         });
     }
     function applyChange(event:FormEvent<HTMLFormElement>){
@@ -152,8 +165,11 @@ export default function Operations() {
             {view==='stats'&&<Stats request={submit} onSessionChange={load}/>}
             <div className={s.adminView} hidden={view!=='accounts'}>
             <Accounts roles={staff.roles} request={submit} onOpenWorkspace={open} onSessionChange={load}
-                workspaceBusy={busy} workspaceRevision={workspaceRevision} clearWorkspace={()=>{setWorkspace(null);setChange(null);}}
+                workspaceBusy={busy} workspaceRevision={workspaceRevision} onImpersonate={beginImpersonation} clearWorkspace={()=>{setWorkspace(null);setChange(null);setImpersonateOwner(null);}}
                 reauth={<><p className={s.meta}>Enter a fresh authenticator code to authorize this change.</p><FactorSelect staff={staff}/><AuthenticatorCode/></>}/>
+<>
+            {impersonateOwner&&<section className={s.panel+' '+s.confirm} aria-labelledby="impersonate-heading"><h2 id="impersonate-heading">View as user</h2><p>This opens the selected account’s Assistant Studio in read-only support mode for 15 minutes. Changes made in Studio are still attributed to the selected account and recorded as staff activity.</p><form className={s.form} onSubmit={confirmImpersonation}><label>Reason or case reference<textarea name="reason" minLength={3} maxLength={300} required/></label><p className={s.meta}>Enter a fresh authenticator code to authorize impersonation.</p><FactorSelect staff={staff}/><AuthenticatorCode/><div className={s.row}><button className="button button-primary" disabled={busy}>Open read-only view</button><button type="button" className="button button-outline" disabled={busy} onClick={()=>setImpersonateOwner(null)}>Cancel</button></div></form></section>}
+            </>
             {workspace&&<>
                 <section className={s.panel} aria-labelledby="workspace-heading"><h2 id="workspace-heading">{workspace.email}</h2><span className={s.status}>{workspace.suspended?'Suspended':'Active'}</span>
                     <dl className={s.facts}>
