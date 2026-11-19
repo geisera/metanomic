@@ -1,3 +1,4 @@
+import {AccountMenu} from '@/components/SiteAccount';
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContactForm from "./ContactForm";
@@ -22,7 +23,7 @@ export default function ContactPage() {
           metanomic<span className="text-[var(--site-c9ec8a)]">.</span>
         </Link>
         <Link href="/" className="navlink rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]">← Back to home</Link>
-      </header>
+      <AccountMenu/></header>
 
       <section className="container pb-20 pt-16 md:pb-28 md:pt-24">
         <p className="eyebrow">Let's talk</p>

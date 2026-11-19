@@ -17,7 +17,7 @@ function StudioContent(){
  const [user,setUser]=useState<User|null>(null),[data,setData]=useState<Snapshot|null>(null),[loading,setLoading]=useState(true),[view,setView]=useState<'agents'|'settings'|'account'|'help'>('agents'),[error,setError]=useState('');const {leave}=useGuard();
  const load=useCallback(async()=>{try{const d=await call('auth');setUser({...d.user, impersonating:d.impersonating, impersonationExpiresAt:d.impersonationExpiresAt});setData(await call('manage'));}catch(e){setUser(null);if((e as Error).message==='Sign in to continue.')router.replace(base+'/login');else setError((e as Error).message);}finally{setLoading(false);}},[router]);
  const refresh=useCallback(async()=>{setData(await call('manage'));},[]);
- useEffect(()=>{queueMicrotask(()=>void load());},[load]);
+ useEffect(()=>{queueMicrotask(()=>{if(window.location.hash==='#account')setView('account');void load();});},[load]);
  function navigate(next:typeof view){if(leave())setView(next);}
  async function logout(){if(!leave())return;try{await call('auth',{action:'logout'});setUser(null);setData(null);router.replace(base+'/login');}catch(e){setError((e as Error).message);}}
  async function exitImpersonation(){if(!leave())return;try{const response=await fetch('/api/studio-admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'impersonate_stop'})});if(!response.ok)throw new Error('Could not exit View as user.');router.replace('/admin');}catch(e){setError((e as Error).message);}}

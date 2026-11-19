@@ -30,7 +30,7 @@
 
   .logo { justify-self: start; }
   .desktop { margin-left: 0; }
-  .sticky[data-studio] .desktop { flex-direction:column; gap:0; }
+  .sticky[data-studio] .desktop { flex-direction:row; gap:24px; }
   .ctas { justify-self: end; }
 }
 
@@ -38,3 +38,21 @@
   .sticky[data-studio] .ctas { display:none; }
   .sticky[data-studio] .toggle { margin-left:auto; }
 }
+
+.account{position:relative;min-width:0}
+.accountButton{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font-size:14px;color:var(--muted)}
+.avatar{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:50%;background:var(--site-11212d);color:var(--foreground);border:1px solid var(--muted)}
+.accountName{max-width:12em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.accountPanel{position:absolute;right:0;top:100%;width:min(270px,90vw);padding:12px;background:var(--background);border:1px solid var(--muted);border-radius:10px;overflow-wrap:anywhere}
+.accountPanel strong,.accountPanel>small{display:block}
+.accountPanel small{color:var(--muted)}
+.accountPanel hr{margin:10px 0;border-color:var(--site-273843)}
+.accountPanel a,.accountPanel button{display:flex;align-items:center;gap:6px;min-height:40px;width:100%;padding-inline:8px;font-size:14px;cursor:pointer}
+.accountPanel :is(a,button):hover{background:var(--site-11212d)}
+@media(min-width:900px){.header:has(.account){grid-template-columns:auto 1fr auto auto;gap:16px}.header:has(.account) .desktop{justify-self:center}}
+@media(max-width:1190px){.accountName,.accountArrow{display:none}}
+@media(max-width:899px){.sticky[data-studio] .header:has(.account) .ctas{display:flex}.sticky[data-studio] .header:has(.account) .toggle{margin-left:0}.header:has(.account){gap:8px}.accountButton{min-width:40px;justify-content:center}}
+
+
+
+.account{z-index:51}.account :is(a,button):focus-visible{outline:2px solid var(--lime);outline-offset:2px}

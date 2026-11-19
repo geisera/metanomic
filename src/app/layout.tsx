@@ -26,5 +26,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeInit}} /></head><body className={geist.variable}><IntelligenceVisual /><TheiaConversationProvider><TheiaDock><div className="relative z-10"><SiteAccount />{children}<div className="theme-footer container"><ThemeControl /></div><ParticlePlaygroundLink /></div></TheiaDock></TheiaConversationProvider></body></html>;
+  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeInit}} /></head><body className={geist.variable}><IntelligenceVisual /><TheiaConversationProvider><TheiaDock><div className="relative z-10"><SiteAccount>{children}</SiteAccount><div className="theme-footer container"><ThemeControl /></div><ParticlePlaygroundLink /></div></TheiaDock></TheiaConversationProvider></body></html>;
 }

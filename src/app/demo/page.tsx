@@ -1,3 +1,4 @@
+import {AccountMenu} from '@/components/SiteAccount';
 import type { Metadata } from "next";
 import Link from "next/link";
 import AgentExperience from "./AgentExperience";
@@ -23,7 +24,7 @@ export default function DemoPage() {
           <span className="text-[16px] font-semibold tracking-[-.035em]">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></span>
         </Link>
         <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm text-[var(--site-d1e0dc)] hover:text-[var(--site-c9ec8a)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ec8a]"><span aria-hidden="true">←</span> Back to site</Link>
-      </header>
+      <AccountMenu/></header>
       <AgentExperience />
     </main>
   );
