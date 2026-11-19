@@ -25,7 +25,8 @@ export async function GET(req: Request) { try {
         await ownedAgent(s, id);
         return json({ documents: await rest<Document[]>('studio_documents?agent_id=eq.' + id + '&order=updated_at.desc', { session: s }) });
     }
-    const [agents, keys, usage, documents, [tier]] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest('studio_usage?day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}), rest('studio_documents?select=id,agent_id,published', {session:s}), rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{p_owner:s.user.id}})]);
+    const [agents, keys, documents, [tier]] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }), rest('studio_documents?select=id,agent_id,published', { session: s }), rest<Tier[]>('rpc/studio_account_tier',{session:s,body:{p_owner:s.user.id}})]);
+    const usage = agents.length ? await rest('studio_usage?agent_id=in.(' + agents.map(agent=>agent.id).join(',') + ')&day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}) : [];
     const limits=agents.length ? await rest<{agent_id:string;message_limit:number;limit_expires_at:string}[]>(
         'studio_assistant_controls?select=agent_id,message_limit,limit_expires_at&limit_expires_at=gt.'+encodeURIComponent(new Date().toISOString()),{session:s}) : [];
     const assistantKeys = agents.length
