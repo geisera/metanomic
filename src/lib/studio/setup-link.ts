@@ -5,6 +5,7 @@ export function setupDestination() {
   const saved=new URLSearchParams(sessionStorage.getItem('studio-setup-destination')||'');
   sessionStorage.removeItem('studio-setup-destination');
   const step=saved.get('setup');
+  if(step==='account')return '/assistant-studio/account';
   if(step && ['create','key','knowledge','preview','embed'].includes(step)){
    url.searchParams.set('setup',step);
    const assistant=saved.get('assistant');
