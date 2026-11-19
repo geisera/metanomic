@@ -19,7 +19,11 @@ function StudioContent(){
  const load=useCallback(async()=>{try{const d=await call('auth');setUser({...d.user, impersonating:d.impersonating, impersonationExpiresAt:d.impersonationExpiresAt});setData(await call('manage'));}catch(e){setUser(null);if((e as Error).message==='Sign in to continue.'){try{sessionStorage.setItem('studio-setup-destination',window.location.search);}catch{}router.replace(base+'/login');}else setError((e as Error).message);}finally{setLoading(false);}},[router]);
  const refresh=useCallback(async()=>{setData(await call('manage'));},[]);
  useEffect(()=>{queueMicrotask(()=>{if(new URLSearchParams(window.location.search).get('setup')==='key')setView('settings');else if(window.location.hash==='#account'||window.location.hash==='#account-email-preferences')setView('account');void load();});},[load]);
- function navigate(next:typeof view){if(leave())setView(next);}
+ function navigate(next:typeof view){
+  if(!leave())return;
+  if(next!=='help')window.history.replaceState(window.history.state,'',base+'/dashboard'+(next==='account'?'#account':next==='settings'?'?setup=key':''));
+  setView(next);
+ }
  async function logout(){if(!leave())return;try{await call('auth',{action:'logout'});setUser(null);setData(null);router.replace(base+'/login');}catch(e){setError((e as Error).message);}}
  async function exitImpersonation(){if(!leave())return;try{const response=await fetch('/api/studio-admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'impersonate_stop'})});if(!response.ok)throw new Error('Could not exit View as user.');router.replace('/admin');}catch(e){setError((e as Error).message);}}
  return <><PrimaryNav studio dashboard={{view,signedIn:Boolean(user),navigate,leave,logout:user?.impersonating?exitImpersonation:logout}}/><main className={s.shell}><div className='container'>{user?.impersonating&&<div className={s.impersonationBar} role='status'><strong>Admin view</strong><span>Viewing {user.name?.trim() || user.email}. Changes apply to this account.</span><button className={s.textButton} type='button' onClick={exitImpersonation}>Return to operations</button></div>}

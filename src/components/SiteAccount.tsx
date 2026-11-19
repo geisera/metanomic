@@ -43,11 +43,8 @@ export default function SiteAccount({children}:{children:ReactNode}) {
     return <IdentityContext.Provider value={show ? account : null}>{children}</IdentityContext.Provider>;
 }
 
-type DashboardActions = {navigate:(view:'agents'|'account')=>void;leave:()=>boolean;logout:()=>void};
+type DashboardActions = {navigate:(view:'agents'|'account'|'settings')=>void;leave:()=>boolean;logout:()=>void};
 export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
-    const path = usePathname();
-    const studioLanding = path === '/assistant-studio' || path === '/assistant-studio/';
-    const studioRoute = path === '/assistant-studio' || path.startsWith('/assistant-studio/');
     const account = useIdentity();
     const [open,setOpen] = useState(false);
     const [error,setError] = useState('');
@@ -77,10 +74,18 @@ export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
         </button>
         <div id="site-account-panel" className={s.accountPanel} hidden={!open}>
             <strong>{account.label}</strong><small>Signed in as {account.email}</small><hr/>
-            {dashboard?<button onClick={()=>{setOpen(false);dashboard.navigate('agents');}}>Studio</button>:<a href="/assistant-studio/dashboard">Studio</a>}
-            {studioLanding && <a href="/assistant-studio/dashboard#account">Account settings</a>}
-            <a onClick={e=>{if(dashboard&&!dashboard.leave())e.preventDefault();}} href="https://platform.openai.com/settings">OpenAI settings</a>
-            {studioRoute && <a href="/" onClick={event=>{if(dashboard && !dashboard.leave())event.preventDefault();}}>Metanomic home</a>}
+            {([
+                ['Open Studio','/assistant-studio/dashboard','agents'],
+                ['Account settings','/assistant-studio/dashboard#account','account'],
+                ['Model settings','/assistant-studio/dashboard?setup=key','settings'],
+            ] as const).map(([label,href,view])=><a key={view} href={href} onClick={event=>{
+                if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+                if(dashboard){
+                    event.preventDefault();
+                    dashboard.navigate(view);
+                }
+                setOpen(false);
+            }}>{label}</a>)}
             <button type="button" onClick={dashboard?dashboard.logout:logout}>Sign out</button>
             {error&&<p role="alert">{error}</p>}
         </div>
