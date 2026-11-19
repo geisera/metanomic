@@ -16,6 +16,7 @@ export const launcherAnimationFrames = {
 } satisfies Record<string, Keyframe[]>;
 
 export const launcherAnimationOptions = { duration: 1000, easing: 'ease-in-out' };
+export const launcherAnimationRepeatDelay = 15000;
 
 export function launcherAnimation(value: unknown): 'off' | 'glow' | 'pulse' {
   return value === 'glow' || value === 'pulse' ? value : 'off';

@@ -1,4 +1,4 @@
-import {launcherAnimationFrames,launcherAnimationOptions} from './launcher-animation';
+import {launcherAnimationFrames,launcherAnimationOptions,launcherAnimationRepeatDelay} from './launcher-animation';
 export const widgetClient = String.raw `(()=>{const cfg=JSON.parse(document.getElementById('config').textContent);let messages=[],busy=false,abort;const log=document.getElementById('log'),form=document.getElementById('form'),input=document.getElementById('message'),send=document.getElementById('send'),status=document.getElementById('status');document.getElementById('name').textContent=cfg.name;send.ariaLabel=cfg.sendLabel||'Send message';send.title=send.ariaLabel;if(cfg.sendDisplay==='text'){send.textContent=send.ariaLabel;send.style.width='auto';send.style.height='auto';send.style.maxWidth='50%';send.style.whiteSpace='normal';send.style.overflowWrap='anywhere';}
 function bubble(text,role){const div=document.createElement('div');div.className='bubble '+role;div.textContent=text;log.append(div);log.scrollTop=log.scrollHeight;return div;}
 function showCitations(citations){
@@ -52,7 +52,7 @@ function playLauncherAnimation(){
     button.style.setProperty('--launcher-glow',color+'80');
     launcherAnimation=button.animate?.(${JSON.stringify(launcherAnimationFrames)}[animation],${JSON.stringify(launcherAnimationOptions)});
   }
-  if(script.dataset.repeatAnimation==='true')animationTimer=setTimeout(playLauncherAnimation,15000);
+  if(script.dataset.repeatAnimation==='true')animationTimer=setTimeout(playLauncherAnimation,${launcherAnimationRepeatDelay});
 }
 if(animation==='glow'||animation==='pulse')animationTimer=setTimeout(playLauncherAnimation,3000);
 function setFullscreen(fullscreen){
