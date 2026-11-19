@@ -15,7 +15,7 @@ function isMfaSession(token: string) {
 }
 
 export async function studioStaff(): Promise<Staff> {
-    const signedIn = await session();
+    const signedIn = await session(true);
     const [staff] = await rest<{ roles: StaffRole[] }[]>('studio_staff?select=roles&user_id=eq.' + signedIn.user.id, { admin: true });
     if (!staff?.roles.length) throw new StudioError('Staff access is required.', 403);
     const factors = (signedIn.user.factors ?? []).filter(factor => factor.factor_type === 'totp' && uuid(factor.id));
