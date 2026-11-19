@@ -43,7 +43,7 @@ export default function SiteAccount({children}:{children:ReactNode}) {
     return <IdentityContext.Provider value={show ? account : null}>{children}</IdentityContext.Provider>;
 }
 
-type DashboardActions = {navigate:(view:'agents'|'account'|'settings')=>void;leave:()=>boolean;logout:()=>void};
+type DashboardActions = {navigate:(view:'agents'|'account')=>void;leave:()=>boolean;logout:()=>void};
 export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
     const account = useIdentity();
     const [open,setOpen] = useState(false);
@@ -77,7 +77,6 @@ export function AccountMenu({dashboard}:{dashboard?:DashboardActions}={}) {
             {([
                 ['Open Studio','/assistant-studio/dashboard','agents'],
                 ['Account settings','/assistant-studio/dashboard#account','account'],
-                ['Model settings','/assistant-studio/dashboard?setup=key','settings'],
             ] as const).map(([label,href,view])=><a key={view} href={href} onClick={event=>{
                 if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
                 if(dashboard){

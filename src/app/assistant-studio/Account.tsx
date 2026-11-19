@@ -2,12 +2,15 @@
 import {useState,type FormEvent} from 'react';
 import FieldHelp from './FieldHelp';
 import AccountEmailPreferences from './AccountEmailPreferences';
+import OpenAIConnection from './OpenAIConnection';
 import SettingsNav,{SettingsIcon} from './SettingsNav';
-import {LastSaved,Notice,call,type User} from './ui';
+import {LastSaved,Notice,call,type Snapshot,type User} from './ui';
 import s from './studio.module.css';
-export function Account({ user, onUpdate }: {
+export function Account({ user, onUpdate, keyInfo, onKeyUpdate }: {
     user: User;
     onUpdate: () => Promise<void>;
+    keyInfo?: Snapshot['keys'][number];
+    onKeyUpdate: () => Promise<void>;
 }) {
     const [saved,setSaved]=useState<Record<string,string>>({}), [busy, setBusy] = useState(false), [notice, setNotice] = useState(''), [error, setError] = useState('');
     async function action(e: FormEvent<HTMLFormElement>, kind: string) {
@@ -33,13 +36,14 @@ export function Account({ user, onUpdate }: {
         }
     }
     return <div className={s.settingsLayout}><SettingsNav label='Account settings'>
+      <a href='#account-default-key'><SettingsIcon name='security'/>Default key</a>
       <a href='#account-profile'><SettingsIcon name='profile'/>Profile</a>
       <a href='#account-password'><SettingsIcon name='security'/>Password</a>
       <a href='#account-email'><SettingsIcon name='profile'/>Email address</a>
       <a href='#account-email-preferences'><SettingsIcon name='settings'/>Email preferences</a>
       <a href='#account-sessions'><SettingsIcon name='status'/>Sessions</a>
       {!user.is_admin&&<a href='#account-delete'><SettingsIcon name='security'/>Delete account</a>}
-    </SettingsNav><div className={s.account}>{error && <p className={s.alert} role='alert'>{error}</p>}<Notice>{notice}</Notice><section id='account-profile' className='card'><h2>Account profile</h2><p className={s.help}>{user.email}</p><form className={s.form} onSubmit={e => action(e, 'profile')}><FieldHelp id="studio-field-help-17" label="Display name" caption={<>Display name</>} control={<input name='name' defaultValue={user.name} maxLength={80} aria-describedby="studio-field-help-17"/>}>Optional account name, up to 80 characters. This does not change the name visitors see in your assistant’s chat.</FieldHelp><button className='button button-primary' disabled={busy}>Save profile</button><LastSaved value={saved.profile}/></form></section>
+    </SettingsNav><div className={s.account}>{error && <p className={s.alert} role='alert'>{error}</p>}<Notice>{notice}</Notice><OpenAIConnection keyInfo={keyInfo} onUpdate={onKeyUpdate}/><section id='account-profile' className='card'><h2>Account profile</h2><p className={s.help}>{user.email}</p><form className={s.form} onSubmit={e => action(e, 'profile')}><FieldHelp id="studio-field-help-17" label="Display name" caption={<>Display name</>} control={<input name='name' defaultValue={user.name} maxLength={80} aria-describedby="studio-field-help-17"/>}>Optional account name, up to 80 characters. This does not change the name visitors see in your assistant’s chat.</FieldHelp><button className='button button-primary' disabled={busy}>Save profile</button><LastSaved value={saved.profile}/></form></section>
  
  <section id='account-password' className='card'><h2>Change password</h2><form className={s.form} onSubmit={e => action(e, 'password')}><FieldHelp id="studio-field-help-19" label="Current password" caption={<>Current password</>} control={<input name='current_password' type='password' autoComplete='current-password' required aria-describedby="studio-field-help-19"/>}>Enter your existing password to confirm this change. Do not enter your OpenAI API key.</FieldHelp><FieldHelp id="studio-field-help-20" label="New password" caption={<>New password</>} control={<input name='password' type='password' autoComplete='new-password' minLength={12} maxLength={128} required aria-describedby="studio-field-help-20"/>}>Choose a unique password of 12–128 characters. You&apos;ll be signed out on all devices.</FieldHelp><button className='button button-outline' disabled={busy}>Update password</button></form></section>
  <section id='account-email' className='card'><h2>Change email</h2><form className={s.form} onSubmit={e => action(e, 'email')}><FieldHelp id="studio-field-help-21" label="New email" caption={<>New email</>} control={<input name='email' type='email' maxLength={254} required aria-describedby="studio-field-help-21"/>}>Use an address you can access. Confirm the messages sent to both your current address and the new one to complete the change.</FieldHelp><FieldHelp id="studio-field-help-22" label="Current password" caption={<>Current password</>} control={<input name='current_password' type='password' autoComplete='current-password' required aria-describedby="studio-field-help-22"/>}>Enter your current Studio password to authorize the email change.</FieldHelp><button className='button button-outline' disabled={busy}>Send confirmation emails</button></form></section>

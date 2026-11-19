@@ -84,6 +84,8 @@
 .settingsContent > .form { margin-top: 0; }
 .settingsForm { display: grid; gap: 48px; }
 .settingsSection { min-width: 0; }
+.modelConfiguration{border-bottom:1px solid var(--site-273843);padding-bottom:28px;margin-bottom:28px}
+.overrideKeySection{border-top:1px solid var(--site-273843);margin-top:22px;padding-top:22px}
 .shell .settingsSection h2 { font-size: 18px; margin: 0; }
 .settingsSection > .help { margin: 6px 0 24px; }
 .settingsSection > .field,
