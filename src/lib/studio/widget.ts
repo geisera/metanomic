@@ -1,37 +1,7 @@
 import {launcherAnimationFrames,launcherAnimationOptions,launcherAnimationRepeatDelay} from './launcher-animation';
+import {renderReplyMarkdown} from './reply-markdown';
 export const widgetClient = String.raw `(()=>{const cfg=JSON.parse(document.getElementById('config').textContent);let messages=[],busy=false,abort;const log=document.getElementById('log'),form=document.getElementById('form'),input=document.getElementById('message'),send=document.getElementById('send'),status=document.getElementById('status');document.getElementById('name').textContent=cfg.name;send.ariaLabel=cfg.sendLabel||'Send message';send.title=send.ariaLabel;if(cfg.sendDisplay==='text'){send.textContent=send.ariaLabel;send.style.width='auto';send.style.height='auto';send.style.maxWidth='50%';send.style.whiteSpace='normal';send.style.overflowWrap='anywhere';}
-function appendText(parent,text){if(!text)return;parent.append(document.createTextNode(text));}
-function appendInline(parent,text){
-  const pattern=/(!?\[[^\]\n]+\]\([^\)\n]+\)|\x60[^\x60\n]+\x60|\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*|_[^_\n]+_)/g;
-  let at=0,match;
-  while((match=pattern.exec(text))){
-    appendText(parent,text.slice(at,match.index));
-    const token=match[0];
-    if(token.startsWith('![')){
-      appendText(parent,token.slice(2,token.indexOf(']')));
-    }else if(token.startsWith('[')){
-      const close=token.indexOf(']'),label=token.slice(1,close),href=token.slice(close+2,-1);let url;
-      try{const candidate=new URL(href,location.origin);if(['http:','https:'].includes(candidate.protocol)&&!candidate.username&&!candidate.password)url=candidate.href;}catch{}
-      if(url){const link=document.createElement('a');link.textContent=label;link.href=url;link.target='_blank';link.rel='noopener noreferrer';parent.append(link);}else appendText(parent,label);
-    }else if(token.charCodeAt(0)===96){const code=document.createElement('code');code.textContent=token.slice(1,-1);parent.append(code);
-    }else{const strong=token.startsWith('**')||token.startsWith('__'),node=document.createElement(strong?'strong':'em');node.textContent=token.slice(strong?2:1,strong?-2:-1);parent.append(node);}
-    at=pattern.lastIndex;
-  }
-  appendText(parent,text.slice(at));
-}
-function renderMarkdown(root,text){
-  root.textContent=text;
-  if(typeof document.createTextNode!=='function')return;
-  root.replaceChildren();
-  for(const raw of text.replace(/\r/g,'').split(/\n{2,}/)){
-    const block=raw.trim();if(!block)continue;const lines=block.split('\n');let node;
-    if(block.startsWith(String.fromCharCode(96).repeat(3))&&block.endsWith(String.fromCharCode(96).repeat(3))){node=document.createElement('pre');const code=document.createElement('code');code.textContent=lines.slice(1,-1).join('\n');node.append(code);
-    }else if(lines.every(line=>/^\s*[-+*]\s+/.test(line))){node=document.createElement('ul');for(const line of lines){const item=document.createElement('li');appendInline(item,line.replace(/^\s*[-+*]\s+/,''));node.append(item);}
-    }else if(lines.every(line=>/^\s*\d+[.)]\s+/.test(line))){node=document.createElement('ol');for(const line of lines){const item=document.createElement('li');appendInline(item,line.replace(/^\s*\d+[.)]\s+/,''));node.append(item);}
-    }else{node=document.createElement('p');const heading=block.match(/^#{1,6}\s+([\s\S]+)$/);if(heading)node.className='markdown-heading';appendInline(node,(heading?heading[1]:lines.map(line=>line.replace(/^>\s?/, '')).join(' ')));}
-    root.append(node);
-  }
-}
+const renderMarkdown=${renderReplyMarkdown.toString()};
 function bubble(text,role){const div=document.createElement('div');div.className='bubble '+role;if(role.startsWith('assistant'))renderMarkdown(div,text);else div.textContent=text;log.append(div);log.scrollTop=log.scrollHeight;return div;}
 function showCitations(citations){
   if(!Array.isArray(citations)||!citations.length)return;

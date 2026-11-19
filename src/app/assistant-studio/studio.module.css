@@ -147,3 +147,17 @@
 .connectionVerified{display:flex;align-items:center;gap:12px;padding:16px;border:1px solid var(--lime);border-radius:8px;background:var(--site-11212d);color:var(--foreground)}
 .connectionVerified svg{flex:none;color:var(--lime)}
 .connectionVerified p{margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
+
+.formattedReply{white-space:normal}
+.formattedReply > * + *{margin-top:.75em}
+.formattedReply :global(.markdown-heading){font-weight:700;font-size:1.05em}
+.formattedReply :is(ul,ol){padding-inline-start:1.4em}
+.formattedReply ul{list-style:disc}
+.formattedReply ol{list-style:decimal}
+.formattedReply li + li{margin-top:.3em}
+.formattedReply a{text-decoration:underline;text-underline-offset:2px}
+.formattedReply a:focus-visible{outline-color:var(--chat-text)}
+.formattedReply :is(pre,code){font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.formattedReply code{padding:.1em .3em;border-radius:4px;background:color-mix(in srgb,var(--chat-text) 10%,transparent)}
+.formattedReply pre{overflow-x:auto;padding:.75em;border-radius:6px;background:color-mix(in srgb,var(--chat-text) 8%,transparent)}
+.formattedReply pre code{padding:0;background:transparent}
