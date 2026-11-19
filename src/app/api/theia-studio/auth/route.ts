@@ -42,6 +42,8 @@ export async function POST(req: Request) {
         }
         if (b.action === 'signup' || b.action === 'recover') {
             const address = email(b.email);
+            if (b.action === 'signup' && address.split('@')[0].includes('+'))
+                throw new StudioError('Use your email address without a plus tag to create an account.', 400, 'plus_address_not_allowed');
             const terms = b.action === 'signup' ? await signupTerms() : null;
             if (terms && b.termsVersion !== terms.version)
                 throw new StudioError('The terms have changed. Reload this page and review the current version before signing up.', 409);
