@@ -1,12 +1,12 @@
 import 'server-only';
 import type { Agent, Document, Message } from './core';
 import { rest } from './server';
-import { normalizeTopics, SCOPE_MODEL, topicsFromKnowledge } from './scope-control';
+import { isScopeModel, normalizeTopics, scopeModels, topicsFromKnowledge } from './scope-control';
 
 type Verdict = 'allow' | 'unrelated' | 'clarify';
 type Reservation =
   | { status: 'inactive' | 'skipped' | 'limited' }
-  | { status: 'reserved'; timeout_ms: number };
+  | { status: 'reserved'; timeout_ms: number; model: unknown };
 type Result = { decision: Verdict | 'inactive' | 'fallback' | 'limited' | 'skipped'; topics: string[] };
 
 const instructions = [
@@ -38,16 +38,22 @@ export async function reviewStudioScope(agent: Agent, messages: Message[], docum
     if (reservation.status !== 'reserved' || !key)
       return { decision: greeting ? 'skipped' : 'fallback', topics };
 
+    const model = reservation.model;
+    if (!isScopeModel(model)) {
+      console.warn('Studio scope model is unavailable.');
+      return { decision: 'fallback', topics };
+    }
+    const profile = scopeModels[model];
     const review = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
       cache: 'no-store',
       signal: AbortSignal.any([signal, AbortSignal.timeout(reservation.timeout_ms)]),
       body: JSON.stringify({
-        model: SCOPE_MODEL,
+        model,
         store: false,
-        reasoning_effort: 'none',
-        max_completion_tokens: 48,
+        reasoning_effort: profile.reasoningEffort,
+        max_completion_tokens: profile.maxCompletionTokens,
         response_format: { type: 'json_schema', json_schema: {
           name: 'scope_decision', strict: true,
           schema: { type: 'object', properties: { decision: { type: 'string', enum: ['allow', 'unrelated', 'clarify'] } },

@@ -68,7 +68,7 @@ export async function POST(request: Request) {
                 } });
                 return json({ ok: true });
             }
-            const [config] = await rest<ScopeConfig[]>('studio_scope_config?select=enabled,pro_monthly,enterprise_monthly,global_monthly,timeout_ms&id=eq.true', { admin: true });
+            const [config] = await rest<ScopeConfig[]>('studio_scope_config?select=model,enabled,pro_monthly,enterprise_monthly,global_monthly,timeout_ms&id=eq.true', { admin: true });
             if (!config) throw new StudioError('Scope Control configuration is unavailable.', 503);
             return json(config);
         }

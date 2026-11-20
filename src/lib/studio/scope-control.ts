@@ -2,9 +2,19 @@ import { StudioError, type Document } from './core';
 
 export const SCOPE_TOPIC_LIMIT = 24;
 export const SCOPE_TOPIC_LENGTH = 120;
-export const SCOPE_MODEL = 'openai/gpt-6-luna';
+export const scopeModels = {
+  'openai/gpt-6-luna': { label: 'GPT-6 Luna', reasoningEffort: 'none', maxCompletionTokens: 48 },
+  'openai/gpt-oss-20b': { label: 'GPT-OSS 20B', reasoningEffort: 'low', maxCompletionTokens: 256 },
+} as const;
+
+export type ScopeModel = keyof typeof scopeModels;
+
+export function isScopeModel(value: unknown): value is ScopeModel {
+  return typeof value === 'string' && Object.hasOwn(scopeModels, value);
+}
 
 export type ScopeConfig = {
+  model: ScopeModel;
   enabled: boolean;
   pro_monthly: number;
   enterprise_monthly: number;
@@ -55,6 +65,7 @@ export function scopeTopicsInput(value: unknown) {
 
 export function scopeConfigInput(value: Record<string, unknown>): ScopeConfig {
   if (typeof value.enabled !== 'boolean') throw new StudioError('Choose whether Scope Control is available.');
+  if (!isScopeModel(value.model)) throw new StudioError('Choose a supported classifier model.');
   const fields = Object.entries(scopeLimits).map(([key, { label, min, max }]) => {
     const entry = value[key];
     if (typeof entry !== 'number' || !Number.isInteger(entry) || entry < min || entry > max) {
@@ -62,5 +73,5 @@ export function scopeConfigInput(value: Record<string, unknown>): ScopeConfig {
     }
     return [key, entry];
   });
-  return { enabled: value.enabled, ...Object.fromEntries(fields) } as ScopeConfig;
+  return { model: value.model, enabled: value.enabled, ...Object.fromEntries(fields) } as ScopeConfig;
 }

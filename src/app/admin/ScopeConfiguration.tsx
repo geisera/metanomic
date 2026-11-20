@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { SCOPE_MODEL, scopeLimits, type ScopeConfig } from '@/lib/studio/scope-control';
+import { isScopeModel, scopeLimits, scopeModels, type ScopeConfig } from '@/lib/studio/scope-control';
 import s from './operations.module.css';
 
 type Props = { request: <T>(body: object) => Promise<T>; onSessionChange: () => Promise<void> };
@@ -45,13 +45,22 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
 
   return <section className={s.panel} aria-labelledby="scope-config-title">
     <h2 id="scope-config-title">Scope Control Beta</h2>
-    <p className={s.meta}>Hosted model {SCOPE_MODEL}. Monthly allowances use UTC and include Preview. A zero allowance stops hosted checks for that limit.</p>
+    <p className={s.meta}>Monthly allowances use UTC and include Preview. A zero allowance stops hosted checks for that limit.</p>
     {error && <p className={s.message} data-error="true" role="alert">{error}</p>}
     {notice && <p className={s.message} role="status">{notice}</p>}
     {!config && !error && <p role="status">Loading configuration…</p>}
     {config && <form className={s.form} onSubmit={save}>
       <label><input type="checkbox" checked={config.enabled} disabled={busy}
         onChange={event => setConfig({ ...config, enabled: event.target.checked })} /> Enable Scope Control for eligible workspaces</label>
+      <label>Classifier model
+        <select value={config.model} disabled={busy} onChange={event => {
+          const model = event.currentTarget.value;
+          if (isScopeModel(model)) setConfig({ ...config, model });
+        }}>
+          {Object.entries(scopeModels).map(([id, { label }]) => <option key={id} value={id}>{label}</option>)}
+        </select>
+      </label>
+      <p className={s.meta}>This selection applies to new hosted checks across Pro and Enterprise workspaces.</p>
       {Object.entries(scopeLimits).map(([name, { label, min, max }]) => {
         const key = name as keyof typeof scopeLimits;
         return <label key={key}>{label}<input type="number" required min={min} max={max} step={1}
