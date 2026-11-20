@@ -1,4 +1,5 @@
 'use client';
+import {loginRedirect} from '@/lib/studio/login-destination';
 import {setupDestination} from '@/lib/studio/setup-link';
 import { useEffect, useState, useRef, type FormEvent } from 'react';
 import Link from 'next/link';
@@ -11,6 +12,7 @@ export default function Confirm() {
     const [link, setLink] = useState<{
         token_hash: string;
         type: string;
+        destination: string | null;
     } | null>(null), [recovery, setRecovery] = useState(false), [busy, setBusy] = useState(false), [notice, setNotice] = useState(''), [error, setError] = useState('');
     const initialized = useRef(false);
     const router = useRouter();
@@ -19,7 +21,7 @@ export default function Confirm() {
             return;
         initialized.current = true;
         const p = new URLSearchParams(location.search);
-        const value = { token_hash: p.get('token_hash') || '', type: p.get('type') || '' };
+        const value = { token_hash: p.get('token_hash') || '', type: p.get('type') || '', destination: loginRedirect(p.get('redirect'), location.origin) };
         history.replaceState(null, '', location.pathname);
         queueMicrotask(() => setLink(value));
     }, []);
@@ -29,10 +31,10 @@ export default function Confirm() {
         setBusy(true);
         setError('');
         try {
-            const d = await call('auth', { action: 'verify', ...link });
+            const d = await call('auth', { action: 'verify', token_hash: link.token_hash, type: link.type });
             if(link.type==='magiclink'){
                 track('signin_complete',{});
-                router.replace(setupDestination());
+                router.replace(link.destination || setupDestination());
                 return;
             }
             setRecovery(d.recovery);

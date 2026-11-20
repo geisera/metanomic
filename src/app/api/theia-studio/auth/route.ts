@@ -7,6 +7,7 @@ import { StudioError, text } from '@/lib/studio/core';
 import { session, setSession, clearSession, authFetch, reserveAuthAttempt, ipOf, rest, failure } from '@/lib/studio/server';
 import { fingerprint } from '@/lib/studio/crypto';
 import { recordStudioTermsAcceptance, signupTerms } from '@/lib/studio/terms';
+import { loginRedirect } from '@/lib/studio/login-destination';
 import { sendAuthLink } from '@/lib/studio/mail';
 import { IMPERSONATION_COOKIE } from '@/lib/studio/impersonation';
 export const runtime = 'nodejs';
@@ -40,7 +41,8 @@ export async function POST(req: Request) {
         }
         if (b.action === 'magiclink') {
             const address = email(b.email);
-            await sendAuthLink(address, 'magiclink');
+            const loginDestination = loginRedirect(b.redirect, new URL(req.url).origin);
+            await sendAuthLink(address, 'magiclink', { loginDestination });
             return json({ message: 'If an account can sign in with this email, we’ve sent a sign-in link. Check your inbox and spam folder.' });
         }
         if (b.action === 'signup' || b.action === 'recover') {
@@ -52,7 +54,10 @@ export async function POST(req: Request) {
                 throw new StudioError('The terms have changed. Reload this page and review the current version before signing up.', 409);
             if (terms && b.acceptedTerms !== true)
                 throw new StudioError('Agree to the Assistant Studio Terms of Service to sign up.');
-            await sendAuthLink(address, b.action === 'signup' ? 'signup' : 'recovery', b.action === 'signup' ? password(b.password) : undefined, undefined, terms ? accountId => recordStudioTermsAcceptance(accountId, terms.version) : undefined);
+            await sendAuthLink(address, b.action === 'signup' ? 'signup' : 'recovery', {
+                password: b.action === 'signup' ? password(b.password) : undefined,
+                beforeSend: terms ? accountId => recordStudioTermsAcceptance(accountId, terms.version) : undefined
+            });
             return json({ message: 'If the address is eligible, a verification email has been sent. Check your inbox and spam folder. Existing accounts can use password recovery.' });
         }
         if (b.action === 'verify') {
@@ -130,8 +135,8 @@ export async function POST(req: Request) {
             if (next === s.user.email)
                 throw new StudioError('Enter a different email address.');
             await reserveAuthAttempt('email-change:' + s.user.id, 3, 3600);
-            await sendAuthLink(s.user.email, 'email_change_current', undefined, next);
-            await sendAuthLink(s.user.email, 'email_change_new', undefined, next);
+            await sendAuthLink(s.user.email, 'email_change_current', { newEmail: next });
+            await sendAuthLink(s.user.email, 'email_change_new', { newEmail: next });
             return json({ message: 'Check both email addresses and confirm the change.' });
         }
         if (b.action === 'delete') {

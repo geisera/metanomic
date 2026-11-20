@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { useReducedMotion } from "motion/react";
 
 type Star = {
@@ -217,6 +218,10 @@ function paint(
 }
 
 export default function IntelligenceVisual() {
+  return usePathname() === "/assistant-studio/login" ? null : <Starfield />;
+}
+
+function Starfield() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const pointer = useRef({ x: -10000, y: -10000 });
   const reducedMotion = useReducedMotion();
