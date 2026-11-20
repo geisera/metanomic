@@ -1,4 +1,6 @@
 export type Agent = {
+    cta_label?: string | null;
+    cta_url?: string | null;
     first_preview_at?: string | null; configured_at?: string | null; first_published_at?: string | null; first_embed_at?: string | null; first_answer_at?: string | null; usage_alert?: boolean; button_label?: string; button_color?: string; launcher_color?: string | null; send_label?: string | null; send_display?: string | null; send_color?: string | null; send_text_color?: string | null; user_message_color?: string | null; button_text_color?: string | null; button_outline_color?: string | null; button_position?: string; launcher_style?: string; launcher_animation?: string; launcher_animation_repeat?: boolean; tab_side?: string; tab_alignment?: string; tab_orientation?: string; tab_offset?: number; pill_side?: string | null; pill_alignment?: string | null; pill_offset?: number | null; pill_orientation?: string | null;
     id: string;
     owner_id: string;

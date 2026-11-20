@@ -113,3 +113,26 @@ test('magic-link requests carry only normalized same-origin destinations', async
  assert.equal((await post({...body,redirect})).status,200);
  assert.deepEqual(calls.at(-1),['redirect','/assistant-studio/dashboard?setup=embed#install']);
 });
+
+test('call to action saves a complete HTTPS link or clears both fields', () => {
+ const {callToActionInput}=load('call-to-action');
+ assert.deepEqual(callToActionInput(' Book a consultation ', 'https://EXAMPLE.com/book?ref=chat'), {
+   cta_label:'Book a consultation',cta_url:'https://example.com/book?ref=chat'
+ });
+ assert.deepEqual(callToActionInput(' ', ''),{cta_label:null,cta_url:null});
+ assert.throws(()=>callToActionInput('Learn more',''));
+ assert.throws(()=>callToActionInput('','https://example.com'));
+ assert.throws(()=>callToActionInput('a'.repeat(61),'https://example.com'));
+ for(const url of ['http://example.com','/book','javascript:alert(1)','https://user:pass@example.com']) {
+   assert.throws(()=>callToActionInput('Learn more',url));
+ }
+});
+
+test('widget renders the saved call to action as an escaped external link', () => {
+ const {widgetCallToAction}=load('widget');
+ assert.equal(widgetCallToAction(agent),'');
+ assert.equal(widgetCallToAction({...agent,cta_label:'Book now',cta_url:'javascript:alert(1)'}),'');
+ const html=widgetCallToAction({...agent,cta_label:'Book <a> & ask',cta_url:'https://example.com/book?a=1&b=2'});
+ assert.match(html,/href="https:\/\/example\.com\/book\?a=1&amp;b=2" target="_blank" rel="noopener noreferrer"/);
+ assert.match(html,/>Book &lt;a&gt; &amp; ask<\/a>/);
+});

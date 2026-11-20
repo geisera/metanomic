@@ -1,3 +1,4 @@
+import { callToActionInput } from '@/lib/studio/call-to-action';
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { session, rest, ownedAgent, apiKey, gate, failure } from '@/lib/studio/server';
 import { knowledgeSourceUrl, agentInput, origins, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
@@ -103,6 +104,14 @@ export async function POST(req: Request) {
             const input={name:valid.name,greeting:valid.greeting,instructions:valid.instructions,model:valid.model,daily_limit:valid.daily_limit,max_output:valid.max_output,updated_at:valid.updated_at,configured_at:agent.configured_at||new Date().toISOString()};
             const rows = await rest<Agent[]>('studio_agents?id=eq.' + agent.id, { session: s, method: 'PATCH', body: input });
             return json({ agent: rows[0] });
+        }
+        if (b.action === 'save-call-to-action') {
+            const fields = callToActionInput(b.cta_label, b.cta_url);
+            const [saved] = await rest<Agent[]>('studio_agents?id=eq.' + agent.id, {
+                session: s, method: 'PATCH', body: { ...fields, updated_at: new Date().toISOString() }
+            });
+            if (!saved) throw new StudioError('Assistant not found.', 404);
+            return json({ agent: saved });
         }
         if (b.action === 'save-origins') {
             const sites=origins(b.origins);checkSites(sites);

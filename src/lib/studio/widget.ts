@@ -1,3 +1,5 @@
+import {assistantCallToAction} from './call-to-action';
+import type {Agent} from './core';
 import {launcherAnimationFrames,launcherAnimationOptions,launcherAnimationRepeatDelay} from './launcher-animation';
 import {renderReplyMarkdown} from './reply-markdown';
 export const widgetClient = String.raw `(()=>{const cfg=JSON.parse(document.getElementById('config').textContent);let messages=[],busy=false,abort;const log=document.getElementById('log'),form=document.getElementById('form'),input=document.getElementById('message'),send=document.getElementById('send'),status=document.getElementById('status');document.getElementById('name').textContent=cfg.name;send.ariaLabel=cfg.sendLabel||'Send message';send.title=send.ariaLabel;if(cfg.sendDisplay==='text'){send.textContent=send.ariaLabel;send.style.width='auto';send.style.height='auto';send.style.maxWidth='50%';send.style.whiteSpace='normal';send.style.overflowWrap='anywhere';}
@@ -67,10 +69,21 @@ function toggle(value){open=value;if(open){if(animationTimer!==undefined)clearTi
   if(event.data.type==='theia:close'&&open)toggle(false);
   if(event.data.type==='theia:fullscreen'&&open&&typeof event.data.fullscreen==='boolean')setFullscreen(event.data.fullscreen);
 });shadow.addEventListener('keydown',e=>{if(e.key==='Escape')toggle(false);});if(edge==='top'){frame.style.marginBottom='0';frame.style.marginTop='12px';shadow.append(style,button,frame);}else shadow.append(style,frame,button);document.body.append(host);})();`;
+export function widgetCallToAction(agent: Agent) {
+  const cta = assistantCallToAction(agent);
+  if (!cta) return '';
+  const escape = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return `<div class="widget-cta-region"><a class="widget-cta" href="${escape(cta.href)}" target="_blank" rel="noopener noreferrer">${escape(cta.label)}</a></div>`;
+}
+
 export const widgetCss = `*{box-sizing:border-box}body{margin:0;background:#091019;color:#ecf0ed;font:15px system-ui}#chat{height:100dvh;display:flex;flex-direction:column}header{padding:16px;display:flex;gap:12px;align-items:center;border-bottom:1px solid #52616a}h1{font-size:17px;margin:0;flex:1}button{background:#c9ec8a;color:#091019;border:0;border-radius:6px;padding:10px;cursor:pointer;font:inherit}button:disabled{opacity:.5}button:focus-visible,textarea:focus-visible{outline:2px solid #c9ec8a;outline-offset:3px}#log{overflow:auto;flex:1;min-height:0;padding:16px}.bubble{padding:12px;margin:0 0 14px;border-radius:8px;background:#11212d;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}.user{background:#273843;margin-left:24px}footer{padding:12px;border-top:1px solid #52616a}form{display:flex;gap:8px}textarea{resize:none;width:100%;min-width:0;background:#11212d;color:#ecf0ed;border:1px solid #52616a;border-radius:6px;padding:10px;font:inherit}label{display:block;margin-bottom:6px}small,#status{font-size:12px;color:#b8c7ce;line-height:1.5}#status{margin:8px 0}a{color:#c9ec8a}`;
 
 export const widgetAppearanceCss = `
 .bubble.assistant{white-space:normal}.bubble.assistant p{margin:0 0 .75em}.bubble.assistant p:last-child{margin-bottom:0}.bubble.assistant .markdown-heading{font-weight:700;font-size:1.05em}.bubble.assistant :is(ul,ol){margin:.25em 0 .75em;padding-left:1.4em}.bubble.assistant li+li{margin-top:.3em}.bubble.assistant :is(pre,code){font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.bubble.assistant code{padding:.1em .3em;border-radius:4px;background:color-mix(in srgb,var(--chat-text) 10%,transparent)}.bubble.assistant pre{overflow-x:auto;margin:.25em 0 .75em;padding:.75em;border-radius:6px;background:color-mix(in srgb,var(--chat-text) 8%,transparent)}.bubble.assistant pre code{padding:0;background:transparent}.bubble.assistant a{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}.bubble.assistant a:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.widget-cta-region{padding:0 0 8px}
+.widget-cta{display:inline-flex;align-items:center;justify-content:center;min-height:44px;max-width:100%;padding:8px 14px;border:1px solid currentColor;border-radius:8px;background:var(--chat-send-background);color:var(--chat-send-text);font-weight:650;text-align:center;text-decoration:none;overflow-wrap:anywhere}
+.widget-cta:hover{text-decoration:underline}
+.widget-cta:focus-visible{outline:2px solid var(--chat-text);outline-offset:2px}
 .citations{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:-4px 0 14px}
 .citations a,.citations span{display:block;padding:4px 9px;border:1px solid var(--chat-outline);border-radius:999px;font-size:12px;overflow-wrap:anywhere}
 .citations a:focus-visible{outline:2px solid var(--chat-text);outline-offset:2px}
