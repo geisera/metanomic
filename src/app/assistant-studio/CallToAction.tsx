@@ -1,12 +1,22 @@
 'use client';
 
+import Link from 'next/link';
 import { useRef, useState, type FormEvent } from 'react';
 import { CTA_LABEL_MAX, CTA_URL_MAX, callToActionInput } from '@/lib/studio/call-to-action';
 import type { Agent } from '@/lib/studio/core';
 import { call, ErrorNotice, SaveBar, useDirty } from './ui';
 import s from './studio.module.css';
 
-export default function CallToAction({ agent, onSaved }: { agent: Agent; onSaved: () => Promise<void> }) {
+export default function CallToAction({ enabled, ...props }: { agent: Agent; enabled: boolean; onSaved: () => Promise<void> }) {
+  if (enabled) return <CallToActionForm {...props} />;
+  return <section className={s.settingsSection} aria-labelledby="assistant-cta-heading">
+    <h2 id="assistant-cta-heading">Call to Action</h2>
+    <p className={s.help}>Available on Pro and Enterprise. Add a button to your assistant’s widget that links to a booking, product, or contact page.</p>
+    <Link href="/assistant-studio#pricing" className="button button-outline">View plans</Link>
+  </section>;
+}
+
+function CallToActionForm({ agent, onSaved }: { agent: Agent; onSaved: () => Promise<void> }) {
   const [baseline, setBaseline] = useState(agent);
   const [label, setLabel] = useState(agent.cta_label ?? '');
   const [url, setUrl] = useState(agent.cta_url ?? '');

@@ -3,6 +3,10 @@ import { StudioError, knowledgeSourceUrl, type Agent } from './core';
 export const CTA_LABEL_MAX = 60;
 export const CTA_URL_MAX = 2048;
 
+export function canUseCallToAction(tier?: string | null) {
+  return tier === 'pro' || tier === 'enterprise';
+}
+
 function ctaUrl(value: string) {
   if (!/^https:\/\//i.test(value) || value.length > CTA_URL_MAX) return null;
   const url = knowledgeSourceUrl(value);

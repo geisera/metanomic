@@ -1,4 +1,4 @@
-import {assistantCallToAction} from './call-to-action';
+import {assistantCallToAction, canUseCallToAction} from './call-to-action';
 import type {Agent} from './core';
 import {launcherAnimationFrames,launcherAnimationOptions,launcherAnimationRepeatDelay} from './launcher-animation';
 import {renderReplyMarkdown} from './reply-markdown';
@@ -69,7 +69,8 @@ function toggle(value){open=value;if(open){if(animationTimer!==undefined)clearTi
   if(event.data.type==='theia:close'&&open)toggle(false);
   if(event.data.type==='theia:fullscreen'&&open&&typeof event.data.fullscreen==='boolean')setFullscreen(event.data.fullscreen);
 });shadow.addEventListener('keydown',e=>{if(e.key==='Escape')toggle(false);});if(edge==='top'){frame.style.marginBottom='0';frame.style.marginTop='12px';shadow.append(style,button,frame);}else shadow.append(style,frame,button);document.body.append(host);})();`;
-export function widgetCallToAction(agent: Agent) {
+export function widgetCallToAction(agent: Agent, tier?: string | null) {
+  if (!canUseCallToAction(tier)) return '';
   const cta = assistantCallToAction(agent);
   if (!cta) return '';
   const escape = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

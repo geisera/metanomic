@@ -6,6 +6,7 @@ import {canOverrideAssistantKey} from '@/lib/studio/assistant-keys';
 import SettingsNav,{SettingsIcon} from './SettingsNav';
 import {HeaderUsage,useUsageDay} from './Usage';
 import {ASSISTANT_TEMPLATES} from '@/lib/studio/templates';
+import {canUseCallToAction} from '@/lib/studio/call-to-action';
 import CallToAction from './CallToAction';
 import Knowledge from './Knowledge';
 import Preview from './Preview';
@@ -19,6 +20,7 @@ export type Tab='key'|'status'|'settings'|'knowledge'|'cta'|'preview'|'embed'|'d
 export default function Workspace({data,refresh,onDefaultKey,accountId='',startedAt}:{accountId?:string;startedAt?:string;data:Snapshot;refresh:()=>Promise<void>;onDefaultKey:()=>void}){
  const [active,setActive]=useState(()=>data.agents.find(a=>a.id===new URLSearchParams(window.location.search).get('assistant'))?.id||data.agents[0]?.id||''),[tab,setTab]=useState<Tab>(()=>{const step=new URLSearchParams(window.location.search).get('setup');return step==='knowledge'||step==='preview'||step==='embed'?step:'key';}),[error,setError]=useState<unknown>(null),[busy,setBusy]=useState(false),[creating,setCreating]=useState(()=>new URLSearchParams(window.location.search).get('setup')==='create');const {leave}=useGuard();const agent=data.agents.find(a=>a.id===active)||data.agents[0],sharedConnected=data.keys.length>0;
  const tier=data.tier||{id:'starter',name:'Starter',assistants:1,websites:2,documents:1};
+ const ctaEnabled = canUseCallToAction(tier.id);
  const allowsOverride=canOverrideAssistantKey(tier.id);
  const keyInfo=data.assistantKeys?.find(key=>key.agent_id===agent?.id);
  const hasKey=keyInfo?allowsOverride&&!keyInfo.invalidated_at:sharedConnected;
@@ -43,8 +45,8 @@ export default function Workspace({data,refresh,onDefaultKey,accountId='',starte
  {tab==='status'&&management}
  {tab==='settings'&&<Settings key={'settings:'+agent.id} rows={data.usage.filter(u=>u.agent_id===agent.id)} agent={agent} effectiveLimit={limitFor(agent.id,agent.daily_limit)} onSaved={refresh} onKey={fixKey}/>}
  {tab==='knowledge'&&<Knowledge documentLimit={tier.documents} key={agent.id} agent={agent} onSaved={refresh}/>}
- {tab==='cta'&&<CallToAction key={agent.id} agent={agent} onSaved={refresh}/>}
- {tab==='preview'&&<Preview key={agent.id} agent={agent} hasKey={hasKey} keyIssue={!!keyInfo} onKey={fixKey} onNavigate={navigate} onUsage={refresh} onTested={()=>{recordMilestone('tested:'+agent.id);setTestedAgent(agent.id);}}/>}
+ {tab==='cta'&&<CallToAction key={agent.id} agent={agent} enabled={ctaEnabled} onSaved={refresh}/>}
+ {tab==='preview'&&<Preview key={agent.id} agent={agent} ctaEnabled={ctaEnabled} hasKey={hasKey} keyIssue={!!keyInfo} onKey={fixKey} onNavigate={navigate} onUsage={refresh} onTested={()=>{recordMilestone('tested:'+agent.id);setTestedAgent(agent.id);}}/>}
  {tab==='embed'&&<Publish websiteLimit={tier.websites} key={agent.id} agent={agent} hasKey={hasKey} onSaved={refresh} onKey={fixKey}/>}
  {tab==='danger'&&<DangerZone key={agent.id} agent={agent} onSaved={refresh}/>}
  </div></div></section>:<><div className={s.empty}>Create your first assistant. Add its behavior and knowledge, test it privately, then publish it on your website.</div></>}</div></div></>;

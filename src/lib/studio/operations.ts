@@ -22,6 +22,10 @@ export function addressFingerprint(value: string) {
     return fingerprint('studio-access-block:' + canonical);
 }
 
+export function effectiveStudioTier(ownerId: string) {
+    return rest<string>('rpc/studio_effective_tier', { admin: true, body: { p_owner: ownerId } });
+}
+
 type RuntimePolicy = { suspended: boolean; embed_disabled: boolean; blocked: boolean; message_limit: number };
 
 export async function requireStudioRuntime(agentId: string, options: { origin?: string; request?: Request; dashboard?: boolean } = {}) {

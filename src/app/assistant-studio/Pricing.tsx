@@ -129,7 +129,7 @@ export default function Pricing(){
         <ul className={s.fg2+' space-y-2'}>
           <Feature><strong>Customer insights:</strong> see what visitors ask, how they feel, and which questions went unanswered</Feature>
           <Feature><strong>Human handoff:</strong> route visitors to your support email or contact form</Feature>
-          <Feature><strong>Smart calls to action:</strong> suggest your booking, product, or support pages based on what visitors ask</Feature>
+          <Feature><strong>Call to Action:</strong> add a widget button that links to your booking, product, or support page</Feature>
           {config.PRO_LIMITS&&<Feature>Up to {config.PRO_LIMITS.assistants} assistants, {config.PRO_LIMITS.documents} documents each, {config.PRO_LIMITS.websites} websites</Feature>}
           <Feature>Remove Metanomic branding</Feature>
         </ul>

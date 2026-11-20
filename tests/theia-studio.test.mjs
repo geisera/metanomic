@@ -130,9 +130,13 @@ test('call to action saves a complete HTTPS link or clears both fields', () => {
 
 test('widget renders the saved call to action as an escaped external link', () => {
  const {widgetCallToAction}=load('widget');
- assert.equal(widgetCallToAction(agent),'');
- assert.equal(widgetCallToAction({...agent,cta_label:'Book now',cta_url:'javascript:alert(1)'}),'');
- const html=widgetCallToAction({...agent,cta_label:'Book <a> & ask',cta_url:'https://example.com/book?a=1&b=2'});
+ assert.equal(widgetCallToAction(agent,'pro'),'');
+ assert.equal(widgetCallToAction({...agent,cta_label:'Book now',cta_url:'javascript:alert(1)'},'pro'),'');
+ const configured={...agent,cta_label:'Book <a> & ask',cta_url:'https://example.com/book?a=1&b=2'};
+ assert.equal(widgetCallToAction(configured,'starter'),'');
+ assert.equal(widgetCallToAction(configured),'');
+ const html=widgetCallToAction(configured,'pro');
+ assert.equal(widgetCallToAction(configured,'enterprise'),html);
  assert.match(html,/href="https:\/\/example\.com\/book\?a=1&amp;b=2" target="_blank" rel="noopener noreferrer"/);
  assert.match(html,/>Book &lt;a&gt; &amp; ask<\/a>/);
 });

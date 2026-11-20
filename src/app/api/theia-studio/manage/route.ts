@@ -1,10 +1,10 @@
-import { callToActionInput } from '@/lib/studio/call-to-action';
+import { callToActionInput, canUseCallToAction } from '@/lib/studio/call-to-action';
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { session, rest, ownedAgent, apiKey, gate, failure } from '@/lib/studio/server';
 import { knowledgeSourceUrl, agentInput, origins, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
 import { ASSISTANT_TEMPLATES } from '@/lib/studio/templates';
 import {canOverrideAssistantKey,type AssistantKeyInfo} from '@/lib/studio/assistant-keys';
-import {requireStudioRuntime} from '@/lib/studio/operations';
+import {effectiveStudioTier, requireStudioRuntime} from '@/lib/studio/operations';
 import { encrypt } from '@/lib/studio/crypto';
 export const runtime = 'nodejs';
 type Tier={id:string;name:string;assistants:number;websites:number;documents:number};
@@ -27,7 +27,7 @@ export async function GET(req: Request) { try {
         return json({ documents: await rest<Document[]>('studio_documents?agent_id=eq.' + id + '&order=updated_at.desc', { session: s }) });
     }
     const [agents, keys] = await Promise.all([rest<Agent[]>('studio_agents?order=created_at.desc', { session: s }), rest('studio_keys?select=last_four,validated_at', { session: s }).catch(()=>[]) ]);
-    const [tier] = s.impersonatedBy ? await (async()=>{ try { const [account] = await rest<{tier_id:string}[]>('studio_accounts?owner_id=eq.'+s.user.id+'&select=tier_id',{admin:true}); return rest<Tier[]>('studio_tiers?id=eq.'+(account?.tier_id||'starter'),{admin:true}); } catch { return [{id:'starter',name:'Starter',assistants:1,websites:2,documents:1}]; } })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
+    const [tier] = s.impersonatedBy ? await (async()=>{ try { const tierId = await effectiveStudioTier(s.user.id); return rest<Tier[]>('studio_tiers?id=eq.'+encodeURIComponent(tierId),{admin:true}); } catch { return [{id:'starter',name:'Starter',assistants:1,websites:2,documents:1}]; } })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
     const agentFilter = agents.length ? '&agent_id=in.(' + agents.map(agent=>agent.id).join(',') + ')' : '';
     const [usage, documents, limits] = agents.length ? await Promise.all([
         rest('studio_usage?agent_id=in.(' + agents.map(agent=>agent.id).join(',') + ')&day=gte.' + new Date(Date.now()-6*86400000).toISOString().slice(0,10)+'&order=day.asc', {session:s}),
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
             await rest('rpc/studio_remove_openai_key', {admin:true,body:{p_owner:s.user.id}});
             return json({ ok: true });
         }
-        const [tier] = s.impersonatedBy ? await (async()=>{ const [account] = await rest<{tier_id:string}[]>('studio_accounts?owner_id=eq.'+s.user.id+'&select=tier_id',{admin:true}); return rest<Tier[]>('studio_tiers?id=eq.'+(account?.tier_id||'starter'),{admin:true}); })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
+        const [tier] = s.impersonatedBy ? await (async()=>{ const tierId = await effectiveStudioTier(s.user.id); return rest<Tier[]>('studio_tiers?id=eq.'+encodeURIComponent(tierId),{admin:true}); })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
         if (b.action === 'create-agent') {
             const existing=await rest<Agent[]>('studio_agents?select=id',{session:s});
             if(existing.length>=tier.assistants)throw new StudioError(`${tier.name} allows ${tier.assistants} assistant(s).`,400,'tier_limit');
@@ -106,6 +106,8 @@ export async function POST(req: Request) {
             return json({ agent: rows[0] });
         }
         if (b.action === 'save-call-to-action') {
+            if (!canUseCallToAction(tier?.id))
+                throw new StudioError('Call to Action requires Pro or Enterprise.', 403, 'tier_limit');
             const fields = callToActionInput(b.cta_label, b.cta_url);
             const [saved] = await rest<Agent[]>('studio_agents?id=eq.' + agent.id, {
                 session: s, method: 'PATCH', body: { ...fields, updated_at: new Date().toISOString() }
