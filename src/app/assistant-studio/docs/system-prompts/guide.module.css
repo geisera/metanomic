@@ -1,0 +1,44 @@
+.guide {
+  width: min(760px, calc(100% - 48px));
+  margin-inline: auto;
+  padding-block: 32px 64px;
+  font-size: 1rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 24px;
+  margin-bottom: 24px;
+}
+.links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.guide a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.guide h2 {
+  margin-top: 36px;
+  margin-bottom: 12px;
+}
+.guide li + li {
+  margin-top: 10px;
+}
+.guide pre, .guide blockquote {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--site-314350);
+  border-radius: 8px;
+  background: var(--site-11212d);
+}
+.guide pre {
+  white-space: pre-wrap;
+}
+.guide blockquote p {
+  margin: 0;
+}
