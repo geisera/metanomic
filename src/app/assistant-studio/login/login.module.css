@@ -203,6 +203,16 @@
   .value li { display: flex; align-items: center; gap: 12px; font-size: 1rem; color: var(--muted); }
   .check { width: 26px; height: 26px; border-radius: 7px; }
 }
+@media (min-width: 1024px) and (max-height: 760px) {
+  .headerInner { min-height: 60px; }
+  .main { padding-block: 6px; }
+  .card { padding-block: 24px; }
+  .helper, .destination { margin-top: 8px; }
+  .form { margin-top: 16px; }
+  .formFeedback { min-height: 36px; }
+  .signup { margin-top: 4px; padding-top: 4px; }
+  .footer { min-height: 48px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .passwordExpand { transition: none; }
   .spinner { animation: none; }
