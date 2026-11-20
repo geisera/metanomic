@@ -140,3 +140,15 @@ test('widget renders the saved call to action as an escaped external link', () =
  assert.match(html,/href="https:\/\/example\.com\/book\?a=1&amp;b=2" target="_blank" rel="noopener noreferrer"/);
  assert.match(html,/>Book &lt;a&gt; &amp; ask<\/a>/);
 });
+
+test('scope topics use published titles and headings and accept editable overrides',()=>{
+ const {topicsFromKnowledge,scopeTopicsInput}=load('scope-control');
+ assert.deepEqual(topicsFromKnowledge([
+   {published:true,title:'Returns',content:'# RETURNS\n## Exceptions\nordinary text'},
+   {published:false,title:'Draft policy',content:'# Internal'},
+ ]),['Returns','Exceptions']);
+ assert.deepEqual(scopeTopicsInput([' Online orders ','online orders','Store hours']),['Online orders','Store hours']);
+ assert.equal(scopeTopicsInput(null),null);
+ assert.throws(()=>scopeTopicsInput([]));
+ assert.throws(()=>scopeTopicsInput(['x'.repeat(121)]));
+});

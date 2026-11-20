@@ -19,7 +19,7 @@ export default function Privacy() {
       <header className={s.intro}>
         <p className="eyebrow">Assistant Studio</p>
         <h1>Assistant Studio Privacy Policy</h1>
-        <p><strong>Effective date:</strong> November 18, 2026</p>
+        <p><strong>Effective date:</strong> November 20, 2026</p>
         <p><strong>Service provider:</strong> Metanomic, a Pennsylvania limited liability company</p>
       </header>
       <p>This Privacy Policy explains how Metanomic handles information when you visit the Assistant Studio website, create or manage an account, join a waitlist, or use an Assistant Studio chat embedded on a website. It applies to Assistant Studio and its embedded chats. Other services and websites may have their own privacy notices.</p>
@@ -37,6 +37,7 @@ export default function Privacy() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">2. How chats and OpenAI processing work</h2>
         <p>When you send a message, Assistant Studio sends the message, recent conversation context, the assistant’s instructions, and relevant published knowledge passages to OpenAI to generate a reply. Requests use the assistant owner’s OpenAI API key. The owner’s OpenAI account settings and applicable OpenAI terms also govern that processing.</p>
+        <p>When Scope Control is active, Metanomic may send the latest message, short excerpts from the recent conversation, and the assistant’s topic list through its AI gateway to OpenAI to check whether the request relates to the business. This check runs on Metanomic’s account. Assistant owners can turn it off in Studio.</p>
         <p><strong>Assistant Studio does not store conversation transcripts in its database.</strong> The open chat or Preview keeps the conversation in browser memory, and clearing the conversation or reloading the page removes it from that view. Clearing the chat does not recall information already transmitted to a provider. Studio also keeps usage counts separately from the conversation.</p>
         <p>Metanomic does not use your Studio content to train models. Assistant Studio requests OpenAI responses with application storage disabled. OpenAI handles abuse-monitoring retention separately, and its API data-sharing controls depend on the account’s settings. <a className="underline" href="https://developers.openai.com/api/docs/guides/your-data">OpenAI API data controls</a>.</p>
         <p><strong>Do not enter passwords, payment details, government identification numbers, medical records, or other sensitive or confidential information in a chat.</strong> If you operate an assistant, publish only knowledge you are willing to have quoted or summarized to your visitors. Source titles and public URLs you provide may appear alongside answers.</p>
@@ -53,7 +54,7 @@ export default function Privacy() {
         <p>We share information as needed to operate Assistant Studio:</p>
         <ul className="list-disc space-y-2 pl-6">
           <li><strong>Hosting, database, and authentication providers</strong> help us deliver the site, securely manage accounts, and store settings, documents, and usage records.</li>
-          <li><strong>OpenAI</strong> receives the information described in Section 2 to generate answers.</li>
+          <li><strong>OpenAI</strong> processes the information described in Section 2 to generate answers or check scope.</li>
           <li><strong>Email delivery providers</strong> process recipient addresses and email contents to deliver verification, password recovery, account notices, and enabled usage alerts.</li>
           <li><strong>Authorities or other parties</strong> may receive information where law requires it or where disclosure is reasonably necessary to protect rights, investigate fraud or abuse, or respond to a security issue.</li>
         </ul>

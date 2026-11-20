@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { actions, accountActions, type AccountAction, type AdminAction, type StaffRole, type Workspace } from '@/lib/studio/admin-contract';
 import Accounts from './Accounts';
 import Stats from './Stats';
+import ScopeConfiguration from './ScopeConfiguration';
 import s from './operations.module.css';
 
 type Staff = { accountLabel: string; roles: StaffRole[]; verified: boolean; factors: { id: string; name?: string }[] };
@@ -32,7 +33,7 @@ async function submit<T>(body?: object, endpoint = '/api/studio-admin'): Promise
 }
 
 export default function Operations() {
-    const [view,setView] = useState<'accounts'|'membership'|'stats'>('accounts');
+    const [view,setView] = useState<'accounts'|'membership'|'stats'|'scope'>('accounts');
     const [staff,setStaff] = useState<Staff|null>(null);
     const [state,setState] = useState<'loading'|'sign-in'|'blocked'|'ready'>('loading');
     const [busy,setBusy] = useState(false);
@@ -162,9 +163,11 @@ export default function Operations() {
                 <button type="button" className={'button '+(view==='accounts'?'button-primary':'button-outline')} aria-pressed={view==='accounts'} onClick={()=>setView('accounts')}>Accounts</button>
                 {billing&&<button type="button" className={'button '+(view==='membership'?'button-primary':'button-outline')} aria-pressed={view==='membership'} onClick={()=>setView('membership')}>Membership configuration</button>}
                 <button type="button" className={'button '+(view==='stats'?'button-primary':'button-outline')} aria-pressed={view==='stats'} onClick={()=>setView('stats')}>Stats</button>
+                {operations&&<button type="button" className={'button '+(view==='scope'?'button-primary':'button-outline')} aria-pressed={view==='scope'} onClick={()=>setView('scope')}>Scope Control Beta</button>}
             </nav>
+            {view==='scope'&&operations&&<ScopeConfiguration request={submit} onSessionChange={load}/>}
             {view==='stats'&&<Stats request={submit} onSessionChange={load}/>}
-            <div className={s.adminView} hidden={view==='stats'}>
+            <div className={s.adminView} hidden={view==='stats'||view==='scope'}>
             <Accounts membershipView={view==='membership'} roles={staff.roles} request={submit} onOpenWorkspace={open} onSessionChange={load}
                 workspaceBusy={busy} workspaceRevision={workspaceRevision} onImpersonate={beginImpersonation} clearWorkspace={()=>{setWorkspace(null);setChange(null);setImpersonateOwner(null);}}
                 reauth={<><p className={s.meta}>Enter a fresh authenticator code to authorize this change.</p><FactorSelect staff={staff}/><AuthenticatorCode/></>}/>

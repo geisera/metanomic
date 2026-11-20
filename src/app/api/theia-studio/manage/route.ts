@@ -1,6 +1,7 @@
 import { callToActionInput, canUseCallToAction } from '@/lib/studio/call-to-action';
+import { canUseScopeControl, scopeTopicsInput, topicsFromKnowledge } from '@/lib/studio/scope-control';
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
-import { session, rest, ownedAgent, apiKey, gate, failure } from '@/lib/studio/server';
+import { session, rest, ownedAgent, apiKey, gate, failure, publishedDocs } from '@/lib/studio/server';
 import { knowledgeSourceUrl, agentInput, origins, StudioError, text, uuid, type Agent, type Document } from '@/lib/studio/core';
 import { ASSISTANT_TEMPLATES } from '@/lib/studio/templates';
 import {canOverrideAssistantKey,type AssistantKeyInfo} from '@/lib/studio/assistant-keys';
@@ -104,6 +105,20 @@ export async function POST(req: Request) {
             const input={name:valid.name,greeting:valid.greeting,instructions:valid.instructions,model:valid.model,daily_limit:valid.daily_limit,max_output:valid.max_output,updated_at:valid.updated_at,configured_at:agent.configured_at||new Date().toISOString()};
             const rows = await rest<Agent[]>('studio_agents?id=eq.' + agent.id, { session: s, method: 'PATCH', body: input });
             return json({ agent: rows[0] });
+        }
+        if (b.action === 'scope-topics' || b.action === 'save-scope-control') {
+            if (!canUseScopeControl(tier?.id))
+                throw new StudioError('Scope Control requires Pro or Enterprise.', 403, 'tier_limit');
+            if (b.action === 'scope-topics')
+                return json({ topics: topicsFromKnowledge(await publishedDocs(agent, s)) });
+            if (typeof b.enabled !== 'boolean') throw new StudioError('Choose whether Scope Control is enabled.');
+            const [saved] = await rest<Agent[]>('studio_agents?id=eq.' + agent.id, {
+                session: s, method: 'PATCH', body: {
+                    scope_enabled: b.enabled, scope_topics: scopeTopicsInput(b.topics), updated_at: new Date().toISOString(),
+                },
+            });
+            if (!saved) throw new StudioError('Assistant not found.', 404);
+            return json({ agent: saved });
         }
         if (b.action === 'save-call-to-action') {
             if (!canUseCallToAction(tier?.id))

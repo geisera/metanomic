@@ -1,3 +1,4 @@
+import { scopeConfigInput, type ScopeConfig } from '@/lib/studio/scope-control';
 import { accountLabel } from '@/lib/studio/account-label';
 import { parseBody, sameOrigin } from '@/lib/knowledge-server';
 import { actions, accountActions, type AccountAction, type AdminAction, type StudioStats, type Workspace } from '@/lib/studio/admin-contract';
@@ -57,6 +58,19 @@ export async function POST(request: Request) {
             (await cookies()).set(IMPERSONATION_COOKIE, issueImpersonation(actor,body.ownerId), { httpOnly:true, secure:process.env.NODE_ENV==='production', sameSite:'lax', path:'/', maxAge:impersonationTtlSeconds });
             await auditRead(actor,'impersonate_start',reason,body.ownerId);
             return json({ok:true,expiresAt,redirectUrl:'/assistant-studio/dashboard'});
+        }
+
+        if (body.action === 'scope_config' || body.action === 'save_scope_config') {
+            requireStaffMfa(staff, 'operations');
+            if (body.action === 'save_scope_config') {
+                await rest('rpc/studio_save_scope_config', { admin: true, body: {
+                    p_actor: actor, p_settings: scopeConfigInput(body), p_reason: text(body.reason, 300, 3),
+                } });
+                return json({ ok: true });
+            }
+            const [config] = await rest<ScopeConfig[]>('studio_scope_config?select=enabled,pro_monthly,enterprise_monthly,global_monthly,timeout_ms&id=eq.true', { admin: true });
+            if (!config) throw new StudioError('Scope Control configuration is unavailable.', 503);
+            return json(config);
         }
 
         if (body.action === 'stats') {

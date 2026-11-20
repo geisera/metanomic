@@ -131,6 +131,7 @@ export default function Pricing(){
           <Feature><strong>Human handoff:</strong> route visitors to your support email or contact form</Feature>
           <Feature><strong>Call to Action:</strong> add a widget button that links to your booking, product, or support page</Feature>
           {config.PRO_LIMITS&&<Feature>Up to {config.PRO_LIMITS.assistants} assistants, {config.PRO_LIMITS.documents} documents each, {config.PRO_LIMITS.websites} websites</Feature>}
+          <Feature><strong>Scope Control (Beta)</strong> keeps the assistant focused on your business topics.</Feature>
           <Feature>Remove Metanomic branding</Feature>
         </ul>
         <Waitlist/>

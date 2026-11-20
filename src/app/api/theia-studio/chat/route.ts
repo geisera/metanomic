@@ -6,6 +6,7 @@ import { checkWidgetToken } from '@/lib/studio/crypto';
 import { after } from 'next/server';
 import { recordOutcome } from '@/lib/studio/usage';
 import { requireStudioRuntime,recordStudioSupportError } from '@/lib/studio/operations';
+import { reviewStudioScope } from '@/lib/studio/scope-runtime';
 import { answer } from '@/lib/studio/chat';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -47,8 +48,7 @@ export async function POST(req: Request) {
                   'Preview has a separate limit from the public widget’s daily quota.'
                 : undefined
         );
-        const key = await apiKey(agent);
-        const docs = await publishedDocs(agent, ownerSession);
+        const [key, docs] = await Promise.all([apiKey(agent), publishedDocs(agent, ownerSession)]);
         if (!preview && !await rest<boolean>('rpc/studio_reserve', { admin: true, body: { p_agent: agent.id } }))
             throw new StudioError('This assistant has reached its daily message limit. Try again after the next reset.', 429, 'daily_limit');
         const day=new Date().toISOString().slice(0,10);
@@ -74,9 +74,21 @@ export async function POST(req: Request) {
                 }
             } catch { console.error('Studio telemetry could not be recorded'); }
         });
-        let stream;
+        const headers: Record<string, string> = { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'X-Request-ID': requestId };
         try {
-            stream = await answer(agent,key.value,conversation,docs,req.signal,finish);
+            const scope = await reviewStudioScope(agent, conversation, docs, req.signal);
+            if (preview && scope.decision !== 'inactive') headers['X-Studio-Scope'] = scope.decision;
+            if (scope.decision === 'unrelated' || scope.decision === 'clarify') {
+                const reply = scope.decision === 'unrelated'
+                    ? 'I can help with questions about this business. What would you like to know about its products, services, or policies?'
+                    : 'Could you tell me how that relates to what you’re looking for from this business?';
+                finish(true);
+                const events = [{ delta: reply }, { done: true, text: reply, sources: [], citations: [] }];
+                return new Response(events.map(event => JSON.stringify(event) + '\n').join(''), { headers });
+            }
+            const stream = await answer(agent, key.value, conversation, docs, req.signal, finish,
+                scope.decision === 'inactive' ? undefined : scope.topics);
+            return new Response(stream, { headers });
         } catch (error) {
             startupFailed=true;
             finish(false);
@@ -86,7 +98,6 @@ export async function POST(req: Request) {
             }
             throw error;
         }
-        return new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'X-Request-ID':requestId } });
     }
     catch (e) {
         if (agent) {
