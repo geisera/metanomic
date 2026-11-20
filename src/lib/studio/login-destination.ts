@@ -24,5 +24,3 @@ export function loginDestinationName(destination: string) {
   };
   return labels[path] || 'your requested page';
 }
-
-export const signupEmailKey = 'studio:login-signup-email';

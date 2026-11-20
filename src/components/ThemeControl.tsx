@@ -19,5 +19,5 @@ export default function ThemeControl({icon,className='theme-control'}:{icon?:Rea
 
 export function GlobalThemeControl(){
  const path=usePathname();
- return path==='/assistant-studio/login'?null:<div className='theme-footer container'><ThemeControl/></div>;
+ return ['/assistant-studio/login', '/assistant-studio/signup'].includes(path)?null:<div className='theme-footer container'><ThemeControl/></div>;
 }

@@ -10,7 +10,7 @@ export const useIdentity = () => useContext(IdentityContext);
 
 export default function SiteAccount({children}:{children:ReactNode}) {
     const path = usePathname();
-    const show = !['/admin', '/particles', '/assistant-studio/login'].includes(path);
+    const show = !['/admin', '/particles', '/assistant-studio/login', '/assistant-studio/signup'].includes(path);
     const [account, setAccount] = useState<Identity|null>(null);
 
     useEffect(() => {

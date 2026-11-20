@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from 'react';
-import { signupEmailKey } from '@/lib/studio/login-destination';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import SignupForm from './SignupForm';
 import { trackLogin, type LoginErrorCode, type LoginMethod } from '@/lib/studio/login-events';
 import { setupDestination } from '@/lib/studio/setup-link';
 import { Button, Divider, Icon, Input, OAuthButton } from './form-controls';
@@ -12,6 +12,7 @@ import s from './login.module.css';
 const methodKey = 'studio:login-method';
 const cooldown = 60;
 const signup = '/assistant-studio/signup';
+const login = '/assistant-studio/login';
 const typoDomains: Record<string, string> = {
   'gmial.com': 'gmail.com', 'gamil.com': 'gmail.com', 'gmal.com': 'gmail.com',
   'gmail.con': 'gmail.com', 'gmail.co': 'gmail.com', 'gmai.com': 'gmail.com',
@@ -68,14 +69,21 @@ function validateEmail(field: HTMLInputElement) {
   return '';
 }
 
-export default function LoginForm({ redirect, destination, setupAccount, expiresIn, showOAuthPlaceholders }: {
+export default function LoginForm({ redirect, destination, setupAccount, expiresIn, termsVersion, showOAuthPlaceholders }: {
   redirect: string | null;
   destination: string | null;
   setupAccount: boolean;
   expiresIn: number;
+  termsVersion?: string;
   showOAuthPlaceholders: boolean;
 }) {
   const router = useRouter();
+  const isSignup = usePathname() === signup;
+  const signupView = useRef(isSignup);
+  const query = new URLSearchParams();
+  if (redirect) query.set('redirect', redirect);
+  if (setupAccount) query.set('next', 'account');
+  const suffix = query.size ? '?' + query : '';
   const [mode, setMode] = useState<Mode>('magic');
   const [email, setEmail] = useState('');
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
@@ -107,14 +115,14 @@ export default function LoginForm({ redirect, destination, setupAccount, expires
       if (localStorage.getItem(methodKey) === 'password') restored = 'password';
       if (setupAccount) sessionStorage.setItem('studio-setup-destination', 'setup=account');
     } catch {}
-    if (!viewed.current) {
+    if (!viewed.current && !signupView.current) {
       viewed.current = true;
       trackLogin('login_view', restored === 'password' ? 'password' : 'magic');
     }
     queueMicrotask(() => {
       if (!active) return;
       setMode(restored);
-      if (matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches &&
+      if (!signupView.current && matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches &&
           (document.activeElement === document.body || !document.activeElement)) {
         emailField.current?.focus({ preventScroll: true });
       }
@@ -278,11 +286,36 @@ export default function LoginForm({ redirect, destination, setupAccount, expires
     setConfirmation(null);
   }
 
-  function carryEmail(event: MouseEvent<HTMLAnchorElement>) {
-    trackLogin('signup_click_from_login', method);
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    try { sessionStorage.setItem(signupEmailKey, email); } catch {}
+  useEffect(() => {
+    if (signupView.current === isSignup) return;
+    signupView.current = isSignup;
+    document.title = (isSignup ? 'Create an account' : 'Sign in') + ' | Assistant Studio by Metanomic';
+    heading.current?.focus({ preventScroll: true });
+    if (!isSignup && !viewed.current) {
+      viewed.current = true;
+      trackLogin('login_view', method);
+    }
+  }, [isSignup, method]);
+
+  function switchView(next: string) {
+    if (next === signup) trackLogin('signup_click_from_login', method);
+    window.history.pushState(null, '', next + suffix);
   }
+
+  function updateSignupEmail(address: string) {
+    setEmail(address);
+    setConfirmation(null);
+    setEmailError('');
+    setSuggestion('');
+    setIssue(null);
+    setAnnouncement('');
+  }
+
+  if (isSignup) return <section className={s.card} aria-labelledby="studio-login-title">
+    <h1 id="studio-login-title" ref={heading} tabIndex={-1}>Create your Assistant Studio account</h1>
+    <SignupForm email={email} setEmail={updateSignupEmail} termsVersion={termsVersion} loginHref={login + suffix}
+      onSignIn={() => switchView(login)} />
+  </section>;
 
   const provider = confirmation ? inbox(email) : null;
   const recovery = mode === 'recover';
@@ -305,7 +338,7 @@ export default function LoginForm({ redirect, destination, setupAccount, expires
       </div>
       {issue && <p className={s.error} role="alert">{issue.message}</p>}
       <p className={s.deliveryHelp}>Didn’t get it? Check spam or <Link href="/contact">contact support</Link>.</p>
-      {confirmation === 'magic' && <Link className={s.textAction} href={signup} onClick={carryEmail}>Create an account with this email</Link>}
+      {confirmation === 'magic' && <Link className={s.textAction} href={signup + suffix} prefetch={false} onNavigate={event => { event.preventDefault(); switchView(signup); }}>Create an account with this email</Link>}
     </> : <>
       <p className={s.helper}>{helper}</p>
       {destination && <p className={s.destination}>Sign in to continue to {destination}.</p>}
@@ -366,7 +399,7 @@ export default function LoginForm({ redirect, destination, setupAccount, expires
         {recovery ? 'Back to sign in' : mode === 'magic' ? 'Use a password instead' : 'Use an email link instead'}
       </button>
       <div className={s.signup}>
-        <p>Don’t have an account? <Link href={signup} onClick={() => trackLogin('signup_click_from_login', method)}>Start free <span aria-hidden="true">→</span></Link></p>
+        <p>Don’t have an account? <Link href={signup + suffix} prefetch={false} onNavigate={event => { event.preventDefault(); switchView(signup); }}>Start free <span aria-hidden="true">→</span></Link></p>
         <small>No credit card required.</small>
       </div>
     </>}

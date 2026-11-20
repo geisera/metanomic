@@ -218,7 +218,7 @@ function paint(
 }
 
 export default function IntelligenceVisual() {
-  return usePathname() === "/assistant-studio/login" ? null : <Starfield />;
+  return ["/assistant-studio/login", "/assistant-studio/signup"].includes(usePathname()) ? null : <Starfield />;
 }
 
 function Starfield() {

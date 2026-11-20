@@ -1,6 +1,8 @@
-import {signupTerms} from '@/lib/studio/terms';
-import AuthForm from '../AuthForm';
-import {copy} from '../content';
-export const metadata={title:copy.auth.signup};
-export const dynamic='force-dynamic';
-export default async function Page(){const terms=await signupTerms();return <AuthForm signup termsVersion={terms?.version}/>;}
+import type { Metadata } from 'next';
+import AuthScreen from '../login/AuthScreen';
+
+export const metadata: Metadata = {
+  title: { absolute: 'Create an account | Assistant Studio by Metanomic' },
+  description: 'Create a free Assistant Studio account to build an AI chatbot for your website.',
+};
+export default AuthScreen;
