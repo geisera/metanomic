@@ -4,14 +4,16 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { track } from '@/lib/navigation-analytics';
 import { copy } from '../content';
+import {STARTER_TRIAL_OFFER} from '@/lib/studio/starter-plan';
 import { call, ErrorNotice, Notice } from '../ui';
 import { Button, Icon, Input } from './form-controls';
 import s from './login.module.css';
 
-export default function SignupForm({ email, setEmail, termsVersion, loginHref, onSignIn }: {
+export default function SignupForm({ email, setEmail, termsVersion, starterTrial, loginHref, onSignIn }: {
   email: string;
   setEmail: (email: string) => void;
   termsVersion?: string;
+  starterTrial?: boolean;
   loginHref: string;
   onSignIn: () => void;
 }) {
@@ -80,7 +82,7 @@ export default function SignupForm({ email, setEmail, termsVersion, loginHref, o
         <label htmlFor="studio-signup-terms">I agree to the <Link href={'/assistant-studio/terms?version=' + encodeURIComponent(termsVersion)}
           target="_blank" rel="noopener noreferrer">Assistant Studio Terms of Service</Link></label>
       </div>}
-      <Button type="submit" pending={busy ? 'Creating account…' : undefined}>Create free account</Button>
+      <Button type="submit" pending={busy ? 'Creating account…' : undefined}>{starterTrial?'Start free trial':'Create free account'}</Button>
       <ErrorNotice error={error}/>
       <Notice>{notice}</Notice>
     </form>
@@ -89,7 +91,7 @@ export default function SignupForm({ email, setEmail, termsVersion, loginHref, o
         event.preventDefault();
         if (!pending.current) onSignIn();
       }}>Sign in <span aria-hidden="true">→</span></Link></p>
-      <small>No credit card required.</small>
+      <small>{starterTrial ? STARTER_TRIAL_OFFER + '. No credit card required to start. OpenAI usage is billed separately.' : 'No credit card required.'}</small>
     </div>
   </>;
 }

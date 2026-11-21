@@ -2,6 +2,7 @@ import { isIP } from 'node:net';
 import { StudioError } from './core';
 import { fingerprint } from './crypto';
 import { rest } from './server';
+import { starterAccess } from './starter-billing';
 
 export function domainName(value: string) {
     try {
@@ -28,8 +29,8 @@ export function effectiveStudioTier(ownerId: string) {
 
 type RuntimePolicy = { suspended: boolean; embed_disabled: boolean; blocked: boolean; message_limit: number };
 
-export async function requireStudioRuntime(agentId: string, options: { origin?: string; request?: Request; dashboard?: boolean } = {}) {
-    const { origin, request, dashboard } = options;
+export async function requireStudioRuntime(agentId: string, options: { origin?: string; request?: Request; dashboard?: boolean; ownerId?: string; publishing?: boolean } = {}) {
+    const { origin, request, dashboard, ownerId, publishing } = options;
     const ip = (request?.headers.get('x-vercel-forwarded-for') ?? request?.headers.get('x-forwarded-for'))?.split(',')[0] ?? '';
     const [policy] = await rest<RuntimePolicy[]>('rpc/studio_runtime_policy', {
         admin: true,
@@ -37,6 +38,15 @@ export async function requireStudioRuntime(agentId: string, options: { origin?: 
     });
     if (!policy || policy.suspended || (!dashboard && (policy.embed_disabled || policy.blocked)))
         throw new StudioError(dashboard ? 'This workspace is suspended. Contact Metanomic support.' : 'This assistant is unavailable.', 403, 'studio_access_blocked');
+    if (process.env.STUDIO_STARTER_BILLING_ENABLED === 'true' && ownerId && !dashboard) {
+        const access = await starterAccess(ownerId, await effectiveStudioTier(ownerId));
+        if (access?.state === 'ready' || access?.state === 'expired') {
+            const message = access.state === 'ready'
+                ? 'Send a test message in Preview to start your Starter trial before publishing.'
+                : 'Your Starter trial or subscription has ended. Subscribe to resume your assistant.';
+            throw new StudioError(publishing ? message : 'This assistant is temporarily unavailable.', 403, 'starter_inactive');
+        }
+    }
     return policy;
 }
 

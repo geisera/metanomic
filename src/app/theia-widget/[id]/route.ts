@@ -20,7 +20,7 @@ export async function GET(req: Request, { params }: {
     catch { }
     if (!a.origins.includes(origin))
         throw new StudioError('Embed this assistant on an approved website.', 403);
-    await requireStudioRuntime(a.id,{origin,request:req});
+    await requireStudioRuntime(a.id,{origin,request:req,ownerId:a.owner_id});
     const ctaTier = a.cta_label && a.cta_url ? await effectiveStudioTier(a.owner_id).catch(() => {
         console.warn('Could not verify Call to Action eligibility for an embedded assistant.');
         return null;

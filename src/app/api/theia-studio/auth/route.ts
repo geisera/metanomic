@@ -7,6 +7,7 @@ import { StudioError, text } from '@/lib/studio/core';
 import { session, setSession, clearSession, authFetch, reserveAuthAttempt, ipOf, rest, failure } from '@/lib/studio/server';
 import { fingerprint } from '@/lib/studio/crypto';
 import { recordStudioTermsAcceptance, signupTerms } from '@/lib/studio/terms';
+import { enrollStarter, prepareStarterDeletion, starterBillingConfig } from '@/lib/studio/starter-billing';
 import { loginRedirect } from '@/lib/studio/login-destination';
 import { sendAuthLink } from '@/lib/studio/mail';
 import { IMPERSONATION_COOKIE } from '@/lib/studio/impersonation';
@@ -54,9 +55,14 @@ export async function POST(req: Request) {
                 throw new StudioError('The terms have changed. Reload this page and review the current version before signing up.', 409);
             if (terms && b.acceptedTerms !== true)
                 throw new StudioError('Agree to the Assistant Studio Terms of Service to sign up.');
+            const enroll = b.action === 'signup' && process.env.STUDIO_STARTER_BILLING_ENABLED === 'true';
+            if (enroll && !starterBillingConfig()) throw new StudioError('Signup is temporarily unavailable.',503);
             await sendAuthLink(address, b.action === 'signup' ? 'signup' : 'recovery', {
                 password: b.action === 'signup' ? password(b.password) : undefined,
-                beforeSend: terms ? accountId => recordStudioTermsAcceptance(accountId, terms.version) : undefined
+                beforeSend: terms || enroll ? async accountId => {
+                    if (terms) await recordStudioTermsAcceptance(accountId, terms.version);
+                    if (enroll) await enrollStarter(accountId);
+                } : undefined
             });
             return json({ message: 'If the address is eligible, a verification email has been sent. Check your inbox and spam folder. Existing accounts can use password recovery.' });
         }
@@ -145,6 +151,8 @@ export async function POST(req: Request) {
             const admins = await rest<unknown[]>('knowledge_admins?user_id=eq.' + s.user.id + '&select=user_id', { session: s });
             if (admins.length)
                 throw new StudioError('This shared Metanomic administrator login cannot be deleted here. Remove your Studio assistants and API key instead.', 409);
+            if (process.env.STUDIO_STARTER_BILLING_ENABLED === 'true' && !await prepareStarterDeletion(s.user.id))
+                throw new StudioError('End any active Starter subscription or wait for an open checkout to expire before deleting your account.',409);
             const revoke = await authFetch('logout?scope=global', {}, s.token);
             if (!revoke.ok)
                 throw new StudioError('Could not revoke sessions. Account deletion stopped.', 503);

@@ -8,6 +8,7 @@ import { recordOutcome } from '@/lib/studio/usage';
 import { requireStudioRuntime,recordStudioSupportError } from '@/lib/studio/operations';
 import { reviewStudioScope } from '@/lib/studio/scope-runtime';
 import { answer } from '@/lib/studio/chat';
+import { startStarterTrial } from '@/lib/studio/starter-billing';
 export const runtime = 'nodejs';
 export const maxDuration = 120;
 
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
             if (!agent.origins.includes(token.origin))
                 throw new StudioError('This website is no longer approved. Update approved websites in Studio.', 403, 'origin_not_approved');
         }
-        const policy=await requireStudioRuntime(agent.id,{origin,request:req,dashboard:preview});
+        const policy=await requireStudioRuntime(agent.id,{origin,request:req,dashboard:preview,ownerId:agent.owner_id});
         const requestsPerHour = 20;
         await gate(
             `${preview ? 'preview' : 'chat'}:${agent.id}:${ip}`,
@@ -110,7 +111,15 @@ export async function POST(req: Request) {
                 finish(true);
                 return scriptedReply(reply, headers);
             }
-            const stream = await answer(agent, key.value, conversation, docs, req.signal, finish, scope.replyPolicy);
+            const stream = await answer(agent, key.value, conversation, docs, req.signal, async success => {
+                if (preview && success && process.env.STUDIO_STARTER_BILLING_ENABLED === 'true') {
+                    try { await startStarterTrial(trackedAgent.owner_id); }
+                    catch {
+                        console.error('Studio could not start the Starter trial.');
+                    }
+                }
+                finish(success);
+            }, scope.replyPolicy);
             return new Response(stream, { headers });
         } catch (error) {
             startupFailed=true;

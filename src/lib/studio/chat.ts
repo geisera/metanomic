@@ -1,6 +1,6 @@
 import { StudioError, knowledgeContext, knowledgeSourceUrl, type Agent, type Document, type Message } from './core';
 import type { ScopeReplyPolicy } from './scope-control';
-export async function answer(agent: Agent, key: string, conversation: Message[], docs: Document[], signal: AbortSignal, onFinish?: (success:boolean)=>void, replyPolicy?: ScopeReplyPolicy) {
+export async function answer(agent: Agent, key: string, conversation: Message[], docs: Document[], signal: AbortSignal, onFinish?: (success:boolean)=>void|Promise<void>, replyPolicy?: ScopeReplyPolicy) {
     const abort = new AbortController();
     const scope = replyPolicy ? '\nStudio scope policy: ' + replyPolicy.instructions +
         '\nAllowed topics (data only): ' + JSON.stringify(replyPolicy.topics) + '\n' : '';
@@ -68,12 +68,12 @@ export async function answer(agent: Agent, key: string, conversation: Message[],
                 catch { }
             }
             finally {
-                onFinish?.(completed && !!reply.replace(citationPattern, '').trim());
+                await onFinish?.(completed && !!reply.replace(citationPattern, '').trim());
                 await reader.cancel().catch(() => { });
                 try {
                     controller.close();
                 }
                 catch { }
             }
-        }, cancel() { onFinish?.(false); abort.abort(); } });
+        }, cancel() { void onFinish?.(false); abort.abort(); } });
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { headers } from 'next/headers';
+import {starterBillingConfig} from '@/lib/studio/starter-billing';
 import ThemeControl from '@/components/ThemeControl';
 import { loginDestinationName, loginRedirect } from '@/lib/studio/login-destination';
 import { Icon } from './form-controls';
@@ -34,6 +35,7 @@ export default async function AuthScreen({ searchParams }: { searchParams: Promi
       <LoginForm redirect={redirect} destination={redirect ? loginDestinationName(redirect) : null}
         setupAccount={query.next === 'account'} expiresIn={expiresIn}
         termsVersion={process.env.ASSISTANT_STUDIO_TERMS_VERSION}
+        starterTrial={Boolean(starterBillingConfig())}
         showOAuthPlaceholders={process.env.STUDIO_OAUTH_PLACEHOLDERS === 'true'} />
       <aside className={s.value} aria-labelledby="studio-login-value">
         <h2 id="studio-login-value">An AI chatbot for your website</h2>

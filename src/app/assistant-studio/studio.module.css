@@ -271,3 +271,11 @@
 .formattedReply a { margin-block: 3px; vertical-align: middle; line-height: 1.35; }
 :is(.previewCta, .formattedReply a):hover { text-decoration: underline; }
 :is(.previewCta, .formattedReply a):focus-visible { outline: 2px solid var(--chat-text); outline-offset: 2px; }
+.starterBilling {
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.shell .starterBilling h2 { font-size: 18px; margin: 0 0 6px; }
+.starterBilling .actions { margin-top: 10px; }

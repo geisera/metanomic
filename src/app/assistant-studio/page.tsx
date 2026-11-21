@@ -1,5 +1,6 @@
 import {HeroActions} from '@/components/SiteAccount';
 import StudioWidgets from './StudioWidgets';
+import {starterBillingConfig} from '@/lib/studio/starter-billing';
 import Pricing from './Pricing';
 import PrimaryNav from '@/components/PrimaryNav';
 import type {Metadata} from 'next';
@@ -94,6 +95,7 @@ function SampleChat(){
 }
 
 export default function Page(){
+  const starterTrial=Boolean(starterBillingConfig());
   return <div data-studio-landing className={s.page+' min-h-screen font-[family-name:var(--font-geist)]'}>
     <PrimaryNav studio/>
 
@@ -136,14 +138,14 @@ export default function Page(){
         </ul>
       </section>
 
-      <Pricing/>
+      <Pricing starterTrial={starterTrial}/>
 
       <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
           <div className="relative">
             <h2 id="final-cta" className="text-balance text-3xl font-semibold tracking-tight sm:text-5xl">Your AI assistant can be live in 10 minutes.</h2>
             <p className={s.bandSub+' mt-4 text-lg'}>Free to start. No credit card required.</p>
-            <a href={SIGNUP} className={s.cta+' mt-8 w-full sm:w-auto'}>Create your free assistant</a>
+            <a href={SIGNUP} className={s.cta+' mt-8 w-full sm:w-auto'}>{starterTrial?'Start free trial':'Create your free assistant'}</a>
           </div>
         </div>
       </section>

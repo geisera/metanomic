@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import {starterBillingConfig} from '@/lib/studio/starter-billing';
 import s from '../studio.module.css';
 
 export const metadata = { title: 'Assistant Studio Privacy Policy' };
@@ -55,6 +56,7 @@ export default function Privacy() {
         <ul className="list-disc space-y-2 pl-6">
           <li><strong>Hosting, database, and authentication providers</strong> help us deliver the site, securely manage accounts, and store settings, documents, and usage records.</li>
           <li><strong>Model providers</strong> process the information described in Section 2. OpenAI generates answers. The AI gateway routes prompt injection and topic checks to a provider that hosts the selected classifier model.</li>
+          {starterBillingConfig()&&<li><strong>Stripe</strong> processes payments and manages subscriptions. Metanomic receives billing identifiers and subscription status to activate or pause access. Customers enter card details on Stripe’s checkout page.</li>}
           <li><strong>Email delivery providers</strong> process recipient addresses and email contents to deliver verification, password recovery, account notices, and enabled usage alerts.</li>
           <li><strong>Authorities or other parties</strong> may receive information where law requires it or where disclosure is reasonably necessary to protect rights, investigate fraud or abuse, or respond to a security issue.</li>
         </ul>

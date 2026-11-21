@@ -6,6 +6,7 @@ import { knowledgeSourceUrl, agentInput, origins, StudioError, text, uuid, type 
 import { ASSISTANT_TEMPLATES } from '@/lib/studio/templates';
 import {canOverrideAssistantKey,type AssistantKeyInfo} from '@/lib/studio/assistant-keys';
 import {effectiveStudioTier, requireStudioRuntime} from '@/lib/studio/operations';
+import {starterAccess} from '@/lib/studio/starter-billing';
 import { encrypt } from '@/lib/studio/crypto';
 export const runtime = 'nodejs';
 type Tier={id:string;name:string;assistants:number;websites:number;documents:number};
@@ -38,7 +39,8 @@ export async function GET(req: Request) { try {
     const assistantKeys = agents.length
         ? (await rest<AssistantKeyInfo[]>('studio_assistant_keys?select=agent_id,last_four,validated_at,invalidated_at,studio_agents!inner()&studio_agents.owner_id=eq.'+s.user.id, {admin:true}).catch(()=>[])).map(({agent_id,last_four,validated_at,invalidated_at})=>({agent_id,last_four,validated_at,invalidated_at}))
         : [];
-    return json({ agents, keys, usage, documents, tier, assistantKeys, limits });
+    const billing = process.env.STUDIO_STARTER_BILLING_ENABLED === 'true' && tier ? await starterAccess(s.user.id,tier.id) : null;
+    return json({ agents, keys, usage, documents, tier, assistantKeys, limits, billing });
 }
 catch (e) {
     return failure(e);
@@ -168,7 +170,7 @@ export async function POST(req: Request) {
         }
         if (b.action === 'publish') {
             const live=b.published===true;
-            if(live){await requireStudioRuntime(agent.id);await apiKey(agent);if(!origins(agent.origins).length)throw new StudioError('Save at least one approved website before publishing.',400,'origin_not_approved');}
+            if(live){await requireStudioRuntime(agent.id,{ownerId:agent.owner_id,publishing:true});await apiKey(agent);if(!origins(agent.origins).length)throw new StudioError('Save at least one approved website before publishing.',400,'origin_not_approved');}
             const first=live&&!agent.published&&!agent.first_published_at;
             const rows=await rest<Agent[]>('studio_agents?id=eq.'+agent.id,{session:s,method:'PATCH',body:{published:live,first_published_at:live?(agent.first_published_at||new Date().toISOString()):agent.first_published_at,updated_at:new Date().toISOString()}});
             return json({agent:rows[0],first_publish:first});

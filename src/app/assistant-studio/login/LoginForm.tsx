@@ -70,12 +70,13 @@ function validateEmail(field: HTMLInputElement) {
   return '';
 }
 
-export default function LoginForm({ redirect, destination, setupAccount, expiresIn, termsVersion, showOAuthPlaceholders }: {
+export default function LoginForm({ redirect, destination, setupAccount, expiresIn, termsVersion, showOAuthPlaceholders, starterTrial }: {
   redirect: string | null;
   destination: string | null;
   setupAccount: boolean;
   expiresIn: number;
   termsVersion?: string;
+  starterTrial?: boolean;
   showOAuthPlaceholders: boolean;
 }) {
   const router = useRouter();
@@ -314,7 +315,7 @@ export default function LoginForm({ redirect, destination, setupAccount, expires
 
   if (isSignup) return <section className={s.card} aria-labelledby="studio-login-title">
     <h1 id="studio-login-title" ref={heading} tabIndex={-1}>Create your Assistant Studio account</h1>
-    <SignupForm email={email} setEmail={updateSignupEmail} termsVersion={termsVersion} loginHref={login + suffix}
+    <SignupForm email={email} setEmail={updateSignupEmail} termsVersion={termsVersion} starterTrial={starterTrial} loginHref={login + suffix}
       onSignIn={() => switchView(login)} />
   </section>;
 
