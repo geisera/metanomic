@@ -9,7 +9,7 @@ import {renderReplyMarkdown} from '@/lib/studio/reply-markdown';
 import type {Tab} from './Workspace';
 import s from './studio.module.css';
 type Reply=Message&{sources?:string[];retrievedSources?:string[];tokens?:number|null;complete?:boolean;scope?:string|null};
-const scopeLabels: Record<string,string> = {allow:'In scope',unrelated:'Redirected',clarify:'Clarification requested',limited:'Prompt fallback (managed allowance reached)',fallback:'Prompt fallback (managed check unavailable)',skipped:'Greeting (no managed check)'};
+const scopeLabels: Record<string,string> = {allow:'Screening passed',unrelated:'Redirected',clarify:'Clarification requested'};
 
 function FormattedReply({content}: {content: string}) {
  const attach = useCallback((node: HTMLDivElement | null) => {

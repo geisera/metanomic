@@ -77,6 +77,20 @@ export async function POST(req: Request) {
         const headers: Record<string, string> = { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'X-Request-ID': requestId };
         try {
             const scope = await reviewStudioScope(agent, conversation, docs, req.signal);
+            if (scope.decision === 'suspected_injection' || scope.decision === 'suspected_knowledge_injection') {
+                const publicMessage = 'I couldn’t answer that request. Try rephrasing your question about this business.';
+                const previewMessage = scope.decision === 'suspected_injection'
+                    ? 'Prompt injection protection blocked this conversation before answer generation.'
+                    : 'Prompt injection protection flagged a retrieved knowledge passage. Review the published knowledge for this question.';
+                throw new StudioError(preview ? previewMessage : publicMessage, 422, scope.decision);
+            }
+            if (scope.decision === 'limited' || scope.decision === 'unavailable') {
+                const previewMessage = scope.decision === 'limited'
+                    ? 'The monthly allowance for prompt injection checks has been reached.'
+                    : 'Prompt injection screening is temporarily unavailable. Try again shortly.';
+                throw new StudioError(preview ? previewMessage : 'This assistant is temporarily unavailable. Please try again later.',
+                    503, scope.decision === 'limited' ? 'prompt_check_limit' : 'prompt_check_unavailable');
+            }
             if (preview && scope.decision !== 'inactive') headers['X-Studio-Scope'] = scope.decision;
             if (scope.decision === 'unrelated' || scope.decision === 'clarify') {
                 const reply = scope.decision === 'unrelated'
@@ -86,8 +100,7 @@ export async function POST(req: Request) {
                 const events = [{ delta: reply }, { done: true, text: reply, sources: [], citations: [] }];
                 return new Response(events.map(event => JSON.stringify(event) + '\n').join(''), { headers });
             }
-            const stream = await answer(agent, key.value, conversation, docs, req.signal, finish,
-                scope.decision === 'inactive' ? undefined : scope.topics);
+            const stream = await answer(agent, key.value, conversation, docs, req.signal, finish, scope.topics);
             return new Response(stream, { headers });
         } catch (error) {
             startupFailed=true;

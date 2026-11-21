@@ -93,9 +93,14 @@ test('scope redirects before generation and exposes its decision only in Preview
    assert.ok(!r.calls.includes('answer'));
  }
 });
-test('a limited hosted allowance retains the reply-level scope policy',async()=>{
- const r=route({scopeDecision:'limited'});
- const reply=await r.post(true);
- assert.equal(reply.headers.get('X-Studio-Scope'),'limited');
- assert.deepEqual(r.calls.find(call=>Array.isArray(call)&&call[0]==='topics'),['topics',['Returns']]);
+test('unverified or suspicious requests never reach answer generation',async()=>{
+ for (const [scopeDecision,status] of [['limited',503],['unavailable',503],['suspected_injection',422],['suspected_knowledge_injection',422]]) {
+  for (const preview of [true,false]) {
+   const r=route({scopeDecision});
+   const reply=await r.post(preview);
+   assert.equal(reply.status,status);
+   assert.match((await reply.json()).error,preview?/prompt injection/i:/assistant|business/i);
+   assert.ok(!r.calls.includes('answer'));
+  }
+ }
 });

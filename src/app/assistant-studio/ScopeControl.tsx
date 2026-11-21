@@ -93,7 +93,7 @@ function ScopeForm({ agent, onSaved }: { agent: Agent; onSaved: () => Promise<vo
           onChange={event => setTopics(event.target.value)} aria-describedby="scope-topics-help" /></label>
         <p className={s.help} id="scope-topics-help">One topic per line, up to {SCOPE_TOPIC_LIMIT} topics and 120 characters per line.</p>
       </div>}
-      <p className={s.help}>If a managed check is unavailable or the allowance is reached, Studio uses a scope instruction in the reply. Test your scope in Preview after saving.</p>
+      <p className={s.help}>Pro and Enterprise include prompt injection screening, even when topic filtering is off. Replies pause while screening is unavailable or the monthly allowance is exhausted. Test your settings in Preview.</p>
       <ErrorNotice error={error} />
       {notice && <p className={s.help} role="status">{notice}</p>}
     </section>

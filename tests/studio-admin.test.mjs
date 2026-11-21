@@ -202,8 +202,9 @@ test('hosted scope requests use the selected model and its supported reasoning e
     for(const [model,effort,budget] of [['openai/gpt-6-luna','none',48],['openai/gpt-oss-20b','low',256]]){
         const hosted=[];
         const runtime=load('src/lib/studio/scope-runtime.ts',{
+            './core':core,
             './scope-control':scopeControl,
-            './server':{rest:async()=>({status:'reserved',timeout_ms:2500,model})},
+            './server':{rest:async()=>({status:'reserved',timeout_ms:2500,model,scope_enabled:true})},
         },async(url,request)=>{
             hosted.push({url,...JSON.parse(request.body)});
             return Response.json({choices:[{message:{content:'{"decision":"allow"}'}}]});
@@ -214,4 +215,30 @@ test('hosted scope requests use the selected model and its supported reasoning e
         assert.equal(hosted[0].reasoning_effort,effort);
         assert.equal(hosted[0].max_completion_tokens,budget);
     }
+});
+
+test('prompt screening still runs with topic controls off and sees complete prepared inputs',async()=>{
+    const agent={owner_id:owner,name:'Sample shop',scope_enabled:false};
+    const messages=[{role:'user',content:'Returns '.repeat(300)}];
+    const documents=[{id:'one',title:'Returns',content:'Returns are accepted for 30 days.',published:true}];
+    let requests=0;
+    const runtime=load('src/lib/studio/scope-runtime.ts',{
+        './core':core, './scope-control':scopeControl,
+        './server':{rest:async(path,{body})=>{
+            assert.equal(path,'rpc/studio_reserve_prompt_check');
+            assert.equal(body.p_attempt,true);
+            return {status:'reserved',timeout_ms:2500,model:'openai/gpt-oss-20b',scope_enabled:false};
+        }},
+    },async(url,request)=>{
+        requests++;
+        const payload=JSON.parse(request.body);
+        const data=JSON.parse(payload.messages[1].content);
+        assert.equal(data.conversation[0].content,messages[0].content);
+        assert.equal(data.knowledge[0].passage,documents[0].content);
+        assert.equal(data.topics,undefined);
+        assert.ok(payload.response_format.json_schema.schema.properties.decision.enum.includes('suspected_injection'));
+        return Response.json({choices:[{message:{content:'{"decision":"suspected_injection"}'}}]});
+    },{env:{STUDIO_SCOPE_GATEWAY_API_KEY:'fixture'}});
+    assert.equal((await runtime.reviewStudioScope(agent,messages,documents,new AbortController().signal)).decision,'suspected_injection');
+    assert.equal(requests,1);
 });

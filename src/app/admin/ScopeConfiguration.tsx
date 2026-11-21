@@ -45,13 +45,13 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
 
   return <section className={s.panel} aria-labelledby="scope-config-title">
     <h2 id="scope-config-title">Scope Control Beta</h2>
-    <p className={s.meta}>Monthly allowances use UTC and include Preview. A zero allowance stops hosted checks for that limit.</p>
+    <p className={s.meta}>Monthly allowances use UTC and cover both topic and prompt injection checks in live chat and Preview. Replies pause for affected workspaces once an allowance is reached. A zero allowance pauses replies immediately.</p>
     {error && <p className={s.message} data-error="true" role="alert">{error}</p>}
     {notice && <p className={s.message} role="status">{notice}</p>}
     {!config && !error && <p role="status">Loading configuration…</p>}
     {config && <form className={s.form} onSubmit={save}>
       <label><input type="checkbox" checked={config.enabled} disabled={busy}
-        onChange={event => setConfig({ ...config, enabled: event.target.checked })} /> Enable Scope Control for eligible workspaces</label>
+        onChange={event => setConfig({ ...config, enabled: event.target.checked })} /> Enable topic filtering for eligible workspaces</label>
       <label>Classifier model
         <select value={config.model} disabled={busy} onChange={event => {
           const model = event.currentTarget.value;
