@@ -58,3 +58,22 @@
 .account{z-index:51}.account :is(a,button):focus-visible{outline:2px solid var(--lime);outline-offset:2px}
 
 @media(max-width:899px){.sticky[data-dashboard] .header .ctas{display:none}.sticky[data-dashboard] .header .toggle{margin-left:auto}}
+.studioBrand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 10px;
+  min-width: 0;
+}
+
+.membershipTier {
+  max-width: 100%;
+  padding: 3px 8px;
+  border: 1px solid var(--lime);
+  border-radius: 999px;
+  color: var(--lime);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
