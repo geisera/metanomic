@@ -21,6 +21,16 @@ export type ScopeConfig = {
   global_monthly: number;
   timeout_ms: number;
 };
+export type ScopeAdminConfig = ScopeConfig & { guard_prompt: string; guard_prompt_version: number };
+export const GUARD_PROMPT_MAX_LENGTH = 4000;
+
+export function guardPromptInput(value: unknown) {
+  if (typeof value !== 'string' || !value.trim() || value.length > GUARD_PROMPT_MAX_LENGTH || value.includes('\0')) {
+    throw new StudioError('Enter a guard prompt of 1–4,000 characters.');
+  }
+  return value.trim();
+}
+
 export const scopeLimits = {
   pro_monthly: { label: 'Pro checks per workspace per month', min: 0, max: 100000 },
   enterprise_monthly: { label: 'Enterprise checks per workspace per month', min: 0, max: 500000 },
