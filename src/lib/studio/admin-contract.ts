@@ -70,6 +70,28 @@ export const accountActions = {
 } as const;
 export type AccountAction = keyof typeof accountActions;
 
+export const promptGuardAuditActions = {
+    save_scope_config: {label: 'Classifier configuration', fields: {
+        enabled: 'Topic filtering', model: 'Classifier model', pro_monthly: 'Pro monthly allowance',
+        enterprise_monthly: 'Enterprise monthly allowance', global_monthly: 'Global monthly allowance',
+        timeout_ms: 'Provider timeout (ms)',
+    }},
+    save_guard_prompt: {label: 'Guard prompt', fields: {guard_prompt: 'Classifier instructions', version: 'Version'}},
+    save_topic_prompt: {label: 'Topic filtering instructions', fields: {topic_prompt: 'Answer model instructions', version: 'Version'}},
+} as const;
+
+export type PromptGuardAuditAction = keyof typeof promptGuardAuditActions;
+export type PromptGuardAuditCursor = {id: string; created_at: string};
+export type PromptGuardAuditPage = {
+    entries: (PromptGuardAuditCursor & {
+        actor: string;
+        action: PromptGuardAuditAction;
+        reason: string;
+        changes: {label: string; before: unknown; after: unknown}[];
+    })[];
+    next: PromptGuardAuditCursor | null;
+};
+
 export type StudioStats = {
     as_of: string;
     members: number;

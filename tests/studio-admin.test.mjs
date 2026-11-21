@@ -19,14 +19,15 @@ const owner='c35e6552-f086-4f0a-9e2d-0a04d3d06b8f';
 const factor='e9ca2204-9208-47e3-a276-47ec9d97c3c7';
 const token=level=>'header.'+Buffer.from(JSON.stringify({aal:level})).toString('base64url')+'.signature';
 
-function route({roles=['support'],level='aal2',status='verified',allowOrigin=true,qrCode}={}) {
+function route({roles=['support'],level='aal2',status='verified',allowOrigin=true,qrCode,history=[]}={}) {
     const calls=[];
     const server={
-        session:async()=>({token:token(level),user:{id:actor,factors:[{id:factor,factor_type:'totp',status}]}}),
+        session:async()=>({token:token(level),user:{id:actor,email:'operator@example.com',factors:[{id:factor,factor_type:'totp',status}]}}),
         gate:async()=>{},
         authFetch:async (path)=>{
             calls.push(path);
             if(path==='factors')return Response.json({id:factor,totp:{secret:'FIXTURESECRET',qr_code:qrCode}});
+            if(path.startsWith('admin/users/'))return Response.json({email:'prior-operator@example.com'});
             return path.endsWith('/challenge')?Response.json({id:factor}):Response.json({access_token:token('aal2'),refresh_token:'fixture',user:{id:actor}});
         },
         setSession:async()=>{calls.push('session_updated');},
@@ -36,6 +37,7 @@ function route({roles=['support'],level='aal2',status='verified',allowOrigin=tru
             if(path==='rpc/studio_admin_workspace')return {owner_id:owner};
             if(path==='rpc/studio_admin_lookup')return [];
             if(path.startsWith('studio_scope_config?'))return [initialScopeConfig];
+            if(path.startsWith('studio_staff_audit?'))return history;
             if(path==='rpc/studio_save_guard_prompt'||path==='rpc/studio_save_topic_prompt')return options.body.p_version===1 ? 2 : null;
             if(path==='rpc/studio_admin_stats')return {members:3,tiers:[{id:'starter',members:3}]};
         },
@@ -58,6 +60,40 @@ test('staff workspace lookup rejects non-staff, missing MFA, and cross-origin re
         assert.equal((await app.post({action:'lookup',query:'owner@example.com'})).status,403);
         assert.ok(!app.calls.some(call=>Array.isArray(call)&&call[0]==='rpc/studio_admin_lookup'));
     }
+});
+
+test('Prompt Guard history is private, paginated, and returns only relevant changed values',async()=>{
+    const action='prompt_guard_history';
+    for(const options of [{roles:['support']},{roles:['billing']},{roles:['operations'],level:'aal1'},{roles:['operations'],allowOrigin:false}]){
+        const app=route(options);
+        assert.equal((await app.post({action})).status,403);
+        assert.ok(!app.calls.some(call=>Array.isArray(call)&&call[0].startsWith('studio_staff_audit?')));
+    }
+    const at='2026-11-21T16:04:00.123456+00:00';
+    const history=Array.from({length:21},(_,i)=>({id:`11111111-1111-4111-8111-${String(i).padStart(12,'0')}`,
+        actor_id:i===0?actor:owner,created_at:at,action:'save_scope_config',reason:'Tune classifier',
+        before_state:{model:'openai/gpt-6-luna',enabled:true,guard_prompt:'irrelevant text'},
+        after_state:{model:'openai/gpt-oss-20b',enabled:true,guard_prompt:'different irrelevant text'}}));
+    const app=route({roles:['operations'],history});
+    const response=await app.post({action});
+    assert.equal(response.status,200);
+    assert.equal(response.headers.get('Cache-Control'),'no-store');
+    const page=await response.json();
+    assert.equal(page.entries.length,20);
+    assert.equal(page.entries[0].actor,'operator@example.com');
+    assert.equal(page.entries[1].actor,'prior-operator@example.com');
+    assert.equal(app.calls.filter(call=>call==='admin/users/'+owner).length,1);
+    assert.deepEqual(page.entries[0].changes,[{label:'Classifier model',before:'openai/gpt-6-luna',after:'openai/gpt-oss-20b'}]);
+    assert.deepEqual(page.next,{id:history[19].id,created_at:at});
+    assert.equal((await app.post({action,before:{...page.next,created_at:'invalid'}})).status,400);
+    assert.equal((await app.post({action,before:page.next})).status,200);
+    const requests=app.calls.filter(call=>Array.isArray(call)&&call[0].startsWith('studio_staff_audit?'));
+    assert.equal(requests.length,2);
+    const params=new URLSearchParams(requests.at(-1)[0].split('?')[1]);
+    assert.equal(params.get('owner_id'),'is.null');
+    assert.equal(params.get('action'),'in.(save_scope_config,save_guard_prompt,save_topic_prompt)');
+    assert.equal(params.get('order'),'created_at.desc,id.desc');
+    assert.equal(params.get('or'),`(created_at.lt.${at},and(created_at.eq.${at},id.lt.${page.next.id}))`);
 });
 
 test('a workspace read is audited and a support-only account cannot suspend a workspace',async()=>{

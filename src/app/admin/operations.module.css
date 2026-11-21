@@ -17,6 +17,19 @@
 .form textarea{min-height:72px;resize:vertical}
 .row{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
 .row>label{flex:1 1 260px}
+.guardHistory {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--site-405b56);
+}
+.guardHistory > .row { align-items: center; justify-content: space-between; }
+.guardHistory > :global(.button) { justify-self: start; }
+.auditDiff { display: grid; gap: 12px; margin: 12px 0 0; }
+.auditDiff dt { font-weight: 650; }
+.auditDiff dd { margin: 6px 0 0; }
+.auditDiff pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .betaBadge {
   display: inline-block;
   padding: 1px 6px;

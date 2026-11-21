@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { SCOPE_PROMPT_MAX_LENGTH, isScopeModel, scopeLimits, scopeModels, type ScopeAdminConfig } from '@/lib/studio/scope-control';
+import PromptGuardHistory from './PromptGuardHistory';
 import s from './operations.module.css';
 
 type Props = { request: <T>(body: object) => Promise<T>; onSessionChange: () => Promise<void> };
@@ -19,6 +20,7 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  const [historyVersion, setHistoryVersion] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -50,6 +52,7 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
       }
       form.reset();
       setNotice(editor ? editor.title + ' saved.' : 'Prompt Guard configuration saved.');
+      setHistoryVersion(version => version + 1);
     } catch (problem) {
       const failure = problem as Error & { status?: number };
       setError(failure.message);
@@ -97,5 +100,7 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
       <label>{editor.reason}<textarea required name="reason" minLength={3} maxLength={300} disabled={busy}/></label>
       <button className="button button-primary" disabled={busy}>{busy ? 'Saving…' : editor.saveLabel}</button>
     </form>)}</>}
+    <PromptGuardHistory request={request} onSessionChange={onSessionChange} revision={historyVersion}
+      onRefresh={() => setHistoryVersion(version => version + 1)}/>
   </section>;
 }

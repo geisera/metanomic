@@ -1,12 +1,12 @@
 import { scopePromptInput, scopeConfigInput, type ScopeAdminConfig } from '@/lib/studio/scope-control';
 import { accountLabel } from '@/lib/studio/account-label';
 import { parseBody, sameOrigin } from '@/lib/knowledge-server';
-import { actions, accountActions, type AccountAction, type AdminAction, type StudioStats, type Workspace } from '@/lib/studio/admin-contract';
+import { actions, accountActions, promptGuardAuditActions, type AccountAction, type AdminAction, type PromptGuardAuditAction, type PromptGuardAuditCursor, type PromptGuardAuditPage, type StudioStats, type Workspace } from '@/lib/studio/admin-contract';
 import { enrollStaffMfa, requireStaffMfa, studioStaff, verifyStaffMfa } from '@/lib/studio/admin';
 import { changeAccount, listAccounts } from '@/lib/studio/admin-accounts';
 import { StudioError, text, uuid } from '@/lib/studio/core';
 import { addressFingerprint, domainName } from '@/lib/studio/operations';
-import { failure, gate, rest } from '@/lib/studio/server';
+import { authFetch, failure, gate, rest } from '@/lib/studio/server';
 import { cookies } from 'next/headers';
 import { IMPERSONATION_COOKIE, issueImpersonation, impersonationTtlSeconds } from '@/lib/studio/impersonation';
 
@@ -58,6 +58,11 @@ export async function POST(request: Request) {
             (await cookies()).set(IMPERSONATION_COOKIE, issueImpersonation(actor,body.ownerId), { httpOnly:true, secure:process.env.NODE_ENV==='production', sameSite:'lax', path:'/', maxAge:impersonationTtlSeconds });
             await auditRead(actor,'impersonate_start',reason,body.ownerId);
             return json({ok:true,expiresAt,redirectUrl:'/assistant-studio/dashboard'});
+        }
+
+        if (body.action === 'prompt_guard_history') {
+            requireStaffMfa(staff, 'operations');
+            return json(await promptGuardHistory(body.before, staff.session.user));
         }
 
         if (body.action === 'scope_config' || body.action === 'save_scope_config' || body.action === 'save_guard_prompt' || body.action === 'save_topic_prompt') {
@@ -147,6 +152,56 @@ export async function POST(request: Request) {
     } catch (error) {
         return failure(error);
     }
+}
+
+async function promptGuardHistory(cursor: unknown, user: {id: string; email: string}): Promise<PromptGuardAuditPage> {
+    const pageSize = 20;
+    const query = new URLSearchParams({
+        select: 'id,created_at,actor_id,action,reason,before_state,after_state',
+        owner_id: 'is.null',
+        action: 'in.(' + Object.keys(promptGuardAuditActions).join(',') + ')',
+        order: 'created_at.desc,id.desc',
+        limit: String(pageSize + 1),
+    });
+    if (cursor !== undefined) {
+        const before = cursor as Partial<PromptGuardAuditCursor> | null;
+        if (!before || !uuid(before.id) || typeof before.created_at !== 'string' ||
+            !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(before.created_at) ||
+            !Number.isFinite(Date.parse(before.created_at))) {
+            throw new StudioError('Invalid history cursor.');
+        }
+        query.set('or', `(created_at.lt.${before.created_at},and(created_at.eq.${before.created_at},id.lt.${before.id}))`);
+    }
+    type Row = PromptGuardAuditCursor & { actor_id: string; action: PromptGuardAuditAction; reason: string;
+        before_state: Record<string, unknown> | null; after_state: Record<string, unknown> | null };
+    const rows = await rest<Row[]>('studio_staff_audit?' + query, { admin: true });
+    const page = rows.slice(0, pageSize);
+    const actors = await Promise.all([...new Set(page.map(row => row.actor_id))].map(async id => {
+        if (id === user.id && user.email) return [id, user.email] as const;
+        try {
+            const response = await authFetch('admin/users/' + id, undefined, undefined, true);
+            if (response.ok) {
+                const data = await response.json();
+                if (typeof data.email === 'string' && data.email) return [id, data.email] as const;
+            }
+        } catch { /* The audit record remains readable if staff lookup fails. */ }
+        return [id, id] as const;
+    }));
+    const actorById = new Map(actors);
+    const entries = page.map(row => ({
+        id: row.id,
+        created_at: row.created_at,
+        actor: actorById.get(row.actor_id) ?? row.actor_id,
+        action: row.action,
+        reason: row.reason,
+        changes: Object.entries(promptGuardAuditActions[row.action].fields).flatMap(([key, label]) => {
+            const before = row.before_state?.[key] ?? null;
+            const after = row.after_state?.[key] ?? null;
+            return before === after ? [] : [{ label, before, after }];
+        }),
+    }));
+    const last = page.at(-1);
+    return { entries, next: rows.length > pageSize && last ? { id: last.id, created_at: last.created_at } : null };
 }
 
 async function getWorkspace(actor: string, owner: string) {
