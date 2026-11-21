@@ -213,15 +213,13 @@
 .formattedReply ul{list-style:disc}
 .formattedReply ol{list-style:decimal}
 .formattedReply li + li{margin-top:.3em}
-.formattedReply a{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
-.formattedReply a:focus-visible{outline-color:var(--chat-text)}
 .formattedReply :is(pre,code){font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
 .formattedReply code{padding:.1em .3em;border-radius:4px;background:color-mix(in srgb,var(--chat-text) 10%,transparent)}
 .formattedReply pre{overflow-x:auto;padding:.75em;border-radius:6px;background:color-mix(in srgb,var(--chat-text) 8%,transparent)}
 .formattedReply pre code{padding:0;background:transparent}
 
 .previewCtaRegion { padding: 0 12px 8px; }
-.previewCta {
+:is(.previewCta, .formattedReply a) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -237,5 +235,6 @@
   text-decoration: none;
   overflow-wrap: anywhere;
 }
-.previewCta:hover { text-decoration: underline; }
-.previewCta:focus-visible { outline: 2px solid var(--chat-text); outline-offset: 2px; }
+.formattedReply a { margin-block: 3px; vertical-align: middle; line-height: 1.35; }
+:is(.previewCta, .formattedReply a):hover { text-decoration: underline; }
+:is(.previewCta, .formattedReply a):focus-visible { outline: 2px solid var(--chat-text); outline-offset: 2px; }
