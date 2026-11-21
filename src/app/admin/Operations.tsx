@@ -163,7 +163,7 @@ export default function Operations() {
                 <button type="button" className={'button '+(view==='accounts'?'button-primary':'button-outline')} aria-pressed={view==='accounts'} onClick={()=>setView('accounts')}>Accounts</button>
                 {billing&&<button type="button" className={'button '+(view==='membership'?'button-primary':'button-outline')} aria-pressed={view==='membership'} onClick={()=>setView('membership')}>Membership configuration</button>}
                 <button type="button" className={'button '+(view==='stats'?'button-primary':'button-outline')} aria-pressed={view==='stats'} onClick={()=>setView('stats')}>Stats</button>
-                {operations&&<button type="button" className={'button '+(view==='scope'?'button-primary':'button-outline')} aria-pressed={view==='scope'} onClick={()=>setView('scope')}>Scope Control Beta</button>}
+                {operations&&<button type="button" className={'button '+(view==='scope'?'button-primary':'button-outline')} aria-pressed={view==='scope'} onClick={()=>setView('scope')}>Prompt Guard <span className={s.betaBadge}>Beta</span></button>}
             </nav>
             {view==='scope'&&operations&&<ScopeConfiguration request={submit} onSessionChange={load}/>}
             {view==='stats'&&<Stats request={submit} onSessionChange={load}/>}

@@ -49,7 +49,7 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
         await request({ action: 'save_scope_config', model, enabled, pro_monthly, enterprise_monthly, global_monthly, timeout_ms, reason });
       }
       form.reset();
-      setNotice(editor ? editor.title + ' saved.' : 'Scope Control configuration saved.');
+      setNotice(editor ? editor.title + ' saved.' : 'Prompt Guard configuration saved.');
     } catch (problem) {
       const failure = problem as Error & { status?: number };
       setError(failure.message);
@@ -60,7 +60,7 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
   }
 
   return <section className={s.panel} aria-labelledby="scope-config-title">
-    <h2 id="scope-config-title">Scope Control Beta</h2>
+    <h2 id="scope-config-title">Prompt Guard <span className={s.betaBadge}>Beta</span></h2>
     <p className={s.meta}>Monthly allowances use UTC and cover both topic and prompt injection checks in live chat and Preview. Replies pause for affected workspaces once an allowance is reached. A zero allowance pauses replies immediately.</p>
     {error && <p className={s.message} data-error="true" role="alert">{error}</p>}
     {notice && <p className={s.message} role="status">{notice}</p>}

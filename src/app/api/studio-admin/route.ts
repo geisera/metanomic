@@ -64,13 +64,13 @@ export async function POST(request: Request) {
             requireStaffMfa(staff, 'operations');
             if (body.action === 'save_guard_prompt' || body.action === 'save_topic_prompt') {
                 if (typeof body.version !== 'number' || !Number.isSafeInteger(body.version) || body.version < 1 || body.version >= 2147483647)
-                    throw new StudioError('Reload Scope Control to get the current prompt version.');
+                    throw new StudioError('Reload Prompt Guard to get the current prompt version.');
                 const prompt = scopePromptInput(body.prompt);
                 const rpc = body.action === 'save_guard_prompt' ? 'rpc/studio_save_guard_prompt' : 'rpc/studio_save_topic_prompt';
                 const version = await rest<number | null>(rpc, { admin: true, body: {
                     p_actor: actor, p_prompt: prompt, p_version: body.version, p_reason: text(body.reason, 300, 3),
                 } });
-                if (version === null) throw new StudioError('These instructions were updated elsewhere. Copy your edits, then reopen Scope Control to load the latest version.', 409);
+                if (version === null) throw new StudioError('These instructions were updated elsewhere. Copy your edits, then reopen Prompt Guard to load the latest version.', 409);
                 return json({ prompt, version });
             }
             if (body.action === 'save_scope_config') {
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
                 return json({ ok: true });
             }
             const [config] = await rest<ScopeAdminConfig[]>('studio_scope_config?select=model,enabled,pro_monthly,enterprise_monthly,global_monthly,timeout_ms,guard_prompt,guard_prompt_version,topic_prompt,topic_prompt_version&id=eq.true', { admin: true });
-            if (!config) throw new StudioError('Scope Control configuration is unavailable.', 503);
+            if (!config) throw new StudioError('Prompt Guard configuration is unavailable.', 503);
             return json(config);
         }
 
