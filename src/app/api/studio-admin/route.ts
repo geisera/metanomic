@@ -1,3 +1,4 @@
+import { emailSteps } from '@/lib/studio/email-template';
 import { scopePromptInput, scopeConfigInput, type ScopeAdminConfig } from '@/lib/studio/scope-control';
 import { accountLabel } from '@/lib/studio/account-label';
 import { parseBody, sameOrigin } from '@/lib/knowledge-server';
@@ -60,6 +61,21 @@ export async function POST(request: Request) {
             return json({ok:true,expiresAt,redirectUrl:'/assistant-studio/dashboard'});
         }
 
+        if (body.action === 'email_templates' || body.action === 'save_email_template') {
+            requireStaffMfa(staff, 'operations');
+            if (body.action === 'email_templates') return json(await rest('studio_email_templates?select=step,subject,body,label,version', { admin:true }));
+            if (typeof body.step !== 'string' || !Object.hasOwn(emailSteps,body.step) || !Number.isSafeInteger(body.version))
+                throw new StudioError('Choose a current email template.');
+            const subject = text(body.subject,150,1);
+            const label = text(body.label,80,1);
+            if (/[\r\n]/.test(subject+label)) throw new StudioError('Use one line for the subject and button label.');
+            const version = await rest<number|null>('rpc/studio_save_email_template',{admin:true,body:{
+                p_actor:actor,p_step:body.step,p_version:body.version,p_subject:subject,p_body:text(body.body,4000,1),
+                p_label:label,p_reason:text(body.reason,300,3),
+            }});
+            if (version === null) throw new StudioError('Another editor saved this template. Copy your edits and reopen Email templates.',409);
+            return json({version});
+        }
         if (body.action === 'prompt_guard_history') {
             requireStaffMfa(staff, 'operations');
             return json(await promptGuardHistory(body.before, staff.session.user));
