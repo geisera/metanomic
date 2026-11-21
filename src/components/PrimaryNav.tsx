@@ -31,6 +31,7 @@ export default function PrimaryNav({studio=false,dashboard,membershipTier}:{stud
    return <>{links.map(([view,label])=><button type="button" className={s.navLink} key={view} aria-pressed={dashboard.view===view} onClick={()=>{dashboard.navigate(view);if(drawer){setMobile(false);dialog.current?.close();toggle.current?.focus();}}}>{label}</button>)}</>;
   }
   return <>
+  {path==='/assistant-studio'&&<Link href="/" className={s.navLink} onClick={()=>clicked('Metanomic home')}>Metanomic home</Link>}
   <Link href="/assistant-studio/dashboard" className={s.navLink} onClick={()=>clicked('Open Studio')}>Open Studio</Link>
   <Link href="/assistant-studio/docs" className={s.navLink} onClick={()=>clicked('Studio Docs')}>Docs</Link>
   {!account&&<Link href="/assistant-studio/login" className={s.navLink} onClick={()=>clicked('Login')}>Login</Link>}
