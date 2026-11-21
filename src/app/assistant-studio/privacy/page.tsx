@@ -19,8 +19,8 @@ export default function Privacy() {
       <header className={s.intro}>
         <p className="eyebrow">Assistant Studio</p>
         <h1>Assistant Studio Privacy Policy</h1>
-        <p><strong>Effective date:</strong> November 20, 2026</p>
-        <p><strong>Service provider:</strong> Metanomic, a Pennsylvania limited liability company</p>
+        <p><strong>Effective date:</strong> November 21, 2026</p>
+        <p><strong>Service provider:</strong> Metanomic</p>
       </header>
       <p>This Privacy Policy explains how Metanomic handles information when you visit the Assistant Studio website, create or manage an account, join a waitlist, or use an Assistant Studio chat embedded on a website. It applies to Assistant Studio and its embedded chats. Other services and websites may have their own privacy notices.</p>
 
@@ -96,6 +96,11 @@ export default function Privacy() {
         <h2 className="text-xl font-semibold">10. Changes and contact</h2>
         <p>We will post changes to this policy with a new effective date. If a change materially affects how we handle personal information, we will provide additional notice where appropriate or required by law.</p>
         <p>For privacy questions or requests, use the <Link className="underline" href="/contact">Metanomic contact form</Link>.</p>
+        <p>Metanomic Automated Systems LLC is the planned legal name. Pennsylvania LLC formation is pending.</p>
+        <div>
+          <p className="font-semibold">Planned business address</p>
+          <p>812 North Prince Street<br/>Lancaster, PA 17603<br/>Lancaster County</p>
+        </div>
       </section>
       <Link className={s.textButton} href="/assistant-studio">Back to Studio →</Link>
     </article>
