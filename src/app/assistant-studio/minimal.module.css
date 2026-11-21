@@ -117,4 +117,44 @@
 
 .heroAccent { color:var(--site-c9ec8a); }
 
-.starterPlan { border-color:var(--chip-fg); }
+.pricingHeader { max-width:42rem; margin-inline:auto; text-align:center; }
+.pricingHeader h2 { font-size:clamp(2rem,5vw,3.25rem); font-weight:650; letter-spacing:-.045em; line-height:1.1; }
+.pricingHeader p { margin-top:.875rem; color:var(--fg-2); line-height:1.6; text-wrap:balance; }
+.pricingPlans {
+  display:grid;
+  margin-top:2rem;
+  background:var(--surface-solid);
+  border:1px solid var(--border);
+  border-radius:1.25rem;
+}
+.pricingPlan {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:1rem;
+  min-width:0;
+  padding:clamp(1.25rem,3.5vw,2rem);
+}
+.pricingPlan + .pricingPlan { border-top:1px solid var(--border); }
+.pricingPlan[data-featured] {
+  background:linear-gradient(155deg,var(--chip-bg),transparent 75%);
+  border-radius:1.25rem 1.25rem 0 0;
+}
+.pricingPlanHeader h3 { font-size:1.375rem; font-weight:650; letter-spacing:-.025em; }
+.pricingPlanHeader p, .pricingPrice p + p { color:var(--fg-2); font-size:.875rem; line-height:1.5; margin-top:.375rem; }
+.pricingPrice strong { font-size:clamp(1.625rem,2.7vw,2.125rem); font-weight:650; letter-spacing:-.04em; line-height:1.15; }
+.pricingPrice span { color:var(--fg-2); font-size:.875rem; }
+.pricingAction > a, .pricingWaitlist summary { min-height:48px; }
+.pricingWaitlist summary { cursor:pointer; }
+.pricingWaitlist summary::-webkit-details-marker { display:none; }
+.pricingWaitlist summary:focus-visible { outline:2px solid var(--fg); outline-offset:3px; }
+.pricingFeatures { display:grid; gap:.75rem; align-content:start; padding-top:1.125rem; border-top:1px solid var(--border); color:var(--fg-2); font-size:.875rem; line-height:1.5; }
+.pricingFeatures strong { color:var(--fg); }
+.pricingBilling { margin-top:1rem; text-align:center; color:var(--fg-2); font-size:.875rem; line-height:1.6; }
+.pricingBilling a { text-decoration:underline; text-underline-offset:.2em; }
+
+@media (min-width: 850px) {
+  .pricingPlans { grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(4,auto); }
+  .pricingPlan { grid-row:span 4; grid-template-rows:subgrid; }
+  .pricingPlan + .pricingPlan { border-top:0; border-inline-start:1px solid var(--border); }
+  .pricingPlan[data-featured] { border-radius:1.25rem 0 0 1.25rem; }
+}
