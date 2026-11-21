@@ -11,6 +11,7 @@ import s from './studio.module.css';
 type Reply=Message&{sources?:string[];retrievedSources?:string[];tokens?:number|null;complete?:boolean;scope?:string|null;blocked?:boolean};
 const scopeLabels: Record<string,string> = {allow:'Screening passed',unrelated:'Redirected',clarify:'Clarification requested'};
 const promptGuardLabels: Record<string,string> = {
+ timed_out:'Screening timed out. The assistant answered without a screening verdict.',
  suspected_injection:'Suspected prompt injection in the conversation. Studio blocked answer generation.',
  suspected_knowledge_injection:'Suspected prompt injection in a retrieved knowledge passage. Review the published knowledge for this question.',
 };

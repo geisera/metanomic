@@ -99,6 +99,10 @@ export async function POST(req: Request) {
                 throw new StudioError(preview ? previewMessage : 'This assistant is temporarily unavailable. Please try again later.',
                     503, scope.decision === 'limited' ? 'prompt_check_limit' : 'prompt_check_unavailable');
             }
+            if (scope.decision === 'timed_out') {
+                after(() => recordStudioSupportError(trackedAgent.id, requestId, 'prompt_check_timeout', preview)
+                    .catch(() => console.error('Studio support event could not be recorded')));
+            }
             if (scope.decision === 'unrelated' || scope.decision === 'clarify') {
                 const reply = scope.decision === 'unrelated'
                     ? 'I can help with questions about this business. What would you like to know about its products, services, or policies?'

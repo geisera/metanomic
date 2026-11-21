@@ -8,14 +8,18 @@ type Verdict = typeof verdicts[number];
 type Reservation =
   | { status: 'inactive' | 'limited' | 'skipped' }
   | { status: 'reserved'; timeout_ms: number; model: unknown; scope_enabled: boolean; guard_prompt: unknown; topic_prompt: unknown };
-type Result = { decision: Verdict | 'inactive' | 'unavailable' | 'limited'; replyPolicy?: ScopeReplyPolicy };
+type Result = { decision: Verdict | 'inactive' | 'unavailable' | 'limited' | 'timed_out'; replyPolicy?: ScopeReplyPolicy };
 
 export async function reviewStudioScope(agent: Agent, messages: Message[], documents: Document[], signal: AbortSignal): Promise<Result> {
   const key = process.env.STUDIO_SCOPE_GATEWAY_API_KEY || process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+  const reservationTimeout = AbortSignal.timeout(1500);
+  let providerTimeout: AbortSignal | undefined;
+  let replyPolicy: ScopeReplyPolicy | undefined;
+  let stage = 'reservation';
   try {
     const reservation = await rest<Reservation>('rpc/studio_reserve_prompt_check', {
       admin: true, body: { p_owner: agent.owner_id, p_attempt: Boolean(key && !signal.aborted) },
-      signal: AbortSignal.any([signal, AbortSignal.timeout(1500)]),
+      signal: AbortSignal.any([signal, reservationTimeout]),
     });
     if (reservation.status === 'inactive') return { decision: 'inactive' };
     if (reservation.status === 'limited') return { decision: 'limited' };
@@ -38,11 +42,17 @@ export async function reviewStudioScope(agent: Agent, messages: Message[], docum
       ? normalizeTopics(agent.scope_topics.filter(topic => typeof topic === 'string'))
       : topicsFromKnowledge(documents);
     const knowledge = knowledgeContext(documents, messages.at(-1)?.content ?? '');
+    const instructions = reservation.topic_prompt;
+    if (topics && typeof instructions === 'string' && instructions.trim() && instructions.length <= SCOPE_PROMPT_MAX_LENGTH) {
+      replyPolicy = { instructions, topics };
+    }
+    stage = 'gateway';
+    providerTimeout = AbortSignal.timeout(reservation.timeout_ms);
     const review = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
       cache: 'no-store',
-      signal: AbortSignal.any([signal, AbortSignal.timeout(reservation.timeout_ms)]),
+      signal: AbortSignal.any([signal, providerTimeout]),
       body: JSON.stringify({
         model,
         store: false,
@@ -75,14 +85,18 @@ export async function reviewStudioScope(agent: Agent, messages: Message[], docum
     if (decision !== 'allow' && decision !== 'unrelated' && decision !== 'clarify') return { decision: 'unavailable' };
     if (!topics) return { decision: 'allow' };
     if (decision !== 'allow') return { decision };
-    const instructions = reservation.topic_prompt;
-    if (typeof instructions !== 'string' || !instructions.trim() || instructions.length > SCOPE_PROMPT_MAX_LENGTH) {
+    if (!replyPolicy) {
       console.warn('Studio topic filtering instructions are unavailable.');
       return { decision: 'unavailable' };
     }
-    return { decision, replyPolicy: { instructions, topics } };
+    return { decision, replyPolicy };
   } catch {
-    if (!signal.aborted) console.warn('Studio scope check unavailable.');
+    if (signal.aborted) return { decision: 'unavailable' };
+    if ((stage === 'reservation' ? reservationTimeout : providerTimeout)?.aborted) {
+      console.warn('Studio scope check timed out.', { stage });
+      return { decision: 'timed_out', replyPolicy };
+    }
+    console.warn('Studio scope check unavailable.', { stage });
     return { decision: 'unavailable' };
   }
 }

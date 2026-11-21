@@ -22,7 +22,7 @@ function route({authenticated=true,owned=true,reserved=true,fail=false,override=
  },
  'next/server':{after:job=>jobs.push(job)},
  '@/lib/studio/usage':{recordOutcome:async(a,day,success)=>calls.push('outcome:'+success)},
- '@/lib/studio/scope-runtime':{reviewStudioScope:async()=>({decision:scopeDecision,replyPolicy:scopeDecision==='allow'?{instructions:'Saved reply instructions',topics:['Returns']}:undefined})},
+ '@/lib/studio/scope-runtime':{reviewStudioScope:async()=>({decision:scopeDecision,replyPolicy:['allow','timed_out'].includes(scopeDecision)?{instructions:'Saved reply instructions',topics:['Returns']}:undefined})},
  '@/lib/studio/chat':{answer:async(a,key,m,d,s,finish,topics)=>{calls.push('answer',key,['topics',topics]);if(invalid)throw new StudioError('Invalid key',503,'invalid_key');if(fail)throw new Error('provider failed');finish(true);return new ReadableStream({start(c){c.enqueue(new TextEncoder().encode('{"done":true}\n'));c.close();}});}}
  };const compiled={exports:{}};const source=ts.transpileModule(readFileSync('src/app/api/theia-studio/chat/route.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;new Function('require','module','exports',source)(name=>deps[name],compiled,compiled.exports);return {calls,async post(preview){const response=await compiled.exports.POST(new Request('https://metanomic.ai/api/theia-studio/chat',{method:'POST',body:JSON.stringify({agent_id:id,preview,messages:[{role:'user',content:'Hello'}]})}));await Promise.all(jobs.map(job=>job()));return response;}};}
 test('owner Preview works even at daily limit and performs no usage writes or alerts',async()=>{const r=route({reserved:false});assert.equal((await r.post(true)).status,200);assert.ok(r.calls.includes('owned'));assert.ok(r.calls.some(c=>typeof c==="string"&&c.startsWith('preview:')));assert.ok(r.calls.includes('answer'));assert.ok(!r.calls.includes('rpc/studio_reserve'));assert.ok(!r.calls.some(c=>typeof c==="string"&&c.startsWith('outcome:')));});
@@ -128,5 +128,16 @@ test('scoped replies receive the saved topic policy in Preview and the widget',a
     const inactive=route();
     assert.equal((await inactive.post(preview)).status,200);
     assert.equal(inactive.calls.find(call=>Array.isArray(call)&&call[0]==='topics')?.[1],undefined);
+ }
+});
+
+test('screening timeouts still generate a scoped reply and report the timeout in Preview',async()=>{
+ for(const preview of [true,false]){
+    const r=route({scopeDecision:'timed_out'});
+    const reply=await r.post(preview);
+    assert.equal(reply.status,200);
+    assert.equal(reply.headers.get('X-Studio-Scope'),preview?'timed_out':null);
+    assert.ok(r.calls.includes('answer'));
+    assert.deepEqual(r.calls.find(call=>Array.isArray(call)&&call[0]==='topics')?.[1],{instructions:'Saved reply instructions',topics:['Returns']});
  }
 });

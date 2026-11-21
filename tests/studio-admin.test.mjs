@@ -313,3 +313,22 @@ test('only MFA-verified operations staff can read or edit either scope prompt',a
     assert.deepEqual(await topicSave.json(),{prompt:topicUpdate.prompt,version:2});
     assert.ok(app.calls.some(call=>call[0]==='rpc/studio_save_topic_prompt' && call[1].p_prompt===topicUpdate.prompt));
 });
+
+test('the Gateway deadline allows reply fallback, while a network failure remains unavailable',async()=>{
+    const agent={owner_id:owner,name:'Sample shop',scope_topics:['Returns']};
+    const messages=[{role:'user',content:'Do you accept returns?'}];
+    const dependencies={'./core':core,'./scope-control':scopeControl,
+        './server':{rest:async()=>({status:'reserved',timeout_ms:5,model:'openai/gpt-oss-20b',
+            scope_enabled:true,guard_prompt:'Guard instructions',topic_prompt:'Reply within scope'})}};
+    const env={env:{STUDIO_SCOPE_GATEWAY_API_KEY:'fixture'}};
+    const slow=load('src/lib/studio/scope-runtime.ts',dependencies,async(_url,{signal})=>{
+        await new Promise((_,reject)=>{
+            const keepAlive=setTimeout(()=>reject(new Error('No timeout signal')),500);
+            signal.addEventListener('abort',()=>{clearTimeout(keepAlive);reject(signal.reason);},{once:true});
+        });
+    },env);
+    const result=await slow.reviewStudioScope(agent,messages,[],new AbortController().signal);
+    assert.deepEqual(result,{decision:'timed_out',replyPolicy:{instructions:'Reply within scope',topics:['Returns']}});
+    const failing=load('src/lib/studio/scope-runtime.ts',dependencies,async()=>{throw new TypeError('Connection failed');},env);
+    assert.deepEqual(await failing.reviewStudioScope(agent,messages,[],new AbortController().signal),{decision:'unavailable'});
+});
