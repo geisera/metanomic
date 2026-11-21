@@ -93,13 +93,28 @@ test('scope redirects before generation and exposes its decision only in Preview
    assert.ok(!r.calls.includes('answer'));
  }
 });
-test('unverified or suspicious requests never reach answer generation',async()=>{
- for (const [scopeDecision,status] of [['limited',503],['unavailable',503],['suspected_injection',422],['suspected_knowledge_injection',422]]) {
+test('unverified requests never reach answer generation',async()=>{
+ for (const scopeDecision of ['limited','unavailable']) {
   for (const preview of [true,false]) {
    const r=route({scopeDecision});
    const reply=await r.post(preview);
-   assert.equal(reply.status,status);
+   assert.equal(reply.status,503);
    assert.match((await reply.json()).error,preview?/prompt injection/i:/assistant|business/i);
+   assert.ok(!r.calls.includes('answer'));
+  }
+ }
+});
+
+test('suspected injection returns a scripted reply and discloses the verdict only in Preview',async()=>{
+ for(const scopeDecision of ['suspected_injection','suspected_knowledge_injection']){
+  for(const preview of [true,false]){
+   const r=route({scopeDecision});
+   const reply=await r.post(preview);
+   assert.equal(reply.status,200);
+   assert.equal(reply.headers.get('X-Studio-Scope'),preview?scopeDecision:null);
+   const [delta,done]=(await reply.text()).trim().split('\n').map(line=>JSON.parse(line));
+   assert.match(delta.delta,/rephrase your question/);
+   assert.deepEqual(done,{done:true,text:delta.delta,sources:[],citations:[],blocked:true,tokens:0});
    assert.ok(!r.calls.includes('answer'));
   }
  }
