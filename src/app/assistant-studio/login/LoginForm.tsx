@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import FeedbackToast from '../FeedbackToast';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import SignupForm from './SignupForm';
@@ -327,6 +328,7 @@ export default function LoginForm({ redirect, destination, setupAccount, expires
     {confirmation && <span className={s.mailIcon}><Icon name="mail" size={26} /></span>}
     <h1 id="studio-login-title" tabIndex={-1} ref={heading}>{title}</h1>
     <span className={s.visuallyHidden} role="status" aria-live="polite">{announcement}</span>
+    <FeedbackToast tone="error" message={issue?.message}/>
     {confirmation ? <>
       <p className={s.helper}>If this email can {confirmation === 'magic' ? 'sign in' : 'reset its password'}, we sent a link to <strong>{email}</strong>. {confirmation === 'magic' && `It expires in ${expiresIn} minutes.`}</p>
       {provider && <a href={provider.href} target="_blank" rel="noopener noreferrer" className={s.inbox}>{provider.label}<span className={s.visuallyHidden}> (opens in a new tab)</span><span aria-hidden="true">↗</span></a>}
@@ -336,7 +338,6 @@ export default function LoginForm({ redirect, destination, setupAccount, expires
         </button>
         <button type="button" className={s.textAction} disabled={busy} onClick={startOver}>Use a different email</button>
       </div>
-      {issue && <p className={s.error} role="alert">{issue.message}</p>}
       <p className={s.deliveryHelp}>Didn’t get it? Check spam or <Link href="/contact">contact support</Link>.</p>
       {confirmation === 'magic' && <Link className={s.textAction} href={signup + suffix} prefetch={false} onNavigate={event => { event.preventDefault(); switchView(signup); }}>Create an account with this email</Link>}
     </> : <>
@@ -391,7 +392,7 @@ export default function LoginForm({ redirect, destination, setupAccount, expires
           {mode === 'password' ? 'Sign in' : recovery ? 'Email a reset link' : 'Continue with email'}
         </Button>
         <div className={s.formFeedback}>
-          {issue ? <p className={s.error} role="alert">{issue.message}</p> : mode === 'magic' &&
+          {mode === 'magic' &&
             <p className={s.secure}><Icon name="lock" size={15} />Secure, passwordless sign-in</p>}
         </div>
       </form>

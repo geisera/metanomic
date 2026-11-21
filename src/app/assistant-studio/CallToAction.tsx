@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRef, useState, type FormEvent } from 'react';
 import { CTA_LABEL_MAX, CTA_URL_MAX, callToActionInput } from '@/lib/studio/call-to-action';
 import type { Agent } from '@/lib/studio/core';
-import { call, ErrorNotice, SaveBar, useDirty } from './ui';
+import { call, ErrorNotice, Notice, SaveBar, useDirty } from './ui';
 import s from './studio.module.css';
 
 export default function CallToAction({ enabled, ...props }: { agent: Agent; enabled: boolean; onSaved: () => Promise<void> }) {
@@ -67,7 +67,7 @@ function CallToActionForm({ agent, onSaved }: { agent: Agent; onSaved: () => Pro
       </div>
       <p className={s.help}>Use an HTTPS URL. To remove the button, clear both fields and save.</p>
       <ErrorNotice error={error} />
-      {notice && <p className={s.help} role="status">{notice}</p>}
+      <Notice>{notice}</Notice>
     </section>
     <SaveBar dirty={dirty} busy={busy} lastSaved={baseline.updated_at} />
   </form>;

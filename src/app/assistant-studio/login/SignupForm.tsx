@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { track } from '@/lib/navigation-analytics';
 import { copy } from '../content';
-import { call } from '../ui';
+import { call, ErrorNotice, Notice } from '../ui';
 import { Button, Icon, Input } from './form-controls';
 import s from './login.module.css';
 
@@ -81,8 +81,8 @@ export default function SignupForm({ email, setEmail, termsVersion, loginHref, o
           target="_blank" rel="noopener noreferrer">Assistant Studio Terms of Service</Link></label>
       </div>}
       <Button type="submit" pending={busy ? 'Creating account…' : undefined}>Create free account</Button>
-      {error && <p className={s.error} role="alert">{error}</p>}
-      <p className={s.signupNotice} role="status">{notice}</p>
+      <ErrorNotice error={error}/>
+      <Notice>{notice}</Notice>
     </form>
     <div className={s.signup}>
       <p>Already have an account? <Link href={loginHref} prefetch={false} onNavigate={event => {

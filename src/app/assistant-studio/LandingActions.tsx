@@ -4,6 +4,7 @@ import {useEffect,useState,type ReactNode} from 'react';
 import {useRouter} from 'next/navigation';
 import {track} from '@/lib/navigation-analytics';
 import {base,copy} from './content';
+import FeedbackToast from './FeedbackToast';
 import {call} from './ui';
 import s from './landing.module.css';
 
@@ -38,7 +39,7 @@ export function StepList({compact=false}:{compact?:boolean}){
   async function copySnippet(){try{await navigator.clipboard.writeText(copy.snippet);setFeedback(copy.copied);}catch{setFeedback(copy.copyError);}}
   return <ol className={compact?s.recapSteps:s.cards}>{copy.steps.map(([title,body,icon],index)=><li key={title} className={compact?undefined:s.panel}>
     {!compact&&<span aria-hidden="true" className={s.step}>{index+1} · {icon}</span>}<h3>{title}</h3><p>{body}</p>
-    {!compact&&index===2&&<><pre className={s.snippet}><code>{copy.snippet}</code></pre><button className={s.secondary} onClick={copySnippet}>{copy.copyCode}</button><small role="status">{feedback}</small></>}
+    {!compact&&index===2&&<><pre className={s.snippet}><code>{copy.snippet}</code></pre><button className={s.secondary} onClick={copySnippet}>{copy.copyCode}</button><FeedbackToast message={feedback} tone={feedback===copy.copyError?'error':'info'}/></>}
   </li>)}</ol>;
 }
 export function Demo({marketing=false}:{marketing?:boolean}){

@@ -1,5 +1,6 @@
 'use client';
 
+import FeedbackToast from './FeedbackToast';
 import {useEffect,useRef,useState,type FormEvent,type ReactNode} from 'react';
 import {track} from '@/lib/navigation-analytics';
 import s from './minimal.module.css';
@@ -82,11 +83,11 @@ function Waitlist(){
       <input type="hidden" name="plan" value="pro"/>
       <label htmlFor="pro-waitlist-email" className="block text-sm font-semibold">Work email</label>
       <input id="pro-waitlist-email" type="email" name="email" required autoComplete="email" maxLength={254}
-        aria-describedby="pro-waitlist-note pro-waitlist-status"
+        aria-describedby="pro-waitlist-note"
         className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-[var(--fg-3)] bg-[var(--surface-solid)] px-3 focus-visible:outline-2 focus-visible:outline-offset-2"/>
       <button type="submit" aria-disabled={status==='pending'||undefined} className={s.fg2+' mt-3 focus-visible:outline-2 focus-visible:outline-offset-2 '+secondary}>Get early access</button>
     </form>}
-    <p id="pro-waitlist-status" aria-live="polite" className={message?s.fg2+' mt-2 text-sm':undefined}>{message}</p>
+    <FeedbackToast message={message} tone={status==='error'?'error':'info'}/>
     <p id="pro-waitlist-note" className={s.fg3+' mt-2 text-xs'}>No spam. One email when Pro launches.</p>
   </div>;
 }

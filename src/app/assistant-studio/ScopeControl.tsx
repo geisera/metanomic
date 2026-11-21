@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import type { Agent } from '@/lib/studio/core';
 import { SCOPE_TOPIC_LIMIT } from '@/lib/studio/scope-control';
-import { call, ErrorNotice, SaveBar, useDirty } from './ui';
+import { call, ErrorNotice, Notice, SaveBar, useDirty } from './ui';
 import s from './studio.module.css';
 
 export default function ScopeControl({ agent, available, onSaved }: {
@@ -95,7 +95,7 @@ function ScopeForm({ agent, onSaved }: { agent: Agent; onSaved: () => Promise<vo
       </div>}
       <p className={s.help}>Pro and Enterprise include prompt injection screening, even when topic filtering is off. If screening times out, the assistant can still reply. Replies pause for other screening failures or when the monthly allowance is exhausted. Test your settings in Preview.</p>
       <ErrorNotice error={error} />
-      {notice && <p className={s.help} role="status">{notice}</p>}
+      <Notice>{notice}</Notice>
     </section>
     <SaveBar dirty={dirty} busy={!!pending} lastSaved={saved.updated_at} />
   </form>;

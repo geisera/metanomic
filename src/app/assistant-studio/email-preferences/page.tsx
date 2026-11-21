@@ -1,6 +1,7 @@
 import { fingerprint } from '@/lib/studio/crypto';
 import { uuid } from '@/lib/studio/core';
 import { rest,session } from '@/lib/studio/server';
+import FeedbackToast from '../FeedbackToast';
 import { redirect } from 'next/navigation';
 type Params={account?:string;signature?:string;saved?:string};
 async function owner(params:Params){
@@ -19,5 +20,5 @@ export default async function Page({searchParams}:{searchParams:Promise<Params>}
  const params=await searchParams;
  const id=await owner(params);
  const [prefs]=await rest<{setup_tips:boolean;product_updates:boolean}[]>('studio_email_preferences?account_id=eq.'+id,{admin:true});
- return <main className="mx-auto max-w-xl p-8"><h1>Email preferences</h1><form action={save.bind(null,params)} className="grid gap-4 py-6"><label><input type="checkbox" name="tips" defaultChecked={prefs?.setup_tips??true}/> Assistant setup tips</label><label><input type="checkbox" name="products" defaultChecked={prefs?.product_updates??false}/> Product news and upgrades</label><button className="button button-primary">Save preferences</button>{params.saved&&<p role="status">Preferences saved.</p>}</form></main>;
+ return <main className="mx-auto max-w-xl p-8"><h1>Email preferences</h1><form action={save.bind(null,params)} className="grid gap-4 py-6"><label><input type="checkbox" name="tips" defaultChecked={prefs?.setup_tips??true}/> Assistant setup tips</label><label><input type="checkbox" name="products" defaultChecked={prefs?.product_updates??false}/> Product news and upgrades</label><button className="button button-primary">Save preferences</button>{params.saved&&<FeedbackToast message="Preferences saved."/>}</form></main>;
 }

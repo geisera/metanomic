@@ -7,7 +7,7 @@ import PrimaryNav from '@/components/PrimaryNav';
 import Workspace from './Workspace';
 import StudioWidgets from './StudioWidgets';
 import Instructions from './Instructions';
-import {call,GuardProvider,useGuard,type User,type Snapshot} from './ui';
+import {call,ErrorNotice,GuardProvider,useGuard,type User,type Snapshot} from './ui';
 import s from './studio.module.css';
 export {call} from './ui';
 export default function Studio(){return <GuardProvider><StudioContent/></GuardProvider>;}
@@ -30,6 +30,6 @@ function StudioContent(){
  async function exitImpersonation(){if(!leave())return;try{const response=await fetch('/api/studio-admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'impersonate_stop'})});if(!response.ok)throw new Error('Could not exit View as user.');router.replace('/admin');}catch(e){setError((e as Error).message);}}
  return <><PrimaryNav studio membershipTier={user ? data?.tier?.name : undefined} dashboard={{view,signedIn:Boolean(user),navigate,leave,logout:user?.impersonating?exitImpersonation:logout}}/><main className={s.shell}><div className='container'>{user?.impersonating&&<div className={s.impersonationBar} role='status'><strong>Admin view</strong><span>Viewing {user.name?.trim() || user.email}. Changes apply to this account.</span><button className={s.textButton} type='button' onClick={exitImpersonation}>Return to operations</button></div>}
  {(!user||data?.agents.length===0)&&<div className={s.intro}><h1>{copy.brand}</h1><p>{copy.onboarding.create}</p></div>}
- {error&&<p className={s.alert} role='alert'>{error}</p>}{view==='help'?<section className={'card '+s.guide}><Instructions/></section>:loading?<p role='status'>Checking your account…</p>:!user?<Link href={base+'/login'}>{copy.signIn}</Link>:data?<Workspace accountId={user.id} startedAt={user.created_at?String(Date.parse(user.created_at)):undefined} data={data} refresh={refresh} onDefaultKey={openDefaultKey}/>:null}
+ <ErrorNotice error={error}/>{view==='help'?<section className={'card '+s.guide}><Instructions/></section>:loading?<p role='status'>Checking your account…</p>:!user?<Link href={base+'/login'}>{copy.signIn}</Link>:data?<Workspace accountId={user.id} startedAt={user.created_at?String(Date.parse(user.created_at)):undefined} data={data} refresh={refresh} onDefaultKey={openDefaultKey}/>:null}
  <footer className={s.footer}>Assistant Studio by Metanomic · <Link href='/assistant-studio/privacy' onClick={e=>{if(!leave())e.preventDefault();}}>Privacy and data handling</Link> · <Link href='/contact' onClick={e=>{if(!leave())e.preventDefault();}}>Contact our team</Link></footer>{user&&data&&<StudioWidgets/>}</div></main></>;
 }
