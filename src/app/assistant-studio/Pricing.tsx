@@ -93,7 +93,7 @@ function Waitlist(){
   </div>;
 }
 
-export default function Pricing({starterTrial=false}:{starterTrial?:boolean}){
+export default function Pricing(){
   const section=useRef<HTMLElement>(null);
   const viewed=useRef(false);
   useEffect(()=>{
@@ -115,8 +115,8 @@ export default function Pricing({starterTrial=false}:{starterTrial?:boolean}){
     <p className={s.fg2+' mt-3 max-w-2xl'}>Launch an AI assistant trained on your content in minutes. No credit card, no contract.</p>
     <div className="mt-8 grid gap-5 md:grid-cols-3">
       <Plan name="Starter" audience="For trying it on your site" starter
-        subtitle={starterTrial ? STARTER_TRIAL_DAYS + '-day free trial. No card required to start.' : undefined}
-        price={<><span className="text-4xl">{starterTrial ? `$${STARTER_MONTHLY_CENTS / 100}` : 'Free'}</span> <span className={s.fg3+' text-base font-normal'}>{starterTrial ? 'per month' : 'forever'}</span></>}>
+        subtitle={STARTER_TRIAL_DAYS + '-day free trial. No card required to start.'}
+        price={<><span className="text-4xl">${STARTER_MONTHLY_CENTS / 100}</span><span className={s.fg3+' text-base font-normal'}> per month after trial</span></>}>
         <ul className={s.fg2+' space-y-2'}>
           <Feature>1 AI assistant trained on your content</Feature>
           <Feature>1 knowledge document (text or Markdown)</Feature>
@@ -125,7 +125,7 @@ export default function Pricing({starterTrial=false}:{starterTrial?:boolean}){
         <p className={s.fg2+' mt-5 text-sm'}>Uses your own OpenAI API key, so you pay OpenAI directly at cost with no markup. <a href={config.DOCS_URL} className="font-semibold underline underline-offset-4" onClick={()=>track('byok_docs_click',{})}>How to get a key →</a></p>
         {config.USAGE_ESTIMATE&&<p className={s.fg3+' mt-2 text-sm'}>{config.USAGE_ESTIMATE}</p>}
         <div className="mt-auto pt-6">
-          <a href="/assistant-studio/signup" className={s.cta+' w-full text-center'} onClick={()=>track('pricing_cta_click',{plan:'starter'})}>{starterTrial ? 'Start free trial' : 'Create your free assistant'}</a>
+          <a href="/assistant-studio/signup" className={s.cta+' w-full text-center'} onClick={()=>track('pricing_cta_click',{plan:'starter'})}>Start free</a>
           <p className={s.fg3+' mt-2 text-center text-xs'}>No credit card required · Live in about 10 minutes</p>
         </div>
       </Plan>

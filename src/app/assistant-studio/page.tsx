@@ -138,7 +138,7 @@ export default function Page(){
         </ul>
       </section>
 
-      <Pricing starterTrial={starterTrial}/>
+      <Pricing/>
 
       <section aria-labelledby="final-cta" className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className={s.band+' px-6 py-16 text-center sm:px-12 sm:py-20'}>
