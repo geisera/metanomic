@@ -1,14 +1,14 @@
 import 'server-only';
 import { knowledgeContext, type Agent, type Document, type Message } from './core';
 import { rest } from './server';
-import { GUARD_PROMPT_MAX_LENGTH, isScopeModel, normalizeTopics, scopeModels, topicsFromKnowledge } from './scope-control';
+import { SCOPE_PROMPT_MAX_LENGTH, isScopeModel, normalizeTopics, scopeModels, topicsFromKnowledge, type ScopeReplyPolicy } from './scope-control';
 
 const verdicts = ['allow', 'unrelated', 'clarify', 'suspected_injection', 'suspected_knowledge_injection'] as const;
 type Verdict = typeof verdicts[number];
 type Reservation =
   | { status: 'inactive' | 'limited' | 'skipped' }
-  | { status: 'reserved'; timeout_ms: number; model: unknown; scope_enabled: boolean; guard_prompt: unknown };
-type Result = { decision: Verdict | 'inactive' | 'unavailable' | 'limited'; topics?: string[] };
+  | { status: 'reserved'; timeout_ms: number; model: unknown; scope_enabled: boolean; guard_prompt: unknown; topic_prompt: unknown };
+type Result = { decision: Verdict | 'inactive' | 'unavailable' | 'limited'; replyPolicy?: ScopeReplyPolicy };
 
 export async function reviewStudioScope(agent: Agent, messages: Message[], documents: Document[], signal: AbortSignal): Promise<Result> {
   const key = process.env.STUDIO_SCOPE_GATEWAY_API_KEY || process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
@@ -29,7 +29,7 @@ export async function reviewStudioScope(agent: Agent, messages: Message[], docum
     }
     const profile = scopeModels[model];
     const prompt = reservation.guard_prompt;
-    if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > GUARD_PROMPT_MAX_LENGTH) {
+    if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > SCOPE_PROMPT_MAX_LENGTH) {
       console.warn('Studio guard prompt is unavailable.');
       return { decision: 'unavailable' };
     }
@@ -72,9 +72,15 @@ export async function reviewStudioScope(agent: Agent, messages: Message[], docum
     const result = await review.json();
     const decision: unknown = JSON.parse(result.choices?.[0]?.message?.content ?? '{}').decision;
     if (decision === 'suspected_injection' || decision === 'suspected_knowledge_injection') return { decision };
-    if (decision === 'allow' || decision === 'unrelated' || decision === 'clarify')
-      return { decision: scopeEnabled ? decision : 'allow', topics };
-    return { decision: 'unavailable' };
+    if (decision !== 'allow' && decision !== 'unrelated' && decision !== 'clarify') return { decision: 'unavailable' };
+    if (!topics) return { decision: 'allow' };
+    if (decision !== 'allow') return { decision };
+    const instructions = reservation.topic_prompt;
+    if (typeof instructions !== 'string' || !instructions.trim() || instructions.length > SCOPE_PROMPT_MAX_LENGTH) {
+      console.warn('Studio topic filtering instructions are unavailable.');
+      return { decision: 'unavailable' };
+    }
+    return { decision, replyPolicy: { instructions, topics } };
   } catch {
     if (!signal.aborted) console.warn('Studio scope check unavailable.');
     return { decision: 'unavailable' };

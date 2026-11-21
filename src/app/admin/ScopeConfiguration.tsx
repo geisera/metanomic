@@ -1,10 +1,18 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { GUARD_PROMPT_MAX_LENGTH, isScopeModel, scopeLimits, scopeModels, type ScopeAdminConfig } from '@/lib/studio/scope-control';
+import { SCOPE_PROMPT_MAX_LENGTH, isScopeModel, scopeLimits, scopeModels, type ScopeAdminConfig } from '@/lib/studio/scope-control';
 import s from './operations.module.css';
 
 type Props = { request: <T>(body: object) => Promise<T>; onSessionChange: () => Promise<void> };
+const promptEditors = [
+  { field: 'guard_prompt', version: 'guard_prompt_version', action: 'save_guard_prompt', title: 'Guard prompt',
+    label: 'Classifier instructions', reason: 'Reason for prompt change', saveLabel: 'Save guard prompt',
+    help: 'Changes apply to new prompt injection and topic checks across Pro and Enterprise.' },
+  { field: 'topic_prompt', version: 'topic_prompt_version', action: 'save_topic_prompt', title: 'Topic filtering instructions',
+    label: 'Answer model instructions', reason: 'Reason for topic instructions change', saveLabel: 'Save topic instructions',
+    help: 'These instructions guide Preview and live replies for Pro and Enterprise assistants with topic filtering enabled.' },
+] as const;
 
 export default function ScopeConfiguration({ request, onSessionChange }: Props) {
   const [config, setConfig] = useState<ScopeAdminConfig | null>(null);
@@ -22,7 +30,7 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
     return () => { active = false; };
   }, [request]);
 
-  async function save(event: FormEvent<HTMLFormElement>, savePrompt = false) {
+  async function save(event: FormEvent<HTMLFormElement>, editor?: (typeof promptEditors)[number]) {
     event.preventDefault();
     if (!config || busy) return;
     const form = event.currentTarget;
@@ -31,17 +39,17 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
     setError('');
     setNotice('');
     try {
-      const { guard_prompt, guard_prompt_version, ...settings } = config;
-      if (savePrompt) {
+      if (editor) {
         const value = await request<{ prompt: string; version: number }>({
-          action: 'save_guard_prompt', prompt: guard_prompt, version: guard_prompt_version, reason,
+          action: editor.action, prompt: config[editor.field], version: config[editor.version], reason,
         });
-        setConfig({ ...settings, guard_prompt: value.prompt, guard_prompt_version: value.version });
+        setConfig({ ...config, [editor.field]: value.prompt, [editor.version]: value.version });
       } else {
-        await request({ action: 'save_scope_config', ...settings, reason });
+        const { model, enabled, pro_monthly, enterprise_monthly, global_monthly, timeout_ms } = config;
+        await request({ action: 'save_scope_config', model, enabled, pro_monthly, enterprise_monthly, global_monthly, timeout_ms, reason });
       }
       form.reset();
-      setNotice(savePrompt ? 'Guard prompt saved.' : 'Scope Control configuration saved.');
+      setNotice(editor ? editor.title + ' saved.' : 'Scope Control configuration saved.');
     } catch (problem) {
       const failure = problem as Error & { status?: number };
       setError(failure.message);
@@ -78,16 +86,16 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
       <label>Reason for change<textarea required name="reason" minLength={3} maxLength={300} disabled={busy} /></label>
       <button className="button button-primary" disabled={busy}>{busy ? 'Saving…' : 'Save classifier configuration'}</button>
     </form>
-    <form className={s.form} onSubmit={event => save(event, true)} aria-labelledby="guard-prompt-title">
-      <h3 id="guard-prompt-title">Guard prompt</h3>
-      <p className={s.meta} id="guard-prompt-help">Changes apply to new prompt injection and topic checks across Pro and Enterprise. Current saved version {config.guard_prompt_version}.</p>
-      <label>Classifier instructions
-        <textarea required rows={14} maxLength={GUARD_PROMPT_MAX_LENGTH} value={config.guard_prompt}
-          aria-describedby="guard-prompt-help" disabled={busy}
-          onChange={event => setConfig({ ...config, guard_prompt: event.target.value })}/>
+    {promptEditors.map(editor => <form key={editor.field} className={s.form} onSubmit={event => save(event, editor)} aria-labelledby={editor.field + '-title'}>
+      <h3 id={editor.field + '-title'}>{editor.title}</h3>
+      <p className={s.meta} id={editor.field + '-help'}>{editor.help} Current saved version {config[editor.version]}.</p>
+      <label>{editor.label}
+        <textarea required rows={14} maxLength={SCOPE_PROMPT_MAX_LENGTH} value={config[editor.field]}
+          aria-describedby={editor.field + '-help'} disabled={busy}
+          onChange={event => setConfig({ ...config, [editor.field]: event.target.value })}/>
       </label>
-      <label>Reason for prompt change<textarea required name="reason" minLength={3} maxLength={300} disabled={busy}/></label>
-      <button className="button button-primary" disabled={busy}>{busy ? 'Saving…' : 'Save guard prompt'}</button>
-    </form></>}
+      <label>{editor.reason}<textarea required name="reason" minLength={3} maxLength={300} disabled={busy}/></label>
+      <button className="button button-primary" disabled={busy}>{busy ? 'Saving…' : editor.saveLabel}</button>
+    </form>)}</>}
   </section>;
 }

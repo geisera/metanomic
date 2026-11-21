@@ -100,7 +100,7 @@ export async function POST(req: Request) {
                 const events = [{ delta: reply }, { done: true, text: reply, sources: [], citations: [] }];
                 return new Response(events.map(event => JSON.stringify(event) + '\n').join(''), { headers });
             }
-            const stream = await answer(agent, key.value, conversation, docs, req.signal, finish, scope.topics);
+            const stream = await answer(agent, key.value, conversation, docs, req.signal, finish, scope.replyPolicy);
             return new Response(stream, { headers });
         } catch (error) {
             startupFailed=true;

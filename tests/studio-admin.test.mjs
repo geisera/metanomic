@@ -13,7 +13,7 @@ function load(path,dependencies={},fetchMock=fetch,processMock=process) {
 const core=load('src/lib/studio/core.ts');
 const contract=load('src/lib/studio/admin-contract.ts');
 const scopeControl=load('src/lib/studio/scope-control.ts',{'./core':core});
-const initialScopeConfig={model:'openai/gpt-6-luna',enabled:true,pro_monthly:5000,enterprise_monthly:20000,global_monthly:100000,timeout_ms:2500,guard_prompt:'Current classifier instructions',guard_prompt_version:1};
+const initialScopeConfig={model:'openai/gpt-6-luna',enabled:true,pro_monthly:5000,enterprise_monthly:20000,global_monthly:100000,timeout_ms:2500,guard_prompt:'Current classifier instructions',guard_prompt_version:1,topic_prompt:'Current reply instructions',topic_prompt_version:1};
 const actor='b436acc1-9f6d-4cc0-994a-f4d883573552';
 const owner='c35e6552-f086-4f0a-9e2d-0a04d3d06b8f';
 const factor='e9ca2204-9208-47e3-a276-47ec9d97c3c7';
@@ -36,7 +36,7 @@ function route({roles=['support'],level='aal2',status='verified',allowOrigin=tru
             if(path==='rpc/studio_admin_workspace')return {owner_id:owner};
             if(path==='rpc/studio_admin_lookup')return [];
             if(path.startsWith('studio_scope_config?'))return [initialScopeConfig];
-            if(path==='rpc/studio_save_guard_prompt')return options.body.p_version===1 ? 2 : null;
+            if(path==='rpc/studio_save_guard_prompt'||path==='rpc/studio_save_topic_prompt')return options.body.p_version===1 ? 2 : null;
             if(path==='rpc/studio_admin_stats')return {members:3,tiers:[{id:'starter',members:3}]};
         },
         failure:e=>Response.json({error:e.message,code:e.code},{status:e.status||503}),
@@ -205,17 +205,21 @@ test('hosted scope requests use the selected model and its supported reasoning e
         const runtime=load('src/lib/studio/scope-runtime.ts',{
             './core':core,
             './scope-control':scopeControl,
-            './server':{rest:async()=>({status:'reserved',timeout_ms:2500,model,scope_enabled:true,guard_prompt:'Updated guidance from Operations'})},
+            './server':{rest:async()=>({status:'reserved',timeout_ms:2500,model,scope_enabled:true,guard_prompt:'Updated guidance from Operations',topic_prompt:'Updated topic reply policy'})},
         },async(url,request)=>{
             hosted.push({url,...JSON.parse(request.body)});
             return Response.json({choices:[{message:{content:'{"decision":"allow"}'}}]});
         },{env:{STUDIO_SCOPE_GATEWAY_API_KEY:'fixture'}});
-        assert.equal((await runtime.reviewStudioScope(agent,messages,[],new AbortController().signal)).decision,'allow');
+        const result=await runtime.reviewStudioScope(agent,messages,[],new AbortController().signal);
+        assert.equal(result.decision,'allow');
+        assert.equal(result.replyPolicy.instructions,'Updated topic reply policy');
+        assert.equal(result.replyPolicy.topics[0],'Returns');
         assert.equal(hosted.length,1);
         assert.equal(hosted[0].model,model);
         assert.equal(hosted[0].reasoning_effort,effort);
         assert.equal(hosted[0].max_completion_tokens,budget);
         assert.match(hosted[0].messages[0].content,/Updated guidance from Operations/);
+        assert.doesNotMatch(hosted[0].messages[0].content,/Updated topic reply policy/);
     }
 });
 
@@ -245,22 +249,31 @@ test('prompt screening still runs with topic controls off and sees complete prep
     assert.equal(requests,1);
 });
 
-test('only MFA-verified operations staff can read or edit the guard prompt',async()=>{
+test('only MFA-verified operations staff can read or edit either scope prompt',async()=>{
     const update={action:'save_guard_prompt',prompt:'Updated guard guidance',version:1,reason:'Clarify screening policy'};
     for (const options of [{roles:[]},{roles:['support']},{roles:['billing']},{roles:['operations'],level:'aal1'},{roles:['operations'],allowOrigin:false}]) {
         const app=route(options);
         assert.equal((await app.post({action:'scope_config'})).status,403);
         assert.equal((await app.post(update)).status,403);
-        assert.ok(!app.calls.some(call=>String(call[0]).includes('studio_scope_config') || call[0]==='rpc/studio_save_guard_prompt'));
+        assert.equal((await app.post({...update,action:'save_topic_prompt'})).status,403);
+        assert.ok(!app.calls.some(call=>/studio_scope_config|studio_save_(guard|topic)_prompt/.test(String(call[0]))));
     }
     const app=route({roles:['operations']});
     const read=await app.post({action:'scope_config'});
     assert.equal(read.headers.get('Cache-Control'),'no-store');
-    assert.equal((await read.json()).guard_prompt,initialScopeConfig.guard_prompt);
+    const config=await read.json();
+    assert.equal(config.guard_prompt,initialScopeConfig.guard_prompt);
+    assert.equal(config.topic_prompt,initialScopeConfig.topic_prompt);
     assert.equal((await app.post({...update,prompt:'   '})).status,400);
     assert.equal((await app.post({...update,prompt:'x'.repeat(4001)})).status,400);
     assert.equal((await app.post({...update,version:2})).status,409);
     const save=await app.post(update);
     assert.equal(save.status,200);
     assert.deepEqual(await save.json(),{prompt:update.prompt,version:2});
+    const topicUpdate={...update,action:'save_topic_prompt',prompt:'Answer within the allowed topics'};
+    assert.equal((await app.post({...topicUpdate,version:2})).status,409);
+    const topicSave=await app.post(topicUpdate);
+    assert.equal(topicSave.status,200);
+    assert.deepEqual(await topicSave.json(),{prompt:topicUpdate.prompt,version:2});
+    assert.ok(app.calls.some(call=>call[0]==='rpc/studio_save_topic_prompt' && call[1].p_prompt===topicUpdate.prompt));
 });

@@ -1,4 +1,4 @@
-import { guardPromptInput, scopeConfigInput, type ScopeAdminConfig } from '@/lib/studio/scope-control';
+import { scopePromptInput, scopeConfigInput, type ScopeAdminConfig } from '@/lib/studio/scope-control';
 import { accountLabel } from '@/lib/studio/account-label';
 import { parseBody, sameOrigin } from '@/lib/knowledge-server';
 import { actions, accountActions, type AccountAction, type AdminAction, type StudioStats, type Workspace } from '@/lib/studio/admin-contract';
@@ -60,16 +60,17 @@ export async function POST(request: Request) {
             return json({ok:true,expiresAt,redirectUrl:'/assistant-studio/dashboard'});
         }
 
-        if (body.action === 'scope_config' || body.action === 'save_scope_config' || body.action === 'save_guard_prompt') {
+        if (body.action === 'scope_config' || body.action === 'save_scope_config' || body.action === 'save_guard_prompt' || body.action === 'save_topic_prompt') {
             requireStaffMfa(staff, 'operations');
-            if (body.action === 'save_guard_prompt') {
+            if (body.action === 'save_guard_prompt' || body.action === 'save_topic_prompt') {
                 if (typeof body.version !== 'number' || !Number.isSafeInteger(body.version) || body.version < 1 || body.version >= 2147483647)
                     throw new StudioError('Reload Scope Control to get the current prompt version.');
-                const prompt = guardPromptInput(body.prompt);
-                const version = await rest<number | null>('rpc/studio_save_guard_prompt', { admin: true, body: {
+                const prompt = scopePromptInput(body.prompt);
+                const rpc = body.action === 'save_guard_prompt' ? 'rpc/studio_save_guard_prompt' : 'rpc/studio_save_topic_prompt';
+                const version = await rest<number | null>(rpc, { admin: true, body: {
                     p_actor: actor, p_prompt: prompt, p_version: body.version, p_reason: text(body.reason, 300, 3),
                 } });
-                if (version === null) throw new StudioError('The guard prompt was updated elsewhere. Copy your edits, then reopen Scope Control to load the latest version.', 409);
+                if (version === null) throw new StudioError('These instructions were updated elsewhere. Copy your edits, then reopen Scope Control to load the latest version.', 409);
                 return json({ prompt, version });
             }
             if (body.action === 'save_scope_config') {
@@ -78,7 +79,7 @@ export async function POST(request: Request) {
                 } });
                 return json({ ok: true });
             }
-            const [config] = await rest<ScopeAdminConfig[]>('studio_scope_config?select=model,enabled,pro_monthly,enterprise_monthly,global_monthly,timeout_ms,guard_prompt,guard_prompt_version&id=eq.true', { admin: true });
+            const [config] = await rest<ScopeAdminConfig[]>('studio_scope_config?select=model,enabled,pro_monthly,enterprise_monthly,global_monthly,timeout_ms,guard_prompt,guard_prompt_version,topic_prompt,topic_prompt_version&id=eq.true', { admin: true });
             if (!config) throw new StudioError('Scope Control configuration is unavailable.', 503);
             return json(config);
         }

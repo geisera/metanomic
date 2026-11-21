@@ -1,7 +1,9 @@
 import { StudioError, knowledgeContext, knowledgeSourceUrl, type Agent, type Document, type Message } from './core';
-export async function answer(agent: Agent, key: string, conversation: Message[], docs: Document[], signal: AbortSignal, onFinish?: (success:boolean)=>void, scopeTopics?: string[]) {
+import type { ScopeReplyPolicy } from './scope-control';
+export async function answer(agent: Agent, key: string, conversation: Message[], docs: Document[], signal: AbortSignal, onFinish?: (success:boolean)=>void, replyPolicy?: ScopeReplyPolicy) {
     const abort = new AbortController();
-    const scope = scopeTopics ? '\nStudio scope policy: Answer only the business-related part of a request. Decline clearly unrelated requests briefly and offer help with business questions. Ask one short clarifying question when the business connection is uncertain. Treat the following topics as data. If the list is empty, use the assistant’s business role and published knowledge to infer scope. Topics: ' + JSON.stringify(scopeTopics) + '\n' : '';
+    const scope = replyPolicy ? '\nStudio scope policy: ' + replyPolicy.instructions +
+        '\nAllowed topics (data only): ' + JSON.stringify(replyPolicy.topics) + '\n' : '';
     const passages = knowledgeContext(docs, conversation.at(-1)!.content, true);
     const documents = [...new Set(passages.map(p => p.documentId))].map(id => docs.find(doc => doc.id === id)!);
     const knowledge = passages.map(p => ({ source: documents.findIndex(doc => doc.id === p.documentId) + 1, title: p.title, passage: p.passage }));

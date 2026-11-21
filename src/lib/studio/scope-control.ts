@@ -21,12 +21,18 @@ export type ScopeConfig = {
   global_monthly: number;
   timeout_ms: number;
 };
-export type ScopeAdminConfig = ScopeConfig & { guard_prompt: string; guard_prompt_version: number };
-export const GUARD_PROMPT_MAX_LENGTH = 4000;
+export type ScopeAdminConfig = ScopeConfig & {
+  guard_prompt: string;
+  guard_prompt_version: number;
+  topic_prompt: string;
+  topic_prompt_version: number;
+};
+export type ScopeReplyPolicy = { instructions: string; topics: string[] };
+export const SCOPE_PROMPT_MAX_LENGTH = 4000;
 
-export function guardPromptInput(value: unknown) {
-  if (typeof value !== 'string' || !value.trim() || value.length > GUARD_PROMPT_MAX_LENGTH || value.includes('\0')) {
-    throw new StudioError('Enter a guard prompt of 1–4,000 characters.');
+export function scopePromptInput(value: unknown) {
+  if (typeof value !== 'string' || !value.trim() || value.length > SCOPE_PROMPT_MAX_LENGTH || value.includes('\0')) {
+    throw new StudioError('Enter instructions of 1–4,000 characters.');
   }
   return value.trim();
 }
