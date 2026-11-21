@@ -125,12 +125,70 @@
 .settingsLayout .account .form { gap: 16px; }
 .settingsLayout .account .form > button { justify-self: end; }
 .settingsLayout .account #account-delete { border-color: var(--site-ed9c9c); }
+
+.accountPage {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+.accountPage > :first-child { flex-shrink: 0; }
+.accountShell,
+.accountFrame {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.accountShell { padding-bottom: 0; }
+.accountFrame > .intro { padding-block: 16px 8px; }
+.accountLayout {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+  margin-top: 12px;
+}
+.accountLayout > .settingsSidebar { position: static; }
+.accountControls {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  padding: 4px 8px 24px 4px;
+}
+.accountControls:focus-visible { outline: 2px solid var(--lime); outline-offset: -2px; }
+.accountFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 0;
+}
+.accountFooter :global(.theme-control) { display: flex; align-items: center; }
+.accountFooter :global(.theme-control) select { width: auto; }
+
 @media (max-width: 1120px) {
   .settingsLayout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .settingsSidebar { position: static; border-bottom: 1px solid var(--site-273843); padding-bottom: 12px; }
   .settingsNav { flex-direction: row; overflow-x: auto; padding: 4px; align-items:stretch; }
   .settingsNav :is(button,a) { flex-shrink: 0; }
   .settingsNav .keyNavButton{margin:0}.navDivider{width:1px;height:auto;margin:4px 8px}
+  .accountLayout { grid-template-rows: auto minmax(0, 1fr); gap: 12px; }
+}
+
+@media (max-height: 560px) {
+  .accountFrame > .intro { padding-block: 4px; }
+  .accountFrame > .intro h1 { font-size: 24px; margin-block: 4px; }
+  .accountFrame > .intro p { font-size: 14px; }
+  .accountLayout { margin-top: 4px; }
+  .accountLayout .settingsNav { gap: 0; }
+  .accountLayout .settingsNav a { padding-inline: 8px; }
+}
+@media (min-width: 1121px) and (max-height: 460px) {
+  .accountLayout { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 8px; }
+  .accountLayout .settingsNav { flex-direction: row; overflow-x: auto; }
+  .accountLayout .settingsNav a { flex-shrink: 0; }
 }
 @media (max-width: 640px) {
   .settingsForm { gap: 32px; }
