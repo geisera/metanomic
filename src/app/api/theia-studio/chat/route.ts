@@ -1,3 +1,4 @@
+import { reportLabels } from '@/lib/studio/reporting';
 import { randomUUID } from 'node:crypto';
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
 import { StudioError, messages, uuid, type Agent } from '@/lib/studio/core';
@@ -59,6 +60,12 @@ export async function POST(req: Request) {
         const [key, docs] = await Promise.all([apiKey(agent), publishedDocs(agent, ownerSession)]);
         if (!preview && !await rest<boolean>('rpc/studio_reserve', { admin: true, body: { p_agent: agent.id } }))
             throw new StudioError('This assistant has reached its daily message limit. Try again after the next reset.', 429, 'daily_limit');
+        if (!preview) {
+            const agentId=agent.id;
+            const {topic,tone}=reportLabels(conversation[conversation.length-1].content);
+            after(()=>rest('rpc/studio_report_event',{admin:true,body:{p_agent:agentId,p_topic:topic,p_tone:tone}})
+                .then(()=>{}).catch(()=>console.error('Studio report count unavailable')));
+        }
         const day=new Date().toISOString().slice(0,10);
         const trackedAgent={...agent,daily_limit:policy.message_limit};
         let finish:(success:boolean)=>void=()=>{};

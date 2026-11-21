@@ -2,6 +2,7 @@ import type {ReactNode} from 'react';
 import s from './studio.module.css';
 
 const icons = {
+  reports: 'M3 3v18h18M7 17v-5m5 5V7m5 10v-8',
   status: 'M4 6h16M4 12h16M4 18h16',
   settings: 'M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6 2.1-2.1',
   knowledge: 'M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-3H4V4Zm9 3a3 3 0 0 1 3-3h4v14h-3a4 4 0 0 0-4 3',

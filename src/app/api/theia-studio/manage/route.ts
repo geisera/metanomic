@@ -1,3 +1,4 @@
+import { reportingEnabled } from '@/lib/studio/reporting';
 import { callToActionInput, canUseCallToAction } from '@/lib/studio/call-to-action';
 import { canUseScopeControl, scopeTopicsInput, topicsFromKnowledge } from '@/lib/studio/scope-control';
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
@@ -66,6 +67,12 @@ export async function POST(req: Request) {
             return json({ ok: true });
         }
         const [tier] = s.impersonatedBy ? await (async()=>{ const tierId = await effectiveStudioTier(s.user.id); return rest<Tier[]>('studio_tiers?id=eq.'+encodeURIComponent(tierId),{admin:true}); })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
+        if (b.action === 'visitor-report') {
+            if (!reportingEnabled(tier.id)) throw new StudioError('Visitor reports require Pro or Enterprise.',403);
+            const agent=await ownedAgent(s,b.agent_id);
+            if (b.days!==7 && b.days!==30) throw new StudioError('Choose 7 or 30 days.');
+            return json(await rest('rpc/studio_read_report',{admin:true,body:{p_agent:agent.id,p_owner:s.user.id,p_days:b.days}}));
+        }
         if (b.action === 'create-agent') {
             const existing=await rest<Agent[]>('studio_agents?select=id',{session:s});
             if(existing.length>=tier.assistants)throw new StudioError(`${tier.name} allows ${tier.assistants} assistant(s).`,400,'tier_limit');

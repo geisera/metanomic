@@ -11,6 +11,7 @@ const dataCategories = [
   ['OpenAI API key', 'If you connect a key, we store it in encrypted form. Our server uses it to validate the connection and make model requests on your behalf. The key is not included in your embed code or visible to chat visitors.'],
   ['Chat messages and replies', 'We process messages and recent conversation context to generate replies in Preview and the embedded chat. See Section 2 for what is sent to OpenAI and how conversations are handled.'],
   ['Usage and technical information', 'Daily request and failure counts, usage-alert settings and delivery records, and technical information needed to load and protect the service. This can include IP addresses, website origins, and hashed rate-limit identifiers. We use this information to enforce limits, prevent abuse, troubleshoot errors, and show usage in Studio.'],
+  ['Visitor interaction reports', 'For eligible plans, Studio groups live widget messages by topic and estimated sentiment and counts clicks on the configured call to action. The assistant owner can view daily aggregates covering the last 30 days. Reporting stores counts without message text or visitor identifiers. Older counts expire through scheduled cleanup.'],
   ['Support and waitlist information', 'If you contact us, we receive the information you choose to send. If you join a waitlist, we use your email address to manage that request and notify you about the plan you selected.'],
 ];
 
