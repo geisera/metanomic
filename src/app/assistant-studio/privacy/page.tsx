@@ -96,11 +96,12 @@ export default function Privacy() {
         <h2 className="text-xl font-semibold">10. Changes and contact</h2>
         <p>We will post changes to this policy with a new effective date. If a change materially affects how we handle personal information, we will provide additional notice where appropriate or required by law.</p>
         <p>For privacy questions or requests, use the <Link className="underline" href="/contact">Metanomic contact form</Link>.</p>
-        <p>Metanomic Automated Systems LLC is the planned legal name. Pennsylvania LLC formation is pending.</p>
-        <div>
-          <p className="font-semibold">Planned business address</p>
-          <p>812 North Prince Street<br/>Lancaster, PA 17603<br/>Lancaster County</p>
-        </div>
+        <address className="not-italic">
+          <strong>Metanomic Automated Systems LLC</strong><br/>
+          812 North Prince Street<br/>
+          Lancaster, PA 17603<br/>
+          Lancaster County
+        </address>
       </section>
       <Link className={s.textButton} href="/assistant-studio">Back to Studio →</Link>
     </article>
