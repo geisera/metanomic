@@ -15,6 +15,28 @@ function ranking(rows:Row[],metric:string) {
     return [...totals.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
 }
 
+function RecurringTopics({rows,days}:{rows:Row[];days:number}) {
+    const topics=new Map<string,{messages:number;days:Set<string>;latest:string}>();
+    for(const row of rows) {
+        if(row.metric!=='topic'||row.bucket==='Other'||row.total<=0)continue;
+        const topic=topics.get(row.bucket)??{messages:0,days:new Set<string>(),latest:row.day};
+        topic.messages+=row.total;
+        topic.days.add(row.day);
+        if(row.day>topic.latest)topic.latest=row.day;
+        topics.set(row.bucket,topic);
+    }
+    const recurring=[...topics].filter(([,topic])=>topic.messages>=2)
+        .sort(([a,x],[b,y])=>y.messages-x.messages||y.days.size-x.days.size||a.localeCompare(b));
+    return <section className={s.panel} aria-labelledby="recurring-topics-heading">
+        <h4 id="recurring-topics-heading">Recurring topics</h4>
+        {recurring.length>0?<><p>Topics mentioned in at least two live messages during the selected {days} days.</p>
+            <ul>{recurring.map(([name,topic])=><li key={name} className={s.recurring}>
+                <strong>{name}</strong>
+                <span>{topic.messages.toLocaleString()} messages · {topic.days.size} {topic.days.size===1?'day':'days'} · Last seen {fmt(topic.latest)} UTC</span>
+            </li>)}</ul></>:<p>No topic has appeared in two live messages during the selected {days} days. A topic appears here as soon as its second message is recorded.</p>}
+    </section>;
+}
+
 function Activity({report,days}:{report:Report;days:number}) {
     const daily=Array.from({length:days},(_,i)=>{
         const day=new Date(Date.parse(report.start+'T00:00:00Z')+i*86400000).toISOString().slice(0,10);
@@ -37,10 +59,11 @@ function Results({report,days,navigate,published,hasCta}:Pick<Props,'navigate'|'
     const topics=ranking(report.rows,'topic'),tones=ranking(report.rows,'tone');
     const messages=topics.reduce((n,[,v])=>n+v,0);
     const clicks=report.rows.reduce((n,r)=>n+(r.metric==='click'?r.total:0),0);
-    if(!messages&&!clicks)return <section className={s.panel}><h4>No live activity recorded</h4><p>{published?'Messages and CTA clicks appear here after visitors use the embedded assistant. Preview conversations are excluded.':'Publish and embed this assistant to start collecting visitor activity.'}</p><button className="button button-outline" onClick={()=>navigate('embed')}>Review Publish &amp; Embed</button></section>;
+    if(!messages&&!clicks)return <><RecurringTopics rows={report.rows} days={days}/><section className={s.panel}><h4>No live activity recorded</h4><p>{published?'Messages and CTA clicks appear here after visitors use the embedded assistant. Preview conversations are excluded.':'Publish and embed this assistant to start collecting visitor activity.'}</p><button className="button button-outline" onClick={()=>navigate('embed')}>Review Publish &amp; Embed</button></section></>;
     const rankedTopics=topics.filter(([name])=>name!=='Other');
     const unmatched=messages-rankedTopics.reduce((sum,[,count])=>sum+count,0);
     return <><div className={s.cards}>{[['Visitor messages',messages],['Call-to-action clicks',clicks],['Days with activity',new Set(report.rows.map(r=>r.day)).size]].map(([label,value])=><div key={label}><span>{label}</span><strong>{value.toLocaleString()}</strong></div>)}</div>
+        <RecurringTopics rows={report.rows} days={days}/>
         <Activity report={report} days={days}/>
         <section className={s.panel}><h4>What visitors ask about</h4>
             {messages>0?<>{rankedTopics.length>0&&<p>Ranked by message count. Percentages include all visitor messages in this period.</p>}
