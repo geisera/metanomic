@@ -164,3 +164,15 @@ test('visitor reports match sections beyond scope limits, FAQ questions and sect
     assert.equal(reportLabels('embed snippet',[],[{...docs[0],published:false}]).topic,'Other');
     assert.equal(topic('giraffe migration'),'Other');
 });
+
+test('each question in a compound FAQ heading is counted under its published topic',()=>{
+    const {reportLabels}=load('reporting');
+    const heading='How does the assistant use my knowledge? Does it cite sources?';
+    const docs=[{title:'Assistant Studio and Metanomic',published:true,content:
+        '## What is Assistant Studio?\nThe assistant uses published knowledge.\n## '+heading+'\nPublished knowledge guides the assistant.'}];
+    for(const question of ['How does the assistant use my knowledge?', 'Does it cite sources?']){
+        const result=reportLabels(question.toUpperCase().replace('?',''),[],docs);
+        assert.equal(result.topic,heading);
+        assert.equal(result.question,question);
+    }
+});

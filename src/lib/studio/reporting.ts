@@ -17,13 +17,28 @@ function topicTerms(text:string) {
         .map(word=>word.length>4?word.replace(/ies$/,'y').replace(/(?<![su])s$/,''):word));
 }
 
+function questionKey(text:string) {
+    return text.normalize('NFKC').toLowerCase().match(/[\p{L}\p{N}]+/gu)?.join(' ')??'';
+}
+
 function businessTopic(message:string, labels:string[], documents:TopicDocument[]) {
     const asked=topicTerms(message);
-    if(!asked.size)return;
+    const query=questionKey(message);
+    if(!query)return;
+    const direct=new Map<string,{name:string;question:string|null;priority:number}>();
     const scores=new Map<string,number>();
     function score(label:string,body:string) {
         const name=label.trim().slice(0,120);
         if(!name)return;
+        // Compare complete questions before dropping common words. A single heading can contain several FAQs.
+        const clause=label.match(/[^?？]+[?？]/gu)?.map(part=>part.trim()).find(part=>questionKey(part)===query);
+        const whole=questionKey(label)===query;
+        if(whole||clause){
+            const priority=whole?2:1;
+            if(priority>=(direct.get(name)?.priority??0))
+                direct.set(name,{name,question:clause??null,priority});
+        }
+        if(!asked.size)return;
         const title=topicTerms(name);
         const titleHits=[...title].filter(term=>asked.has(term)).length;
         const content=topicTerms(body);
@@ -51,8 +66,10 @@ function businessTopic(message:string, labels:string[], documents:TopicDocument[
         }
         score(heading,body.join(' '));
     }
+    const matches=[...direct.values()].sort((a,b)=>b.priority-a.priority);
+    if(matches.length&&matches[0].priority!==matches[1]?.priority)return matches[0];
     const ranked=[...scores].sort((a,b)=>b[1]-a[1]);
-    if(ranked.length&&ranked[0][1]!==ranked[1]?.[1])return ranked[0][0];
+    if(ranked.length&&ranked[0][1]!==ranked[1]?.[1])return {name:ranked[0][0],question:null};
 }
 
 const intents: [string, RegExp][] = [
@@ -86,12 +103,14 @@ export function reportLabels(message:string, labels:string[] = [], documents:Top
     const negative=/\b(frustrat(ed|ing)|angry|terrible|awful|disappointed|hate|unhappy|not happy|not helpful)\b/i;
     const positive=/\b(thanks|thank you|great|excellent|love|happy|awesome)\b/i;
     const tone=negative.test(message)?'Negative language':positive.test(message)?'Positive language':'No clear signal';
-    const subject=businessTopic(message,labels,documents);
+    const match=businessTopic(message,labels,documents);
+    const subject=match?.name;
     const category=topics.find(([,pattern])=>pattern.test(message))?.[0];
     const intent=intents.find(([,pattern])=>pattern.test(message))?.[0];
     const pattern=questionPatterns.find(([,regex])=>regex.test(message))?.[0];
     let question:string|null=null;
-    if(pattern)question=subject?subject+' · '+pattern:pattern;
+    if(match?.question)question=match.question.slice(0,120);
+    else if(pattern)question=subject?subject+' · '+pattern:pattern;
     else if(subject||category){
         const context=subject??category;
         if(intent==='Requests for instructions')question=context+' · How do I do this?';
