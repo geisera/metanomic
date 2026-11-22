@@ -172,7 +172,7 @@ return (
                 T
               </div>
               <Heading className="text-[clamp(1.75rem,4vw,2.625rem)] font-semibold tracking-[-.02em] text-[var(--site-edf5e9)]">I&apos;m Theia.</Heading>
-              <p className="mt-2.5 max-w-[52ch] text-base leading-6 text-[var(--site-d0e0d8)]">
+              <p className="mt-2.5 max-w-[52ch] text-lg leading-7 text-[var(--site-d0e0d8)]">
                 Tell me what you&apos;re working on and I&apos;ll map out how AI can help.
                 Or ask how I&apos;m built—model, tools, architecture, safeguards.
               </p>
@@ -197,8 +197,8 @@ return (
               {items.filter(item => item.id !== "intro").map(item => (
                 <div key={item.id} className={item.role === "user" ? "flex justify-end" : "flex justify-start"}>
                   <div className={item.role === "user"
-                    ? "max-w-[94%] rounded-2xl rounded-tr-sm border border-[var(--site-49664e)] bg-[var(--site-253f37)] px-4 py-3 text-sm leading-7 text-[var(--site-f0f6ef)] sm:max-w-[85%]"
-                    : "max-w-[97%] text-sm leading-7 text-[var(--site-dce8e3)] sm:max-w-[90%]"}>
+                    ? "max-w-[94%] rounded-2xl rounded-tr-sm border border-[var(--site-49664e)] bg-[var(--site-253f37)] px-4 py-3 text-lg leading-7 text-[var(--site-f0f6ef)] sm:max-w-[85%]"
+                    : "max-w-[97%] text-lg leading-7 text-[var(--site-dce8e3)] sm:max-w-[90%]"}>
                     {item.role === "assistant" && <p className="mb-2 text-xs font-semibold uppercase tracking-[.1em] text-[var(--site-c9ec8a)]">Theia</p>}
                     <div className="space-y-0.5">{formattedText(item.content)}</div>
                     {item.role === "assistant" && (
@@ -290,7 +290,7 @@ return (
                 rows={1}
                 maxLength={900}
                 disabled={busy}
-                className="min-h-[44px] max-h-[164px] min-w-0 flex-1 resize-none overflow-y-hidden bg-transparent px-3 py-2 text-base leading-6 text-[var(--site-f0f7ef)] outline-none placeholder:text-[var(--site-b9cdc7)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-[44px] max-h-[164px] min-w-0 flex-1 resize-none overflow-y-hidden bg-transparent px-3 py-2 text-lg leading-7 text-[var(--site-f0f7ef)] outline-none placeholder:text-[var(--site-b9cdc7)] disabled:cursor-not-allowed disabled:opacity-60"
               />
               <button
                 type="submit"

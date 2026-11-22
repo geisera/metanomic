@@ -29,8 +29,8 @@ function SampleExchange() {
   return <div aria-hidden="true" className="theia-sample" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
     <div className="flex items-center gap-3 border-b border-[var(--site-30464f)] p-5"><TheiaAvatar status /><span className="font-semibold">Theia</span><span className="ml-auto text-xs text-[var(--site-d1e1d6)]">Ready</span></div>
     <div className="space-y-5 p-5">
-      <div className="relative ml-auto w-fit max-w-[94%] rounded-2xl rounded-tr-sm border border-[var(--site-49664e)] bg-[var(--site-253f37)] px-4 py-3 text-sm leading-7 text-[var(--site-f0f6ef)]"><span className="invisible" aria-hidden="true">{question}</span><span className="absolute inset-0 px-4 py-3">{question.slice(0, shown)}</span></div>
-      <div className="relative whitespace-pre-line text-sm leading-7 text-[var(--site-dce8e3)]"><span className="invisible" aria-hidden="true">{answer}</span><span className="absolute inset-0">{answer.slice(0, Math.max(0, shown - question.length))}</span></div>
+      <div className="relative ml-auto w-fit max-w-[94%] rounded-2xl rounded-tr-sm border border-[var(--site-49664e)] bg-[var(--site-253f37)] px-4 py-3 text-lg leading-7 text-[var(--site-f0f6ef)]"><span className="invisible" aria-hidden="true">{question}</span><span className="absolute inset-0 px-4 py-3">{question.slice(0, shown)}</span></div>
+      <div className="relative whitespace-pre-line text-lg leading-7 text-[var(--site-dce8e3)]"><span className="invisible" aria-hidden="true">{answer}</span><span className="absolute inset-0">{answer.slice(0, Math.max(0, shown - question.length))}</span></div>
     </div>
   </div>;
 }
