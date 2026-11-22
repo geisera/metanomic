@@ -8,18 +8,51 @@ const topics: [string, RegExp][] = [
 ];
 
 // Only owner-provided labels and fixed categories may become stored report buckets.
-const genericWords = new Set('a an the and or for of to in on with your our what who how is are do does can i my about guide overview faq faqs knowledge base document policy policies information introduction'.split(' '));
+type TopicDocument = {title:string;content:string;published:boolean};
+const genericWords=new Set('a an the and or for of to in on with your our what who how is are do does can i my about guide overview faq faqs knowledge base document policy policies information introduction tell me more please it its you they them their there this that those these will would could should which where when why if have has had be some from like get does need want use using used at as by much many long take takes did'.split(' '));
 
-function businessTopic(message:string, labels:string[]) {
-    const words=(text:string)=>text.toLowerCase().match(/[\p{L}\p{N}]+/gu)??[];
-    const asked=new Set(words(message));
-    let best:string|undefined, bestScore=0;
-    for(const label of labels) {
-        const terms=[...new Set(words(label).filter(word=>!genericWords.has(word)))];
-        if(!terms.length || !terms.every(term=>asked.has(term)))continue;
-        if(terms.length>bestScore){best=label;bestScore=terms.length;}
+function topicTerms(text:string) {
+    const words=text.toLowerCase().match(/[\p{L}\p{N}]+/gu)??[];
+    return new Set(words.filter(word=>word.length>=2&&!genericWords.has(word))
+        .map(word=>word.length>4?word.replace(/ies$/,'y').replace(/(?<![su])s$/,''):word));
+}
+
+function businessTopic(message:string, labels:string[], documents:TopicDocument[]) {
+    const asked=topicTerms(message);
+    if(!asked.size)return;
+    const scores=new Map<string,number>();
+    function score(label:string,body:string) {
+        const name=label.trim().slice(0,120);
+        if(!name)return;
+        const title=topicTerms(name);
+        const titleHits=[...title].filter(term=>asked.has(term)).length;
+        const content=topicTerms(body);
+        const bodyHits=[...asked].filter(term=>content.has(term)).length;
+        const exact=titleHits>0&&titleHits===title.size;
+        // Two supporting terms can identify a section even when the heading is phrased differently.
+        const matched=[...asked].filter(term=>title.has(term)||content.has(term));
+        const specific=matched.length===1&&asked.size===1&&matched[0].length>=5;
+        if(!exact&&!specific&&matched.length<2)return;
+        const value=(exact?3:0)+titleHits*3+bodyHits;
+        scores.set(name,Math.max(scores.get(name)??0,value));
     }
-    return best;
+    for(const label of labels)score(label,'');
+    for(const doc of documents){
+        if(!doc.published)continue;
+        let heading=doc.title;
+        let body:string[]=[];
+        for(const line of doc.content.split(/\r?\n/)){
+            const clean=line.trim().replace(/^[-*]\s+/,'');
+            const match=clean.match(/^#{1,6}\s+(.+?)(?:\s+#+)?$/)
+                ??clean.match(/^\*\*(.{1,120}?)\*\*:?$/)
+                ??clean.match(/^(?:Q:\s*)?([^?]{2,119}\?)$/i);
+            if(match){score(heading,body.join(' '));heading=match[1].replace(/\*\*/g,'');body=[];}
+            else body.push(line);
+        }
+        score(heading,body.join(' '));
+    }
+    const ranked=[...scores].sort((a,b)=>b[1]-a[1]);
+    if(ranked.length&&ranked[0][1]!==ranked[1]?.[1])return ranked[0][0];
 }
 
 const intents: [string, RegExp][] = [
@@ -49,11 +82,11 @@ const questionPatterns: [string, RegExp][] = [
     ['How do I fix a problem?', /\b(how (do|can) i (fix|resolve)|not working|stopped working|won.t work)\b/i],
 ];
 
-export function reportLabels(message:string, labels:string[] = []) {
+export function reportLabels(message:string, labels:string[] = [], documents:TopicDocument[] = []) {
     const negative=/\b(frustrat(ed|ing)|angry|terrible|awful|disappointed|hate|unhappy|not happy|not helpful)\b/i;
     const positive=/\b(thanks|thank you|great|excellent|love|happy|awesome)\b/i;
     const tone=negative.test(message)?'Negative language':positive.test(message)?'Positive language':'No clear signal';
-    const subject=businessTopic(message,labels);
+    const subject=businessTopic(message,labels,documents);
     const category=topics.find(([,pattern])=>pattern.test(message))?.[0];
     const intent=intents.find(([,pattern])=>pattern.test(message))?.[0];
     const pattern=questionPatterns.find(([,regex])=>regex.test(message))?.[0];

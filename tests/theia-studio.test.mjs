@@ -152,3 +152,15 @@ test('scope topics use published titles and headings and accept editable overrid
  assert.throws(()=>scopeTopicsInput([]));
  assert.throws(()=>scopeTopicsInput(['x'.repeat(121)]));
 });
+
+test('visitor reports match sections beyond scope limits, FAQ questions and section body wording',()=>{
+    const {reportLabels}=load('reporting');
+    const docs=[{title:'Product guide',published:true,content:'# Introduction\n'+
+        'General information. '.repeat(1750)+Array.from({length:30},(_,i)=>'\n## Section '+i).join('')+
+        '\n## Website setup and configuration\nCopy the embed snippet into your website footer.\nQ: Can I recover a deleted assistant?\nDeleted assistants cannot be restored.'}];
+    const topic=q=>reportLabels(q,[],docs).topic;
+    assert.equal(topic('Where does the embed snippet go?'),'Website setup and configuration');
+    assert.equal(topic('Recover deleted assistants?'),'Can I recover a deleted assistant?');
+    assert.equal(reportLabels('embed snippet',[],[{...docs[0],published:false}]).topic,'Other');
+    assert.equal(topic('giraffe migration'),'Other');
+});

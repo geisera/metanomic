@@ -80,7 +80,7 @@ function Results({report,days,navigate,published,hasCta}:Pick<Props,'navigate'|'
             {messages>0?<>{rankedTopics.length>0&&<p>Ranked by message count. Percentages include all visitor messages in this period.</p>}
             {rankedTopics.map(([name,count])=><div className={s.rank} key={name}><span>{name}</span><b>{count} · {Math.round(100*count/messages)}%</b><progress aria-label={name} value={count} max={messages}/></div>)}
             {unmatched>0&&<p>{unmatched} of {messages} {messages===1?'message has':'messages have'} no recorded topic. Reporting keeps counts only, so the original wording is unavailable.</p>}
-            <p>To track a recurring subject, use its name as a Markdown heading (for example, <code>## Installation</code>) in a published knowledge document. Future messages that mention it can then appear here.</p>
+            <p>Topics are matched against published document titles, section headings, and the text under each heading. Preview messages are excluded.</p>
             <button className="button button-outline" onClick={()=>navigate('knowledge')}>Review knowledge</button></>:<p>No visitor messages in this period.</p>}</section>
         <section className={s.panel}><h4>Language in visitor messages</h4><p>Estimated from English keywords. “No clear signal” includes messages without a recognized sentiment.</p>
         {tones.map(([name,count])=><div className={s.line} key={name}><span>{name}</span><strong>{count} · {Math.round(100*count/messages)}%</strong></div>)}</section>
