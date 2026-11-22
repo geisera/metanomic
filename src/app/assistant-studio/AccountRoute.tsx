@@ -3,7 +3,6 @@ import SiteFooter from '@/components/SiteFooter';
 import {useCallback,useEffect,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import PrimaryNav from '@/components/PrimaryNav';
-import ThemeControl from '@/components/ThemeControl';
 import {Account} from './Account';
 import {base} from './content';
 import {call,ErrorNotice,type Snapshot,type User} from './ui';
@@ -25,7 +24,7 @@ export default function AccountRoute(){
     <ErrorNotice error={error}/>
     {loading ? <p role='status'>Checking your account…</p> : user&&data&&
      <Account key={user.id} user={user} onUpdate={load} keyInfo={data.keys[0]} onKeyUpdate={refresh}>
-      <SiteFooter className={s.accountFooter}><ThemeControl/></SiteFooter>
+      <SiteFooter className={s.accountFooter}/>
      </Account>}
    </div>
   </main>

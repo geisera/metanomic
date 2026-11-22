@@ -84,7 +84,6 @@ html[data-theme=light] :is(.theia-showcase,.theia-sample,.theia-drawer){backgrou
 html[data-theme=light] .button-primary{background:#c9ec8a;color:#14231e}
 html[data-theme=light] .button-primary:hover{background:#b6dd71}
 html[data-theme=light] .navlink:hover{color:var(--foreground)}
-.theme-footer{display:flex;justify-content:flex-end;padding-block:24px 64px;position:relative;z-index:10}
 .theme-control{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
 .theme-control select{min-height:44px;border:1px solid var(--muted);border-radius:6px;background:var(--background);color:var(--foreground);padding:8px 12px;font:inherit}
 .theme-control select:focus-visible{outline:2px solid var(--lime);outline-offset:3px}

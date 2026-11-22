@@ -3,7 +3,6 @@ import {signupTerms} from '@/lib/studio/terms';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import {starterBillingConfig} from '@/lib/studio/starter-billing';
-import ThemeControl from '@/components/ThemeControl';
 import { loginDestinationName, loginRedirect } from '@/lib/studio/login-destination';
 import { Icon } from './form-controls';
 import LoginForm from './LoginForm';
@@ -30,7 +29,6 @@ export default async function AuthScreen({ searchParams }: { searchParams: Promi
         <Link className={s.brand} href="/assistant-studio">
           <span>Assistant Studio</span><small>by Metanomic.ai</small>
         </Link>
-        <ThemeControl icon={<Icon name="theme" size={17} />} className={s.theme} />
       </div>
     </header>
     <main className={s.main}>
