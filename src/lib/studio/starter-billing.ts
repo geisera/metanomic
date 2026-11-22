@@ -51,6 +51,16 @@ export function hasOpenStarterSubscription(row: BillingRow | undefined) {
     return Boolean(row?.stripe_subscription_id && !['canceled','incomplete_expired'].includes(row.subscription_status ?? ''));
 }
 
+export async function cancelStarterAtRenewal(owner:string) {
+    const row=await starterBillingRow(owner);
+    if(!row?.stripe_subscription_id || !hasOpenStarterSubscription(row)) throw new StudioError('This account has no open Studio subscription.',409);
+    const key=process.env.STUDIO_STRIPE_SECRET_KEY;
+    if(!key)throw new StudioError('Stripe billing credentials are unavailable.',503);
+    const sub=await stripe<{customer:string;metadata?:{studio_owner?:string};cancel_at_period_end:boolean}>('subscriptions/'+encodeURIComponent(row.stripe_subscription_id),key);
+    if(sub.customer!==row.stripe_customer_id || sub.metadata?.studio_owner!==owner)throw new StudioError('Subscription ownership could not be verified.',409);
+    if(!sub.cancel_at_period_end)await stripe('subscriptions/'+encodeURIComponent(row.stripe_subscription_id),key,{cancel_at_period_end:'true'});
+}
+
 export function startStarterTrial(owner: string) {
     return rest('rpc/studio_start_starter_trial', {admin:true, body:{p_owner:owner}});
 }

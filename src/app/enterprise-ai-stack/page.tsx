@@ -323,6 +323,6 @@ export default function EnterpriseAIStackPage() {
       <div className="mt-8 flex flex-wrap items-center gap-6"><Link href="/contact" className="button !bg-[var(--site-14231e)] !text-[var(--site-eff7e8)]">Book a stack review →</Link><a href="#stack-pdf-todo" className="rounded font-semibold underline underline-offset-4">Download the stack as a one-page PDF</a></div>
       <p id="stack-pdf-todo" className="mt-5 text-sm">TODO: Add the approved one-page PDF asset and email-capture/download delivery flow.</p>
     </div></section>
-    <footer className="container flex flex-wrap items-center justify-between gap-5 py-10"><Link href="/" className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></Link><p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p><nav aria-label="Footer navigation" className="flex gap-6"><Link className="navlink" href="/">Home</Link><Link className="navlink" href="/#services">Services</Link><Link className="navlink" href="/contact">Contact</Link></nav></footer>
+
   </main>;
 }

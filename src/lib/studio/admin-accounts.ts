@@ -1,3 +1,4 @@
+import {prepareStarterDeletion,cancelStarterAtRenewal} from './starter-billing';
 import { createHash } from 'node:crypto';
 import { sendSupportEmail } from './support-email';
 import { accountActions, type Account, type AccountAction, type AccountDirectory } from './admin-contract';
@@ -98,6 +99,22 @@ export async function changeAccount(staff:Staff, action:AccountAction, body:Reco
     }
     if (account.is_staff) throw new StudioError('Use the staff identity tools for changes to a staff account.',403);
 
+    if(action==='cancel_subscription'||action==='delete_account'){
+        if(body.confirmEmail!==account.email)throw new StudioError('Enter the current account email to confirm.');
+        await verifyStaffMfa(staff,body.factorId,body.code,true);
+        await audit(actor,owner,action+'_requested',reason,null);
+        if(action==='cancel_subscription')await cancelStarterAtRenewal(owner);
+        else {
+            const admins=await rest<unknown[]>('knowledge_admins?select=user_id&user_id=eq.'+owner,{admin:true});
+            if(admins.length)throw new StudioError('Shared administrator accounts cannot be deleted here.',409);
+            if(!await prepareStarterDeletion(owner))throw new StudioError('An active subscription or open checkout must end before deletion.',409);
+            await rest('rpc/studio_admin_revoke_sessions',{admin:true,body:{p_actor:actor,p_owner:owner}});
+            const result=await authFetch('admin/users/'+owner,{},undefined,true,'DELETE');
+            if(!result.ok)throw new StudioError('Account deletion could not be confirmed. Refresh the directory.',503);
+        }
+        await audit(actor,owner,action,reason,null);
+        return action==='delete_account'?{deleted:true}:{account};
+    }
     const patch:Record<string,unknown>={};
     let revoke=action==='revoke_account_sessions'||action==='deactivate_account';
     if (action==='update_account') {

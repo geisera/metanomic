@@ -17,10 +17,10 @@ export async function recordStudioTermsAcceptance(accountId: string, version: st
     });
 }
 
-export async function signupTerms() {
-    const version = process.env.ASSISTANT_STUDIO_TERMS_VERSION;
-    if (!version) return null;
-    const terms = await studioTerms(version);
-    if (!terms) throw new StudioError('Signup is temporarily unavailable because the terms could not be loaded.', 503);
-    return terms;
+export type PolicyKind = 'terms'|'privacy';
+export async function currentPolicy(kind:PolicyKind) {
+    const [row]=await rest<(StudioTerms & {published_at:string})[]>('site_policies?select=version,body,published_at&kind=eq.'+kind,{admin:true});
+    if(!row)throw new StudioError('The policy is temporarily unavailable.',503);
+    return row;
 }
+export function signupTerms(){return currentPolicy('terms');}

@@ -61,6 +61,8 @@ export const accountActions = {
     send_account_email: { label: 'Send email', role: 'support' },
     update_account: { label: 'Edit profile', role: 'operations' },
     activate_account: { label: 'Activate sign-in', role: 'operations' },
+    delete_account: {label:'Permanently delete account',role:'operations'},
+    cancel_subscription: {label:'Cancel subscription at renewal',role:'billing'},
     deactivate_account: { label: 'Deactivate sign-in', role: 'operations' },
     verify_account_email: { label: 'Mark email verified', role: 'operations' },
     reset_account_password: { label: 'Send password reset', role: 'operations' },

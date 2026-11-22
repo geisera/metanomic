@@ -79,6 +79,7 @@ export default function Accounts({membershipView,roles,reauth,request,onOpenWork
                 messageId,confirmSend:values.confirmSend==='on',
                 confirmOwnership:values.confirmOwnership==='on',
             });
+            if(action==='delete_account'){clearWorkspace();setSelected(null);}
             if(result.account){clearWorkspace();setSelected(result.account);}
             setAction(null);
             setNotice(action==='send_account_email'?'Email accepted for delivery.':action==='reset_account_password'?'Password reset requested.':accountActions[action].label+' completed.');
@@ -96,10 +97,11 @@ export default function Accounts({membershipView,roles,reauth,request,onOpenWork
         'update_account',selected.inactive?'activate_account':'deactivate_account',
         ...(!selected.email_confirmed_at?['verify_account_email'] as const:[]),
         ...(selected.email_confirmed_at&&!selected.inactive?['reset_account_password'] as const:[]),
-        'revoke_account_sessions',
+        'revoke_account_sessions','delete_account',
     ]:[];
     if(selected&&roles.includes('support'))activeAccountActions.push('send_account_email');
     if(selected&&billing)activeAccountActions.push('set_membership');
+    if(selected&&!selected.is_staff&&billing)activeAccountActions.push('cancel_subscription');
 
     if(membershipView && billing) return <MembershipPlans plans={plans} ready={directory!==null} request={request} reauth={reauth} onSaved={()=>refresh(value=>value+1)} loadError={directory===null?error:''}/>;
 
@@ -159,6 +161,7 @@ export default function Accounts({membershipView,roles,reauth,request,onOpenWork
             {action==='reset_account_password'&&<p>Sends a reset link to {selected?.email}.</p>}
             {action==='revoke_account_sessions'&&<p>Ends existing sessions. The account holder can sign in again.</p>}
             <form key={action+selected?.owner_id} onSubmit={save} className={s.form}>
+                {(action==='delete_account'||action==='cancel_subscription')&&selected&&<><p>{action==='delete_account'?'Permanently deletes this login and associated Studio assistants, knowledge, keys, and reports.':'Stops renewal at the end of the current Stripe billing period.'}</p><label>Enter {selected.email} to confirm<input name="confirmEmail" type="email" required/></label></>}
                 {action==='send_account_email'&&selected&&<>
                     <p>To <strong>{selected.email}</strong></p>
                     <label>Subject<input name="subject" maxLength={160} required/></label>

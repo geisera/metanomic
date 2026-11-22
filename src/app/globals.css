@@ -107,3 +107,6 @@ html[data-theme=light] .navlink:hover{color:var(--foreground)}
 body:has([data-studio-landing]) .metanomic-starfield { opacity:.9; }
 
 body:has([data-studio-landing]){--studio-launcher-top:108px}
+
+.siteFooter{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;padding:12px max(20px,calc((100% - 1152px)/2));border-top:1px solid color-mix(in srgb,var(--foreground) 18%,transparent);font-size:13px;color:var(--muted)}
+.siteFooter nav{display:flex;flex-wrap:wrap;gap:4px 18px}.siteFooter a{display:inline-flex;align-items:center;min-height:44px}.siteFooter a:hover{text-decoration:underline}

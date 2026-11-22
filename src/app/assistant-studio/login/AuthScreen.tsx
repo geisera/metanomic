@@ -1,3 +1,5 @@
+import SiteFooter from '@/components/SiteFooter';
+import {signupTerms} from '@/lib/studio/terms';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import {starterBillingConfig} from '@/lib/studio/starter-billing';
@@ -34,7 +36,7 @@ export default async function AuthScreen({ searchParams }: { searchParams: Promi
     <main className={s.main}>
       <LoginForm redirect={redirect} destination={redirect ? loginDestinationName(redirect) : null}
         setupAccount={query.next === 'account'} expiresIn={expiresIn}
-        termsVersion={process.env.ASSISTANT_STUDIO_TERMS_VERSION}
+        termsVersion={(await signupTerms()).version}
         starterTrial={Boolean(starterBillingConfig())}
         showOAuthPlaceholders={process.env.STUDIO_OAUTH_PLACEHOLDERS === 'true'} />
       <aside className={s.value} aria-labelledby="studio-login-value">
@@ -44,13 +46,6 @@ export default async function AuthScreen({ searchParams }: { searchParams: Promi
         </ul>
       </aside>
     </main>
-    <footer className={s.footer}>
-      <span>© Metanomic</span>
-      <nav aria-label="Legal and support">
-        <Link href="/assistant-studio/terms">Terms</Link>
-        <Link href="/assistant-studio/privacy">Privacy</Link>
-        <Link href="/contact">Help</Link>
-      </nav>
-    </footer>
+    <SiteFooter className={s.footer}/>
   </div>;
 }

@@ -1,6 +1,6 @@
 'use client';
+import SiteFooter from '@/components/SiteFooter';
 import {useCallback,useEffect,useState} from 'react';
-import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import PrimaryNav from '@/components/PrimaryNav';
 import ThemeControl from '@/components/ThemeControl';
@@ -25,10 +25,7 @@ export default function AccountRoute(){
     <ErrorNotice error={error}/>
     {loading ? <p role='status'>Checking your account…</p> : user&&data&&
      <Account key={user.id} user={user} onUpdate={load} keyInfo={data.keys[0]} onKeyUpdate={refresh}>
-      <footer className={s.footer + ' ' + s.accountFooter}>
-       <span>Assistant Studio by Metanomic · <Link href='/assistant-studio/privacy'>Privacy and data handling</Link> · <Link href='/contact'>Contact our team</Link></span>
-       <ThemeControl/>
-      </footer>
+      <SiteFooter className={s.accountFooter}><ThemeControl/></SiteFooter>
      </Account>}
    </div>
   </main>

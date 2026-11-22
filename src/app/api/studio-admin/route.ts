@@ -1,3 +1,4 @@
+import {currentPolicy} from '@/lib/studio/terms';
 import { emailSteps } from '@/lib/studio/email-template';
 import { scopePromptInput, scopeConfigInput, type ScopeAdminConfig } from '@/lib/studio/scope-control';
 import { accountLabel } from '@/lib/studio/account-label';
@@ -31,7 +32,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         if (!sameOrigin(request)) throw new StudioError('Cross-origin requests are not permitted.', 403);
-        const body = await parseBody(request, 24000);
+        const body = await parseBody(request, 200000);
         if (!body) throw new StudioError('Invalid request.');
         const staff = await studioStaff();
         const actor = staff.session.user.id;
@@ -61,6 +62,16 @@ export async function POST(request: Request) {
             return json({ok:true,expiresAt,redirectUrl:'/assistant-studio/dashboard'});
         }
 
+        if(body.action==='site_policy'||body.action==='publish_site_policy'){
+            requireStaffMfa(staff,'operations');
+            if(body.kind!=='terms' && body.kind!=='privacy')throw new StudioError('Select a policy.');
+            if(body.action==='publish_site_policy'){
+                const version=await rest<string|null>('rpc/publish_site_policy',{admin:true,body:{p_actor:actor,p_kind:body.kind,
+                    p_version:text(body.version,64,1),p_body:text(body.content,48000,1),p_reason:text(body.reason,300,3)}});
+                if(!version)throw new StudioError('This policy changed. Copy your edits and reopen the editor.',409);
+            }
+            return json(await currentPolicy(body.kind));
+        }
         if (body.action === 'email_templates' || body.action === 'save_email_template') {
             requireStaffMfa(staff, 'operations');
             if (body.action === 'email_templates') return json(await rest('studio_email_templates?select=step,subject,body,label,version', { admin:true }));

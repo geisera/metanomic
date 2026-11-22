@@ -20,12 +20,6 @@ const steps = [
   { index: "04", title: "Improve", description: "We learn from real use, refine the tools, and help their human impact grow." }
 ];
 
-function Logo() {
-  return <Link href="/" aria-label="Metanomic home" className="flex items-center gap-3">
-    <span className="flex h-9 w-9 items-center justify-center rounded-md border border-[var(--site-7b986d)] bg-[#c9ec8a] text-[#122322] font-black text-lg">M</span>
-    <span className="text-[18px] font-semibold tracking-[-.035em]">metanomic<span className="text-[var(--site-c9ec8a)]">.</span></span>
-  </Link>;
-}
 export default function Home() {
   return <main>
     <PrimaryNav />
@@ -120,6 +114,6 @@ export default function Home() {
         <div className="flex flex-wrap items-center gap-5"><Link href="/contact" className="button !bg-[var(--site-14231e)] !text-[var(--site-eff7e8)]">Talk with our team →</Link><TheiaLink source="final-cta" className="rounded py-3 font-semibold">Or start with Theia →</TheiaLink></div>
       </div>
     </section>
-    <footer className="container flex flex-wrap items-center justify-between gap-5 py-10"><Logo/><p className="muted text-xs">© {new Date().getFullYear()} Metanomic. All rights reserved.</p><nav aria-label="Footer navigation" className="flex flex-wrap gap-6"><TheiaLink source="footer" className="navlink rounded">Try Theia →</TheiaLink><Link className="navlink" href="/contact">Contact our team →</Link></nav></footer>
+
   </main>;
 }

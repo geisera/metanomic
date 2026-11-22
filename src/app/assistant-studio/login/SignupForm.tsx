@@ -80,7 +80,7 @@ export default function SignupForm({ email, setEmail, termsVersion, starterTrial
       {termsVersion && <div className={s.termsConsent}>
         <input id="studio-signup-terms" name="accept-terms" type="checkbox" required disabled={busy} />
         <label htmlFor="studio-signup-terms">I agree to the <Link href={'/assistant-studio/terms?version=' + encodeURIComponent(termsVersion)}
-          target="_blank" rel="noopener noreferrer">Assistant Studio Terms of Service</Link></label>
+          target="_blank" rel="noopener noreferrer">Metanomic Terms of Service</Link></label>
       </div>}
       <Button type="submit" pending={busy ? 'Creating account…' : undefined}>{starterTrial?'Start free trial':'Create free account'}</Button>
       <ErrorNotice error={error}/>

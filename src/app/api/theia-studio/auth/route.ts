@@ -54,7 +54,7 @@ export async function POST(req: Request) {
             if (terms && b.termsVersion !== terms.version)
                 throw new StudioError('The terms have changed. Reload this page and review the current version before signing up.', 409);
             if (terms && b.acceptedTerms !== true)
-                throw new StudioError('Agree to the Assistant Studio Terms of Service to sign up.');
+                throw new StudioError('Agree to the Metanomic Terms of Service to sign up.');
             const enroll = b.action === 'signup' && process.env.STUDIO_STARTER_BILLING_ENABLED === 'true';
             if (enroll && !starterBillingConfig()) throw new StudioError('Signup is temporarily unavailable.',503);
             await sendAuthLink(address, b.action === 'signup' ? 'signup' : 'recovery', {

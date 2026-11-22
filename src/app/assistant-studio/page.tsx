@@ -151,15 +151,7 @@ export default function Page(){
       </section>
     </main>
 
-    <footer className={s.footer}>
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 px-5 py-4 text-sm sm:px-8">
-        <p>© 2026 Metanomic</p>
-        <nav aria-label="Legal" className="flex gap-6">
-          <a href="/assistant-studio/privacy" className="inline-flex min-h-11 items-center">Privacy</a>
-          <a href="/assistant-studio/terms" className="inline-flex min-h-11 items-center">Terms</a>
-        </nav>
-      </div>
-    </footer>
+
     <StudioWidgets/>
   </div>;
 }

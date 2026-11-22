@@ -1,4 +1,5 @@
 'use client';
+import SiteFooter from '@/components/SiteFooter';
 import {useCallback,useEffect,useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
@@ -33,5 +34,5 @@ function StudioContent(){
  {(!user||data?.agents.length===0)&&<div className={s.intro}><h1>{copy.brand}</h1><p>{copy.onboarding.create}</p></div>}
  {view==='agents'&&user&&data?.billing&&<StarterBilling access={data.billing} refresh={refresh} impersonating={user.impersonating}/>}
  <ErrorNotice error={error}/>{view==='help'?<section className={'card '+s.guide}><Instructions/></section>:loading?<p role='status'>Checking your account…</p>:!user?<Link href={base+'/login'}>{copy.signIn}</Link>:data?<Workspace accountId={user.id} startedAt={user.created_at?String(Date.parse(user.created_at)):undefined} data={data} refresh={refresh} onDefaultKey={openDefaultKey}/>:null}
- <footer className={s.footer}>Assistant Studio by Metanomic · <Link href='/assistant-studio/privacy' onClick={e=>{if(!leave())e.preventDefault();}}>Privacy and data handling</Link> · <Link href='/contact' onClick={e=>{if(!leave())e.preventDefault();}}>Contact our team</Link></footer>{user&&data&&<StudioWidgets/>}</div></main></>;
+ <SiteFooter leave={leave}/>{user&&data&&<StudioWidgets/>}</div></main></>;
 }
