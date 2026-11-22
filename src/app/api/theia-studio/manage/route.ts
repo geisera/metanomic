@@ -67,10 +67,18 @@ export async function POST(req: Request) {
             return json({ ok: true });
         }
         const [tier] = s.impersonatedBy ? await (async()=>{ const tierId = await effectiveStudioTier(s.user.id); return rest<Tier[]>('studio_tiers?id=eq.'+encodeURIComponent(tierId),{admin:true}); })() : await rest<Tier[]>('rpc/studio_account_tier',{session:s});
-        if (b.action === 'visitor-report') {
+        if (b.action === 'visitor-report' || b.action === 'visitor-report-daily') {
             if (!reportingEnabled(tier.id)) throw new StudioError('Visitor reports require Pro or Enterprise.',403);
             const agent=await ownedAgent(s,b.agent_id);
             if (b.days!==7 && b.days!==30) throw new StudioError('Choose 7 or 30 days.');
+            if (b.action === 'visitor-report-daily') {
+                if (agent.owner_id !== s.user.id) throw new StudioError('Assistant not found.',404);
+                const today = new Date().toISOString().slice(0,10);
+                const start = new Date(Date.parse(today+'T00:00:00Z')-(b.days-1)*86400000).toISOString().slice(0,10);
+                const rows = await rest('studio_report_counts?select=day,metric,bucket,total&agent_id=eq.'+agent.id+
+                    '&day=gte.'+start+'&day=lte.'+today+'&order=day.asc',{admin:true});
+                return json({start,today,rows});
+            }
             return json(await rest('rpc/studio_read_report',{admin:true,body:{p_agent:agent.id,p_owner:s.user.id,p_days:b.days}}));
         }
         if (b.action === 'create-agent') {
