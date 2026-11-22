@@ -51,7 +51,7 @@
   transition:transform .15s ease, filter .15s ease;
 }
 .cta:hover { filter:brightness(.96); transform:translateY(-1px); }
-.ctaSmall { min-height:44px; padding:.5rem 1rem; font-size:.875rem; box-shadow:none; }
+.ctaSmall { min-height:44px; padding:.5rem 1rem; font-size:1rem; box-shadow:none; }
 .link { color:var(--fg-2); font-weight:500; }
 .link:hover { color:var(--fg); }
 .page a:focus-visible { outline:2px solid var(--fg); outline-offset:4px; border-radius:.5rem; }
@@ -59,7 +59,7 @@
 .eyebrow {
   display:inline-flex; border-radius:999px; padding:.25rem .75rem;
   background:var(--chip-bg); color:var(--chip-fg);
-  font-size:.875rem; font-weight:600;
+  font-size:1rem; font-weight:600;
 }
 
 /* Phone mockup */
@@ -140,16 +140,16 @@
   border-radius:1.25rem 1.25rem 0 0;
 }
 .pricingPlanHeader h3 { font-size:1.375rem; font-weight:650; letter-spacing:-.025em; }
-.pricingPlanHeader p, .pricingPrice p + p { color:var(--fg-2); font-size:.875rem; line-height:1.5; margin-top:.375rem; }
+.pricingPlanHeader p, .pricingPrice p + p { color:var(--fg-2); font-size:1rem; line-height:1.5; margin-top:.375rem; }
 .pricingPrice strong { font-size:clamp(1.625rem,2.7vw,2.125rem); font-weight:650; letter-spacing:-.04em; line-height:1.15; }
-.pricingPrice span { color:var(--fg-2); font-size:.875rem; }
+.pricingPrice span { color:var(--fg-2); font-size:1rem; }
 .pricingAction > a, .pricingWaitlist summary { min-height:48px; }
 .pricingWaitlist summary { cursor:pointer; }
 .pricingWaitlist summary::-webkit-details-marker { display:none; }
 .pricingWaitlist summary:focus-visible { outline:2px solid var(--fg); outline-offset:3px; }
-.pricingFeatures { display:grid; gap:.75rem; align-content:start; padding-top:1.125rem; border-top:1px solid var(--border); color:var(--fg-2); font-size:.875rem; line-height:1.5; }
+.pricingFeatures { display:grid; gap:.75rem; align-content:start; padding-top:1.125rem; border-top:1px solid var(--border); color:var(--fg-2); font-size:1rem; line-height:1.5; }
 .pricingFeatures strong { color:var(--fg); }
-.pricingBilling { margin-top:1rem; text-align:center; color:var(--fg-2); font-size:.875rem; line-height:1.6; }
+.pricingBilling { margin-top:1rem; text-align:center; color:var(--fg-2); font-size:1rem; line-height:1.6; }
 .pricingBilling a { text-decoration:underline; text-underline-offset:.2em; }
 
 @media (min-width: 850px) {

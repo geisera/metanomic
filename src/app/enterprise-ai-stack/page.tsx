@@ -300,7 +300,7 @@ export default function EnterpriseAIStackPage() {
           <p className="eyebrow">{layer.number}</p><h3 className="mt-6 text-[26px] font-semibold tracking-[-.045em]">{layer.name}</h3>
           <p className="muted mt-4 text-sm leading-7">{layer.description}</p>
           <p className="mt-6 text-sm leading-7 text-[var(--site-a8bfb4)]"><strong className="text-[var(--site-d7e8d7)]">Choose this when:</strong> {layer.choose}</p>
-          <p className="mt-7 border-t border-[var(--site-31434d)] pt-5 text-[11px] font-semibold uppercase tracking-[.15em] text-[var(--site-c9ec8a)]">{layer.id === "integration" ? "Representative standards & tools" : "Representative tools"}</p>
+          <p className="mt-7 border-t border-[var(--site-31434d)] pt-5 text-base font-semibold uppercase tracking-[.15em] text-[var(--site-c9ec8a)]">{layer.id === "integration" ? "Representative standards & tools" : "Representative tools"}</p>
           {layer.groups.map(group=><div key={group.label} className="mt-4"><p className="muted text-xs">{group.label}</p><Tags tools={group.tools}/></div>)}
           <details className="mt-6 border-t border-[var(--site-31434d)] pt-4"><summary className="cursor-pointer rounded py-2 text-sm font-semibold text-[var(--site-d7e8d7)]">How we implement this</summary><p className="muted mt-3 text-sm leading-7">TODO: Add approved Metanomic implementation guidance for {layer.name}.</p></details>
         </article>)}</div>
