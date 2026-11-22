@@ -1,3 +1,4 @@
+import { topicsFromKnowledge } from '@/lib/studio/scope-control';
 import { reportLabels } from '@/lib/studio/reporting';
 import { randomUUID } from 'node:crypto';
 import { sameOrigin, parseBody } from '@/lib/knowledge-server';
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
             throw new StudioError('This assistant has reached its daily message limit. Try again after the next reset.', 429, 'daily_limit');
         if (!preview) {
             const agentId=agent.id;
-            const {topic,tone}=reportLabels(conversation[conversation.length-1].content);
+            const {topic,tone}=reportLabels(conversation[conversation.length-1].content, [...(agent.scope_topics ?? []), ...topicsFromKnowledge(docs)]);
             after(()=>rest('rpc/studio_report_event',{admin:true,body:{p_agent:agentId,p_topic:topic,p_tone:tone}})
                 .then(()=>{}).catch(()=>console.error('Studio report count unavailable')));
         }

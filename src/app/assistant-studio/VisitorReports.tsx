@@ -38,12 +38,15 @@ function Results({report,days,navigate,published,hasCta}:Pick<Props,'navigate'|'
     const messages=topics.reduce((n,[,v])=>n+v,0);
     const clicks=report.rows.reduce((n,r)=>n+(r.metric==='click'?r.total:0),0);
     if(!messages&&!clicks)return <section className={s.panel}><h4>No live activity recorded</h4><p>{published?'Messages and CTA clicks appear here after visitors use the embedded assistant. Preview conversations are excluded.':'Publish and embed this assistant to start collecting visitor activity.'}</p><button className="button button-outline" onClick={()=>navigate('embed')}>Review Publish &amp; Embed</button></section>;
-    const top=topics.find(([name])=>name!=='Other');
+    const rankedTopics=topics.filter(([name])=>name!=='Other');
+    const unmatched=messages-rankedTopics.reduce((sum,[,count])=>sum+count,0);
     return <><div className={s.cards}>{[['Visitor messages',messages],['Call-to-action clicks',clicks],['Days with activity',new Set(report.rows.map(r=>r.day)).size]].map(([label,value])=><div key={label}><span>{label}</span><strong>{value.toLocaleString()}</strong></div>)}</div>
         <Activity report={report} days={days}/>
         <section className={s.panel}><h4>What visitors ask about</h4>
-            {messages>0?<><p>{top?top[0]+' appeared in '+top[1]+' of '+messages+' messages. Review your published answers for this topic.':'These messages fell outside the recognized topic categories.'}</p>
-            {topics.map(([name,count])=><div className={s.rank} key={name}><span>{name}</span><b>{count} · {Math.round(100*count/messages)}%</b><progress aria-label={name} value={count} max={messages}/></div>)}
+            {messages>0?<>{rankedTopics.length>0&&<p>Ranked by message count. Percentages include all visitor messages in this period.</p>}
+            {rankedTopics.map(([name,count])=><div className={s.rank} key={name}><span>{name}</span><b>{count} · {Math.round(100*count/messages)}%</b><progress aria-label={name} value={count} max={messages}/></div>)}
+            {unmatched>0&&<p>{unmatched} of {messages} {messages===1?'message has':'messages have'} no recorded topic. Reporting keeps counts only, so the original wording is unavailable.</p>}
+            <p>To track a recurring subject, use its name as a Markdown heading (for example, <code>## Installation</code>) in a published knowledge document. Future messages that mention it can then appear here.</p>
             <button className="button button-outline" onClick={()=>navigate('knowledge')}>Review knowledge</button></>:<p>No visitor messages in this period.</p>}</section>
         <section className={s.panel}><h4>Language in visitor messages</h4><p>Estimated from English keywords. “No clear signal” includes messages without a recognized sentiment.</p>
         {tones.map(([name,count])=><div className={s.line} key={name}><span>{name}</span><strong>{count} · {Math.round(100*count/messages)}%</strong></div>)}</section>
