@@ -63,8 +63,8 @@ export async function POST(req: Request) {
             throw new StudioError('This assistant has reached its daily message limit. Try again after the next reset.', 429, 'daily_limit');
         if (!preview) {
             const agentId=agent.id;
-            const {topic,tone}=reportLabels(conversation[conversation.length-1].content, [...(agent.scope_topics ?? []), ...topicsFromKnowledge(docs)]);
-            after(()=>rest('rpc/studio_report_event',{admin:true,body:{p_agent:agentId,p_topic:topic,p_tone:tone}})
+            const {topic,tone,question}=reportLabels(conversation[conversation.length-1].content, [...(agent.scope_topics ?? []), ...topicsFromKnowledge(docs)]);
+            after(()=>rest('rpc/studio_report_message',{admin:true,body:{p_agent:agentId,p_topic:topic,p_tone:tone,p_question:question}})
                 .then(()=>{}).catch(()=>console.error('Studio report count unavailable')));
         }
         const day=new Date().toISOString().slice(0,10);

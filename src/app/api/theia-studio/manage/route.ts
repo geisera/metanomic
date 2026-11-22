@@ -75,8 +75,14 @@ export async function POST(req: Request) {
                 if (agent.owner_id !== s.user.id) throw new StudioError('Assistant not found.',404);
                 const today = new Date().toISOString().slice(0,10);
                 const start = new Date(Date.parse(today+'T00:00:00Z')-(b.days-1)*86400000).toISOString().slice(0,10);
-                const rows = await rest('studio_report_counts?select=day,metric,bucket,total&agent_id=eq.'+agent.id+
-                    '&day=gte.'+start+'&day=lte.'+today+'&order=day.asc',{admin:true});
+                const rows: {day:string;metric:string;bucket:string;total:number}[]=[];
+                const query='studio_report_counts?select=day,metric,bucket,total&agent_id=eq.'+agent.id+
+                    '&day=gte.'+start+'&day=lte.'+today+'&order=day.asc,metric.asc,bucket.asc&limit=500';
+                for (;;) {
+                    const page=await rest<typeof rows>(query+'&offset='+rows.length,{admin:true});
+                    rows.push(...page);
+                    if(page.length<500)break;
+                }
                 return json({start,today,rows});
             }
             return json(await rest('rpc/studio_read_report',{admin:true,body:{p_agent:agent.id,p_owner:s.user.id,p_days:b.days}}));

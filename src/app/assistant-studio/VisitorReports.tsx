@@ -15,6 +15,16 @@ function ranking(rows:Row[],metric:string) {
     return [...totals.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
 }
 
+function VisitorQuestions({rows,messages}:{rows:Row[];messages:number}) {
+    const questions=ranking(rows,'question');
+    const identified=questions.reduce((sum,[,count])=>sum+count,0);
+    return <section className={s.panel}><h4>What visitors want to know</h4>
+        {identified>0?<><p>Common questions, paraphrased from patterns in live messages. Matched {identified.toLocaleString()} of {messages.toLocaleString()} messages in this period.</p>
+            <ol>{questions.map(([question,count])=><li key={question} className={s.recurring}><strong>{question}</strong><span>{count.toLocaleString()} {count===1?'message':'messages'}</span></li>)}</ol>
+        </>:<p>{messages?'No question patterns were recorded for these messages. Earlier reports kept topic counts only.':'Questions appear here after a live widget message matches a question pattern.'}</p>}
+    </section>;
+}
+
 function RecurringTopics({rows,days}:{rows:Row[];days:number}) {
     const topics=new Map<string,{messages:number;days:Set<string>;latest:string}>();
     for(const row of rows) {
@@ -59,10 +69,11 @@ function Results({report,days,navigate,published,hasCta}:Pick<Props,'navigate'|'
     const topics=ranking(report.rows,'topic'),tones=ranking(report.rows,'tone');
     const messages=topics.reduce((n,[,v])=>n+v,0);
     const clicks=report.rows.reduce((n,r)=>n+(r.metric==='click'?r.total:0),0);
-    if(!messages&&!clicks)return <><RecurringTopics rows={report.rows} days={days}/><section className={s.panel}><h4>No live activity recorded</h4><p>{published?'Messages and CTA clicks appear here after visitors use the embedded assistant. Preview conversations are excluded.':'Publish and embed this assistant to start collecting visitor activity.'}</p><button className="button button-outline" onClick={()=>navigate('embed')}>Review Publish &amp; Embed</button></section></>;
+    if(!messages&&!clicks)return <><VisitorQuestions rows={report.rows} messages={0}/><RecurringTopics rows={report.rows} days={days}/><section className={s.panel}><h4>No live activity recorded</h4><p>{published?'Messages and CTA clicks appear here after visitors use the embedded assistant. Preview conversations are excluded.':'Publish and embed this assistant to start collecting visitor activity.'}</p><button className="button button-outline" onClick={()=>navigate('embed')}>Review Publish &amp; Embed</button></section></>;
     const rankedTopics=topics.filter(([name])=>name!=='Other');
     const unmatched=messages-rankedTopics.reduce((sum,[,count])=>sum+count,0);
     return <><div className={s.cards}>{[['Visitor messages',messages],['Call-to-action clicks',clicks],['Days with activity',new Set(report.rows.map(r=>r.day)).size]].map(([label,value])=><div key={label}><span>{label}</span><strong>{value.toLocaleString()}</strong></div>)}</div>
+        <VisitorQuestions rows={report.rows} messages={messages}/>
         <RecurringTopics rows={report.rows} days={days}/>
         <Activity report={report} days={days}/>
         <section className={s.panel}><h4>What visitors ask about</h4>
