@@ -17,6 +17,6 @@ function Editor({kind,request}:{kind:string}&Props){
  <button className="button button-primary" disabled={busy}>Publish {kind==='terms'?'terms':'privacy policy'}</button></form>:!message&&<p>Loading policy…</p>}</>;
 }
 export default function PolicyEditor({request}:Props){const [kind,setKind]=useState('terms');
- return <section className={s.panel}><h2>Site policies</h2><label>Document<select value={kind} onChange={e=>setKind(e.target.value)}><option value="terms">Terms of Service</option><option value="privacy">Privacy Policy</option></select></label>
+ return <section className={s.panel}><h2>Site policies</h2><div className={s.form}><label>Document<select value={kind} onChange={e=>setKind(e.target.value)}><option value="terms">Terms of Service</option><option value="privacy">Privacy Policy</option></select></label></div>
  <Editor key={kind} kind={kind} request={request}/></section>;
 }

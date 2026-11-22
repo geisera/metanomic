@@ -69,8 +69,8 @@ export default function ScopeConfiguration({ request, onSessionChange }: Props) 
     {notice && <p className={s.message} role="status">{notice}</p>}
     {!config && !error && <p role="status">Loading configuration…</p>}
     {config && <><form className={s.form} onSubmit={event => save(event)}>
-      <label><input type="checkbox" checked={config.enabled} disabled={busy}
-        onChange={event => setConfig({ ...config, enabled: event.target.checked })} /> Enable topic filtering for eligible workspaces</label>
+      <fieldset className={s.optionGroup}><legend>Topic filtering</legend><label className={s.optionRow}><span><strong>Enable topic filtering</strong><small id="scope-enabled-help">Apply the configured topic filter to eligible workspaces.</small></span><input aria-describedby="scope-enabled-help" type="checkbox" checked={config.enabled} disabled={busy}
+        onChange={event => setConfig({ ...config, enabled: event.target.checked })} /></label></fieldset>
       <label>Classifier model
         <select value={config.model} disabled={busy} onChange={event => {
           const model = event.currentTarget.value;

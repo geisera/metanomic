@@ -108,13 +108,13 @@ export default function Accounts({membershipView,roles,reauth,request,onOpenWork
     return <section className={s.panel} aria-labelledby="accounts-heading">
         <h2 id="accounts-heading">Accounts</h2>
         <p className={s.meta}>Search and select an account to review its profile, membership, and sign-in status.</p>
-        <form onSubmit={search} className={s.form}>
+        <form onSubmit={search} className={s.form+' '+s.filters}>
             <label>Search accounts<input value={fields.query} onChange={event=>setFields({...fields,query:event.target.value})} autoComplete="off" maxLength={254} placeholder="Email, name, domain, account ID, or assistant ID"/></label>
-            <div className={s.row}>
+            <div className={s.filterFields}>
                 <label>Membership<select value={fields.tier} onChange={event=>setFields({...fields,tier:event.target.value})}><option value="">All plans</option>{plans.map(tier=><option key={tier.id} value={tier.id}>{tier.name}</option>)}</select></label>
                 <label>Account status<select value={fields.status} onChange={event=>setFields({...fields,status:event.target.value})}><option value="">Any status</option><option value="active">Sign-in active</option><option value="inactive">Sign-in inactive</option><option value="suspended">Workspace suspended</option></select></label>
                 <label>Email verification<select value={fields.verified} onChange={event=>setFields({...fields,verified:event.target.value})}><option value="">Any verification status</option><option value="verified">Verified</option><option value="unverified">Unverified</option></select></label>
-                <button type="submit" className="button button-primary">Apply filters</button>
+                </div><div className={s.row}><button type="submit" className="button button-primary">Apply filters</button>
                 <button type="button" className="button button-outline" disabled={busy||workspaceBusy} onClick={()=>{setFields(initial);setFilter({...initial});setSelected(null);setAction(null);setMessageId('');clearWorkspace();setError('');setNotice('');setDirectory(null);}}>Clear</button>
             </div>
         </form>
@@ -150,8 +150,8 @@ export default function Accounts({membershipView,roles,reauth,request,onOpenWork
                 <div><dt>Membership</dt><dd>{plans.find(tier=>tier.id===selected.tier_id)?.name||selected.tier_id}</dd></div>
             </dl>
             {selected.is_staff&&<p className={s.meta}>Staff sign-in and identity are managed separately.</p>}
-            <div className={s.row}>
-                {activeAccountActions.map(id=><button type="button" className="button button-outline" key={id} disabled={busy} onClick={()=>{setError('');if(id==='send_account_email')setMessageId(crypto.randomUUID());setAction(id);}}>{accountActions[id].label}</button>)}
+            <div className={s.actionList}>
+                {activeAccountActions.map(id=><button type="button" className="button button-outline" key={id} data-danger={id==='delete_account'||undefined} disabled={busy} onClick={()=>{setError('');if(id==='send_account_email')setMessageId(crypto.randomUUID());setAction(id);}}>{accountActions[id].label}</button>)}
                 <button type="button" className="button button-outline" disabled={workspaceBusy||busy} onClick={()=>onOpenWorkspace(selected.owner_id)}>Open workspace</button>{(roles.includes('support')||roles.includes('operations'))&&<button type="button" className="button button-outline" disabled={workspaceBusy||busy} onClick={()=>onImpersonate(selected.owner_id)}>View as user</button>}
             </div>
         </section>}

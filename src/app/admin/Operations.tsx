@@ -34,8 +34,22 @@ async function submit<T>(body?: object, endpoint = '/api/studio-admin'): Promise
     return data as T;
 }
 
+type View = 'accounts'|'membership'|'stats'|'scope'|'emails'|'legal';
+type ViewItem = {id:View;label:string;icon:string;role?:StaffRole};
+const viewGroups:{name:string;items:ViewItem[]}[]=[
+    {name:'Workspace',items:[
+        {id:'accounts',label:'Accounts',icon:'M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M14 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M17 4a4 4 0 0 1 0 7 M18 15a4 4 0 0 1 3 4'},
+        {id:'stats',label:'Stats',icon:'M3 3v18h18 M7 17v-6 M12 17V7 M17 17v-9'}]},
+    {name:'Configuration',items:[
+        {id:'membership',label:'Membership',role:'billing',icon:'M3 5h18v14H3z M3 10h18 M7 15h4'},
+        {id:'scope',label:'Prompt Guard',role:'operations',icon:'M12 2l8 4v6c0 5-8 10-8 10S4 17 4 12V6z M8 12l3 3 5-6'}]},
+    {name:'Publishing',items:[
+        {id:'emails',label:'Email templates',role:'operations',icon:'M3 5h18v14H3z M3 6l9 7 9-7'},
+        {id:'legal',label:'Site policies',role:'operations',icon:'M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6'}]},
+];
+
 export default function Operations() {
-    const [view,setView] = useState<'accounts'|'membership'|'stats'|'scope'|'emails'|'legal'>('accounts');
+    const [view,setView] = useState<View>('accounts');
     const [staff,setStaff] = useState<Staff|null>(null);
     const [state,setState] = useState<'loading'|'sign-in'|'blocked'|'ready'>('loading');
     const [busy,setBusy] = useState(false);
@@ -161,14 +175,18 @@ export default function Operations() {
             </form>}
         </section>}
         {staff?.verified&&<>
-            <nav className={s.row} aria-label="Operations views">
-                <button type="button" className={'button '+(view==='accounts'?'button-primary':'button-outline')} aria-pressed={view==='accounts'} onClick={()=>setView('accounts')}>Accounts</button>
-                {billing&&<button type="button" className={'button '+(view==='membership'?'button-primary':'button-outline')} aria-pressed={view==='membership'} onClick={()=>setView('membership')}>Membership configuration</button>}
-                <button type="button" className={'button '+(view==='stats'?'button-primary':'button-outline')} aria-pressed={view==='stats'} onClick={()=>setView('stats')}>Stats</button>
-                {operations&&<button type="button" className={'button '+(view==='scope'?'button-primary':'button-outline')} aria-pressed={view==='scope'} onClick={()=>setView('scope')}>Prompt Guard <span className={s.betaBadge}>Beta</span></button>}
-                {operations&&<button type="button" className={'button '+(view==='emails'?'button-primary':'button-outline')} aria-pressed={view==='emails'} onClick={()=>setView('emails')}>Email templates</button>}
-                {operations&&<button className={'button '+(view==='legal'?'button-primary':'button-outline')} aria-pressed={view==='legal'} onClick={()=>setView('legal')}>Site policies</button>}
+            <div className={s.layout}>
+            <nav className={s.rail} aria-label="Operations views">
+                {viewGroups.map(group=>{
+                    const items=group.items.filter(item=>!item.role||staff.roles.includes(item.role));
+                    return items.length>0&&<div key={group.name}><h2>{group.name}</h2>{items.map(item=>
+                        <button type="button" key={item.id} aria-pressed={view===item.id} onClick={()=>setView(item.id)}>
+                            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon}/></svg>
+                            {item.label}{item.id==='scope'&&<span className={s.betaBadge}>Beta</span>}
+                        </button>)}</div>;
+                })}
             </nav>
+            <div className={s.content}>
             {operations&&view==='legal'&&<PolicyEditor request={submit}/>}
             {view==='emails'&&operations&&<EmailTemplates request={submit}/>}
             {view==='scope'&&operations&&<ScopeConfiguration request={submit} onSessionChange={load}/>}
@@ -245,6 +263,7 @@ export default function Operations() {
                     </form>
                 </section>}
             </>}
+            </div></div>
             </div></div>
         </>}
     </div></main>;
