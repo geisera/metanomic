@@ -8,6 +8,7 @@ import { TheiaConversationProvider } from "@/components/TheiaConversation";
 import TheiaDock from "@/components/TheiaDock";
 import ParticlePlaygroundLink from "@/components/ParticlePlaygroundLink";
 import IntelligenceVisual from "@/components/IntelligenceVisual";
+import { Analytics } from '@vercel/analytics/next';
 
 const geist = Geist({ subsets: ["latin"], display: "swap", variable: "--font-geist" });
 
@@ -26,5 +27,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeInit}} /></head><body className={geist.variable}><IntelligenceVisual /><TheiaConversationProvider><TheiaDock><div className="relative z-10"><SiteAccount>{children}<SiteFooter global/></SiteAccount><ParticlePlaygroundLink /></div></TheiaDock></TheiaConversationProvider></body></html>;
+  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeInit}} /></head><body className={geist.variable}><IntelligenceVisual /><TheiaConversationProvider><TheiaDock><div className="relative z-10"><SiteAccount>{children}<SiteFooter global/></SiteAccount><ParticlePlaygroundLink /></div></TheiaDock></TheiaConversationProvider><Analytics /></body></html>;
 }
