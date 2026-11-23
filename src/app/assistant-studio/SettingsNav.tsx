@@ -1,22 +1,24 @@
 import type {ReactNode} from 'react';
+import {ArrowTopRightOnSquareIcon,Bars3Icon,BookOpenIcon,ChartBarIcon,CodeBracketIcon,Cog6ToothIcon,ExclamationTriangleIcon,EyeIcon,ShieldCheckIcon,UserIcon} from '@heroicons/react/24/outline';
 import s from './studio.module.css';
 
 const icons = {
-  reports: 'M3 3v18h18M7 17v-5m5 5V7m5 10v-8',
-  status: 'M4 6h16M4 12h16M4 18h16',
-  settings: 'M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1M5.6 18.4l2.1-2.1m8.6-8.6 2.1-2.1',
-  knowledge: 'M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-3H4V4Zm9 3a3 3 0 0 1 3-3h4v14h-3a4 4 0 0 0-4 3',
-  cta: 'M13 5h6v6m0-6-8 8m6 0v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h5',
-  scope: 'M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6l-9-4Zm-4 10 3 3 5-6',
-  preview: 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Zm10-3a3 3 0 1 0 0 6 3 3 0 0 0 0-6',
-  embed: 'm8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18',
-  profile: 'M20 21v-2a6 6 0 0 0-6-6h-4a6 6 0 0 0-6 6v2M16 6a4 4 0 1 0-8 0 4 4 0 0 0 8 0',
-  security: 'M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6l-9-4Zm-4 10 3 3 5-6',
-  danger: 'M12 3 2.5 20h19L12 3Zm0 6v5m0 3h.01',
+  reports: ChartBarIcon,
+  status: Bars3Icon,
+  settings: Cog6ToothIcon,
+  knowledge: BookOpenIcon,
+  cta: ArrowTopRightOnSquareIcon,
+  scope: ShieldCheckIcon,
+  preview: EyeIcon,
+  embed: CodeBracketIcon,
+  profile: UserIcon,
+  security: ShieldCheckIcon,
+  danger: ExclamationTriangleIcon,
 } as const;
 
 export function SettingsIcon({name}:{name:keyof typeof icons}) {
-  return <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={icons[name]}/></svg>;
+  const Icon = icons[name];
+  return <Icon width={22} height={22}/>;
 }
 
 export default function SettingsNav({label,children}:{label:string;children:ReactNode}) {

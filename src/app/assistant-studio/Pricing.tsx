@@ -1,6 +1,7 @@
 'use client';
 
 import {STARTER_MONTHLY_CENTS,STARTER_TRIAL_DAYS} from '@/lib/studio/starter-plan';
+import {CheckIcon} from '@heroicons/react/24/outline';
 import FeedbackToast from './FeedbackToast';
 import {useEffect,useRef,useState,type FormEvent,type ReactNode} from 'react';
 import {track} from '@/lib/navigation-analytics';
@@ -29,7 +30,7 @@ function Plan({name, description, price, action, featured=false, children}: {
 
 function Feature({children}:{children:ReactNode}){
   return <li className="flex gap-2">
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-0.5 size-5 shrink-0 text-[var(--chip-fg)]"><path d="m4.5 12.75 6 6 9-13.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <CheckIcon className="mt-0.5 size-5 shrink-0 text-[var(--chip-fg)]"/>
     <span>{children}</span>
   </li>;
 }

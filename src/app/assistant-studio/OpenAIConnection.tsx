@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState,type FormEvent} from 'react';
+import {CheckCircleIcon} from '@heroicons/react/24/outline';
 import FieldHelp from './FieldHelp';
 import {call,ErrorNotice,LastSaved,Notice,type Snapshot} from './ui';
 import s from './studio.module.css';
@@ -44,9 +45,7 @@ export default function OpenAIConnection({keyInfo,onUpdate}:{keyInfo?:Snapshot['
    <Notice>{notice}</Notice>
    <div role="status" className={keyInfo ? s.connectionVerified : s.help}>
      {keyInfo ? <>
-       <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-         <circle cx="12" cy="12" r="10"/><path d="m7 12 3 3 7-7" strokeLinecap="round" strokeLinejoin="round"/>
-       </svg>
+       <CheckCircleIcon width={24} height={24}/>
        <div><strong>API key connected</strong><p>Key ending in {keyInfo.last_four} · Last verified by OpenAI <time dateTime={keyInfo.validated_at}>{new Date(keyInfo.validated_at).toLocaleString()}</time></p></div>
      </> : 'No key connected.'}
    </div>

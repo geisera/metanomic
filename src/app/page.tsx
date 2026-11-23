@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowPathRoundedSquareIcon, ChatBubbleLeftRightIcon, CloudIcon, DocumentCheckIcon, DocumentMagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import styles from "./services.module.css";
 import { servicePrompt } from "@/lib/theia-dock";
 import TheiaLink from "@/components/TheiaLink";
@@ -6,12 +7,12 @@ import PrimaryNav from "@/components/PrimaryNav";
 import TheiaShowcase from "@/components/TheiaShowcase";
 
 const services = [
-  { number: "01", audience: "FOR ANALYSTS & EXPERTS", title: "Knowledge & research agents", outcome: "Answers your team can trace.", description: "Searches approved sources, compares evidence, and cites every finding.", icon: "M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 6 6M7 8h6M7 11h4" },
-  { number: "02", audience: "FOR OPERATIONS", title: "Operations agents", outcome: "Routine work that doesn't stall.", description: "Coordinates recurring tasks across systems, chases missing information, and escalates exceptions.", icon: "M4 4h6v6H4zM14 14h6v6h-6zM10 7h7v7M7 10v7h7" },
-  { number: "03", audience: "FOR SUPPORT", title: "Customer service agents", outcome: "Faster resolutions, cleaner handoffs.", description: "Answers questions, investigates account issues, and passes complex cases to your team with full context.", icon: "M4 13v-2a8 8 0 0 1 16 0v2M4 12H2v6h4v-6H4Zm16 0h2v6h-4v-6h2Zm0 6v1a2 2 0 0 1-2 2h-6" },
-  { number: "04", audience: "FOR REVENUE TEAMS", title: "Sales & intake agents", outcome: "Every inquiry qualified and logged.", description: "Collects requirements, updates your CRM, and books the next step.", icon: "M4 4h16l-6 8v7l-4 2v-9L4 4ZM16 16l2 2 4-4" },
-  { number: "05", audience: "FOR BACK OFFICE", title: "Document-processing agents", outcome: "Documents in, validated data out.", description: "Extracts and checks information, flags gaps and inconsistencies, and queues follow-up.", icon: "M14 2H4v20h16V8l-6-6Zm0 0v6h6M8 15l3 3 5-6" },
-  { number: "06", audience: "FOR SALESFORCE ORGS", title: "Salesforce agents", outcome: "Agents native to your org.", description: "Investigates cases, recommends resolutions, and updates only the fields you approve.", icon: "M6 18a4 4 0 0 1-1-8 6 6 0 0 1 11-3 5 5 0 1 1 2 11H6ZM9 12l2 2 4-4" }
+  { number: "01", audience: "FOR ANALYSTS & EXPERTS", title: "Knowledge & research agents", outcome: "Answers your team can trace.", description: "Searches approved sources, compares evidence, and cites every finding.", icon: DocumentMagnifyingGlassIcon },
+  { number: "02", audience: "FOR OPERATIONS", title: "Operations agents", outcome: "Routine work that doesn't stall.", description: "Coordinates recurring tasks across systems, chases missing information, and escalates exceptions.", icon: ArrowPathRoundedSquareIcon },
+  { number: "03", audience: "FOR SUPPORT", title: "Customer service agents", outcome: "Faster resolutions, cleaner handoffs.", description: "Answers questions, investigates account issues, and passes complex cases to your team with full context.", icon: ChatBubbleLeftRightIcon },
+  { number: "04", audience: "FOR REVENUE TEAMS", title: "Sales & intake agents", outcome: "Every inquiry qualified and logged.", description: "Collects requirements, updates your CRM, and books the next step.", icon: FunnelIcon },
+  { number: "05", audience: "FOR BACK OFFICE", title: "Document-processing agents", outcome: "Documents in, validated data out.", description: "Extracts and checks information, flags gaps and inconsistencies, and queues follow-up.", icon: DocumentCheckIcon },
+  { number: "06", audience: "FOR SALESFORCE ORGS", title: "Salesforce agents", outcome: "Agents native to your org.", description: "Investigates cases, recommends resolutions, and updates only the fields you approve.", icon: CloudIcon }
 ];
 const steps = [
   { index: "01", title: "Understand", description: "We begin with the people, their ambitions, and the work worth amplifying." },
@@ -48,7 +49,7 @@ export default function Home() {
         </div>
         <div className={styles.grid}>
           {services.map((service) => <TheiaLink source="card" prompt={servicePrompt(service.title)} id={`service-${service.number}`} data-theia-context={service.title} className={`card ${styles.card}`} key={service.number} aria-label={`${service.title}: Ask Theia about this`}>
-            <svg className={styles.icon} width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={service.icon} /></svg>
+            <service.icon className={styles.icon} width={28} height={28} />
             <p className="eyebrow mt-5">{service.number} / {service.audience}</p>
             <h3 className="mt-5 text-[25px] font-semibold tracking-[-.04em]">{service.title}</h3>
             <p className={styles.outcome}>{service.outcome}</p>

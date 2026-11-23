@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { ChartBarIcon, CreditCardIcon, DocumentTextIcon, EnvelopeIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { actions, accountActions, type AccountAction, type AdminAction, type StaffRole, type Workspace } from '@/lib/studio/admin-contract';
 import Accounts from './Accounts';
@@ -35,17 +36,17 @@ async function submit<T>(body?: object, endpoint = '/api/studio-admin'): Promise
 }
 
 type View = 'accounts'|'membership'|'stats'|'scope'|'emails'|'legal';
-type ViewItem = {id:View;label:string;icon:string;role?:StaffRole};
+type ViewItem = {id:View;label:string;icon:typeof UsersIcon;role?:StaffRole};
 const viewGroups:{name:string;items:ViewItem[]}[]=[
     {name:'Workspace',items:[
-        {id:'accounts',label:'Accounts',icon:'M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M14 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M17 4a4 4 0 0 1 0 7 M18 15a4 4 0 0 1 3 4'},
-        {id:'stats',label:'Stats',icon:'M3 3v18h18 M7 17v-6 M12 17V7 M17 17v-9'}]},
+        {id:'accounts',label:'Accounts',icon: UsersIcon},
+        {id:'stats',label:'Stats',icon: ChartBarIcon}]},
     {name:'Configuration',items:[
-        {id:'membership',label:'Membership',role:'billing',icon:'M3 5h18v14H3z M3 10h18 M7 15h4'},
-        {id:'scope',label:'Prompt Guard',role:'operations',icon:'M12 2l8 4v6c0 5-8 10-8 10S4 17 4 12V6z M8 12l3 3 5-6'}]},
+        {id:'membership',label:'Membership',role:'billing',icon: CreditCardIcon},
+        {id:'scope',label:'Prompt Guard',role:'operations',icon: ShieldCheckIcon}]},
     {name:'Publishing',items:[
-        {id:'emails',label:'Email templates',role:'operations',icon:'M3 5h18v14H3z M3 6l9 7 9-7'},
-        {id:'legal',label:'Site policies',role:'operations',icon:'M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6'}]},
+        {id:'emails',label:'Email templates',role:'operations',icon: EnvelopeIcon},
+        {id:'legal',label:'Site policies',role:'operations',icon: DocumentTextIcon}]},
 ];
 
 export default function Operations() {
@@ -181,7 +182,7 @@ export default function Operations() {
                     const items=group.items.filter(item=>!item.role||staff.roles.includes(item.role));
                     return items.length>0&&<div key={group.name}><h2>{group.name}</h2>{items.map(item=>
                         <button type="button" key={item.id} aria-pressed={view===item.id} onClick={()=>setView(item.id)}>
-                            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon}/></svg>
+                            <item.icon width={18} height={18}/>
                             {item.label}{item.id==='scope'&&<span className={s.betaBadge}>Beta</span>}
                         </button>)}</div>;
                 })}

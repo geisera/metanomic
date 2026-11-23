@@ -1,5 +1,6 @@
 'use client';
 import {cloneElement, useRef, useState, type ReactElement, type ReactNode} from 'react';
+import {InformationCircleIcon} from '@heroicons/react/24/outline';
 import s from './studio.module.css';
 
 type Props = {
@@ -31,9 +32,7 @@ export default function FieldHelp({id, label, caption, control, checkbox, childr
             {detail && <button ref={button} type='button' className={s.infoButton}
                 aria-label={`Help for ${label}`} aria-expanded={open} aria-controls={id+'-detail'}
                 onClick={() => setOpen(value => !value)}>
-                <svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.7' aria-hidden='true'>
-                    <circle cx='12' cy='12' r='9'/><path d='M12 11v6'/><circle cx='12' cy='7.5' r='.7' fill='currentColor' stroke='none'/>
-                </svg>
+                <InformationCircleIcon width={22} height={22}/>
             </button>}
         </div>
         {!checkbox && input}

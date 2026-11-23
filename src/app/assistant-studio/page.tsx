@@ -1,4 +1,5 @@
 import {HeroActions} from '@/components/SiteAccount';
+import {BoltIcon,BookOpenIcon,CheckCircleIcon,ClockIcon,CodeBracketIcon,CurrencyDollarIcon,DocumentIcon,DocumentTextIcon,KeyIcon,PaperAirplaneIcon} from '@heroicons/react/24/outline';
 import StudioWidgets from './StudioWidgets';
 import {starterBillingConfig} from '@/lib/studio/starter-billing';
 import Pricing from './Pricing';
@@ -26,12 +27,12 @@ const messages=[
 ];
 
 const benefits=[
-  {title:'No code required',body:'If you can copy and paste, you can install it. No developer, no plugins.',icon:'M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5'},
-  {title:'Knows your business',body:'Answers draw on the knowledge you add from your pages, docs, and FAQs.',icon:'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25'},
-  {title:'Live in 10 minutes',body:'Sign up, add your content, paste one line. Your site is answering questions.',icon:'m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z'},
-  {title:'Answers 24/7',body:'Customers get answers at night, on weekends, and on holidays.',icon:'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
-  {title:'Shows its sources',body:'Answers can cite your knowledge documents and link to public source pages you provide.',icon:'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
-  {title:'No markup on usage',body:'Bring your OpenAI key and pay OpenAI directly, at cost.',icon:'M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'},
+  {title:'No code required',body:'If you can copy and paste, you can install it. No developer, no plugins.',icon: CodeBracketIcon},
+  {title:'Knows your business',body:'Answers draw on the knowledge you add from your pages, docs, and FAQs.',icon: BookOpenIcon},
+  {title:'Live in 10 minutes',body:'Sign up, add your content, paste one line. Your site is answering questions.',icon: BoltIcon},
+  {title:'Answers 24/7',body:'Customers get answers at night, on weekends, and on holidays.',icon: ClockIcon},
+  {title:'Shows its sources',body:'Answers can cite your knowledge documents and link to public source pages you provide.',icon: CheckCircleIcon},
+  {title:'No markup on usage',body:'Bring your OpenAI key and pay OpenAI directly, at cost.',icon: CurrencyDollarIcon},
 ];
 
 const features = [
@@ -40,21 +41,21 @@ const features = [
     description:
       'Add your FAQs, policies, and product docs so your assistant can answer common customer questions using the information you provide.',
     href: '/assistant-studio/docs',
-    icon: 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7m-7 4h7',
+    icon: DocumentTextIcon,
   },
   {
     name: 'Install with one line of code',
     description:
       'Preview your assistant in Studio, then paste one script tag into a website that supports custom code. Metanomic handles the hosting.',
     href: '/assistant-studio/docs',
-    icon: 'm17.25 6.75 5.25 5.25-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5',
+    icon: CodeBracketIcon,
   },
   {
     name: 'Bring your own OpenAI key',
     description:
       'Connect your OpenAI API key and pay OpenAI directly for model usage. Metanomic encrypts your saved key and adds no token markup.',
     href: '/assistant-studio/privacy',
-    icon: 'M15.75 5.25a4.5 4.5 0 0 0-4.39 5.49L3 19.1V21h3v-2.25h2.25V16.5h2.25l2.76-2.76a4.5 4.5 0 1 0 2.49-8.49Zm2.25 4.5h.008v.008H18V9.75Z',
+    icon: KeyIcon,
   },
 ];
 
@@ -78,7 +79,7 @@ function SampleChat(){
           {messages.map(m=><li key={m.text} className={s.message+' flex flex-col '+(m.source?'items-start':'items-end')}>
             <p className={(m.source?s.bot+' rounded-bl-sm':s.user+' rounded-br-sm')+' max-w-[88%] rounded-2xl px-3.5 py-2.5 text-lg leading-7'}>{m.text}</p>
             {m.source&&<span className={s.source+' mt-1.5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium'}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+              <DocumentIcon className="size-3.5"/>
               {m.source}
             </span>}
           </li>)}
@@ -86,7 +87,7 @@ function SampleChat(){
         <div className={s.inputBar+' p-3'}>
           <div className={s.input+' flex items-center gap-2 rounded-xl p-1.5 pl-3'}>
             <span className="grow text-lg">Ask a question…</span>
-            <span className={s.send+' grid size-9 shrink-0 place-items-center rounded-lg'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" className="size-5"><path d="m5 12-2-8 18 8-18 8 2-8Zm0 0h16"/></svg></span>
+            <span className={s.send+' grid size-9 shrink-0 place-items-center rounded-lg'}><PaperAirplaneIcon className="size-5"/></span>
           </div>
         </div>
       </div>
@@ -125,9 +126,7 @@ export default function Page(){
           {benefits.map(b => (
             <li key={b.title} className={s.card + ' flex gap-4 p-5 sm:block sm:p-7'}>
               <span className={s.icon + ' inline-grid size-11 shrink-0 place-items-center rounded-xl'}>
-                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-6">
-                  <path d={b.icon} />
-                </svg>
+                <b.icon className="size-6"/>
               </span>
               <div>
                 <h3 className="text-lg font-semibold sm:mt-5">{b.title}</h3>
